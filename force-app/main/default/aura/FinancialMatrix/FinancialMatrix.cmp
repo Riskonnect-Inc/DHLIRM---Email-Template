@@ -1,0 +1,170 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" controller="MatrixController">
+
+    <!-- Public Attributes -->
+    <aura:attribute name="isOccurrence" type="Boolean" default="false" access="global" description="Used to mark Occurence Financial Matrix Implementation"/>
+    <aura:attribute name="showTransactions" type="Boolean" default="true" access="global" description="Used to display Transaction area."/>
+    <aura:attribute name="allowNewTransactions" type="Boolean" default="true" access="global" description="If true the new-transactions button group will be displayed, contingent upon a compatible Occurrence/Claim state and CRUD permissions"/>
+
+    <aura:attribute name="transactionColumn1" type="String" default="Name" access="global" description="Transaction area First Column."/>
+    <aura:attribute name="transactionColumn2" type="String" default="Transaction_Status__c" access="global" description="Transaction area Second Column."/>
+    <aura:attribute name="transactionColumn3" type="String" default="Category__c" access="global" description="Transaction area Third Column."/>
+    <aura:attribute name="transactionColumn4" type="String" default="Transaction_Date__c" access="global" description="Transaction area Fourth Column."/>
+    <aura:attribute name="transactionColumn5" type="String" default="" access="global" description="Transaction area Fifth Column."/>
+    <aura:attribute name="transactionColumn6" type="String" default="" access="global" description="Transaction area Sixth Column."/>
+    <aura:attribute name="transactionColumn7" type="String" default="" access="global" description="Transaction area Seventh Column."/>
+    <aura:attribute name="transactionColumn8" type="String" default="" access="global" description="Transaction area Eighth Column."/>
+    <aura:attribute name="transactionColumn9" type="String" default="" access="global" description="Transaction area Ninth Column."/>
+    <aura:attribute name="transactionColumn10" type="String" default="" access="global" description="Transaction area Tenth Column."/>
+
+    <!-- MDU new atributes -->
+    <aura:attribute name="occur" type="Object" default="" access="Private" description="The loaded occurrence record, if applicable"/>
+    <aura:attribute name="occurClaimOpts" type="List" default="" access="Private" description="The occurrence's selectable claim elements, as label/key tuples"/>
+    <aura:attribute name="activeClaim" type="Object" default="" access="Private" description="If occurrence is parent, then this object contains the selected claim's details fields if not 'All Claims' and null otherwise; for parent claim records this object contains the parent claim fields"/>
+    <aura:attribute name="showNewTransactionButtons" type="Boolean" default="false" access="Private" description="Dynamic calculation on whether the new-transaction buttons should be rendered; takes into account multiple factors such a CRUD security, design checkbox attribute, currently selected claim on occurrences"/>
+    <aura:attribute name="activeClaimKey" type="String" default="all" access="Private" description="simply for synchoronizing the active-claim lightning-select current value, because this lightning component works very poorly"/>
+    <aura:attribute name="isOccurReports" type="Boolean" default="all" access="Private" description="switch that specifies whether occurrence-level or claim-level reports should be used"/>
+
+    <!-- Private Attributes -->
+    <aura:attribute name="currencies" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="sources" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="statuses" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="categories" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="actionButtons" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="transactionConfig" type="Object" default="" access="Private" description=""/>
+    <aura:attribute name="baseData" type="Object" default="" access="Private" description=""/>
+    <aura:attribute name="currency" type="String" default="" access="Private" description=""/>
+    <aura:attribute name="recTypes" type="Object" default="" access="Private" description=""/>
+    <aura:attribute name="claimId" type="String" default="" access="Private" description=""/>
+    <aura:attribute name="claimDetail" type="Object" default="" access="Private" description=""/>
+    <aura:attribute name="claimDetailLoaded" type="Boolean" default="false" access="Private" description=""/>
+    <!--<aura:attribute name="claimRecord" type="Object" default="" access="Private" description=""/>-->
+    <aura:attribute name="claimLoadError" type="String" default="" access="Private" description=""/>
+    <!-- matrix attributes -->
+    <aura:attribute name="customSettings" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="reportMap" type="Object" default="" access="Private" description=""/>
+    <aura:attribute name="rollupOccurNumber" type="String" default="" access="Private" description=""/>
+    <aura:attribute name="rollupClaimNumber" type="String" default="" access="Private" description=""/>
+    <aura:attribute name="matrixData" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="matrixPayload" type="Object" access="Private" description=""/>
+    <!-- data grid attributes -->
+    <aura:attribute name="columns" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="enableInfiniteLoading" type="Boolean" default="" access="Private" description=""/>
+    <aura:attribute name="loadMoreStatus" type="String" default="" access="Private" description=""/>
+    <aura:attribute name="tableData" type="List" default="" access="Private" description=""/>
+        <aura:handler name="change" value="{!v.tableData}" action="{!c.tableDataChanged}"/>
+    <aura:attribute name="slowLoadData" type="List" default="" access="Private" description=""/>
+    <aura:attribute name="slowLoadCounter" type="Object" access="Private" description=""/>
+    <!-- occurrence attributes -->
+    <!--<aura:attribute name="oLeadClaim" type="Object" access="Private" description=""/>-->
+    <aura:attribute name="oClaims" type="Object" access="Private" description=""/>
+    <!--<aura:attribute name="claimsList" type="List" access="Private" description=""/>-->
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:handler event="force:showToast" action="{!c.handleToast}"/> 
+    <aura:handler event="force:refreshView" action="{!c.onRefreshView}"/> 
+
+    <force:recordData recordId="{!v.recordId}" 
+        fields="Name,Coverage_Major__c,Status__c,Currency_Code__c" 
+        targetFields="{!v.claimDetail}"
+        targetError="{!v.claimLoadError}" 
+        recordUpdated="{!c.claimUpdated}"/>
+
+    <lightning:spinner variant="brand" size="large" aura:id="spinner"/>
+
+    <article class="slds-card slds-card_boundary" id="financials">
+        <!--<aura:if isTrue="{!v.isOccurrence}">-->
+        <aura:if isTrue="{! !!v.occur}">
+            <div style="border-bottom: 1px rgb(221, 219, 218) solid; padding: 0em 75% 1em 1em">
+                <lightning:select aura:id="claimFilter" name="claimFilter" onchange="{!c.onActiveClaimChange}">
+                    <aura:iteration items="{!v.occurClaimOpts}" var="claim">
+                        <option value="{!claim.key}" selected="{!claim.key == v.activeClaimKey}">{!claim.label}</option>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+        </aura:if>
+    
+        <div class="slds-grid slds-p-around_medium slds-wrap">
+            <div class="slds-col slds-size--1-of-1 slds-small-size--1-of-2">
+                <div id="financial-filters">
+                    <div class="slds-grid slds-wrap">
+                        <!-- DatePicker -->
+                        <div class="slds-col slds-size--1-of-1 slds-small-size--1-of-3 noLabel">
+                            <c:RKDatePicker aura:id="pit-date" changeListener="{!c.handleDateComparison}" value="Today" />
+                        </div>
+                        <!-- Category Picker -->
+                        <div class="slds-col slds-size--1-of-1 slds-small-size--1-of-3 picklist-label-hidden">
+                            <div style="margin-left:1em">
+                                <lightning:select name="sourceFilter" aura:id="sourceFilter" onchange="{!c.sourceChanged}">
+                                    <aura:iteration items="{!v.sources}" var="source">
+                                        <option value="{!source.key}">{!source.label}</option>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </div>
+                        <!-- Currency Picker -->
+                        <div class="slds-col slds-size--1-of-1 slds-small-size--1-of-3 picklist-label-hidden" style="align-self:center;">
+                            <div style="margin:0 1em; text-align:left; font-weight:bold;">Currency: {!v.currency}</div>
+                        </div>    
+                    </div>   
+                </div>
+            </div>
+            <aura:if isTrue="{!v.showNewTransactionButtons}">
+                <div aura:id="newClaimTransBtns" class="slds-col slds-size--1-of-1 slds-small-size--1-of-2" style="text-align:right;">
+                    <div class="slds-button-group" role="group">
+                        <aura:iteration items="{!v.actionButtons}" var="action">
+                            <!--<button class="slds-button slds-button_neutral" value="{!action.event}" onclick="{!c.actionButtonClick}">{!action.label}</button>-->
+                            <button class="slds-button slds-button_neutral" value="{!action.event}" onclick="{!c.fireNewTransaction}">{!action.label}</button>
+                        </aura:iteration>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+        <div aura:id="financials-table" class="slds-scrollable_x">
+            <c:FinancialsPit payload="{!v.matrixPayload}"/>
+        </div>
+        <aura:if isTrue="{!v.showTransactions}">
+            <div>
+                <div class="slds-grid slds-p-around_medium">
+                    <div class="slds-col slds-size_8-of-12" style="align-self:center">
+                        <div class="slds-text-heading_small">
+                            Transactions ({!v.tableData ? v.tableData.length : 0})
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12 noLabel" style="align-self:center">
+                        <div style="margin-right:1em;">
+                            <lightning:select aura:id="statusFilter" name="statusFilter" onchange="{!c.statusChanged}">
+                                <aura:iteration items="{!v.statuses}" var="source">
+                                    <option value="{!source.key}">{!source.label}</option>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_2-of-12 noLabel" style="align-self:center">
+                        <div>
+                            <lightning:select aura:id="categoriesFilter" name="categoriesFilter" onchange="{!c.categoriesChanged}">
+                                <aura:iteration items="{!v.categories}" var="source">
+                                    <option value="{!source.key}">{!source.label}</option>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </div>
+
+                </div>
+                <aura:if isTrue="{!and(v.tableData, v.tableData.length)}">
+                    <div style="height: 350px;">
+                        <lightning:datatable aura:id="grid"
+                            columns="{!v.columns}"
+                            keyField="id"
+                            data="{!v.slowLoadData}"
+                            enableInfiniteLoading="{!v.enableInfiniteLoading}"
+                            onloadmore="{!c.handleLoadingMoreData}"
+                            hideCheckboxColumn="true"
+
+                        />
+                        {!v.loadMoreStatus}
+                    </div>
+                </aura:if>
+            </div>
+        </aura:if>
+    </article>
+</aura:component>

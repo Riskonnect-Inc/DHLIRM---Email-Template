@@ -1,0 +1,41 @@
+<aura:component controller="RenewalControl_Controller" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:hasSObjectName" access="global" >
+    <!-- IMPORTS -->
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    
+    <!-- PUBLIC ATTRIBUTES -->
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="sObjectName" type="String" />
+    <aura:attribute name="sObjectLabel" type="String" />
+    
+    <aura:attribute name="visible" type="Boolean" default="false"/>
+    
+    <!-- EVENT HANDLERS -->
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    
+    <!-- COMPONENT BODY -->
+    <aura:if isTrue="{!v.visible}"> 
+        <div class="slds-modal__header" style="z-index:0">
+            <h2 class="slds-page-header__title">Renew</h2>
+        </div>
+        
+        <br/>
+        
+        <div class="slds-form--stacked">                
+            <div class="slds-text-heading_small">
+                Warning!!! This Renewal Control has incomplete sections. Renewing this control and generating new
+                renewal assignments may impact your values. Are you sure you want to continue?
+            </div>
+        </div>
+        <br/>
+        <!--  <div class="slds-p-top_medium"></div>     -->   
+        <div class="slds-border_bottom" style="border-bottom: 2px solid rgb(221, 219, 218);"></div>
+        <div class="slds-p-bottom_medium" ></div>
+        
+        <div class="slds-form-element slds-text-align_right">
+            <lightning:button class="slds-button_neutral slds-size_1-of-7" label="Cancel" onclick="{!c.handleCancel}" value="Cancel"/>
+            <lightning:button class="slds-button_brand slds-size_1-of-7" label="OK" onclick="{!c.showPopup}" value="OK"/>
+        </div>
+    </aura:if> 
+    
+</aura:component>

@@ -1,0 +1,11 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   05/29/2013
+           ******************************************************************* -->
+<apex:page standardController="Certificate_of_Insurance__c" standardStylesheets="False" showheader="False" sidebar="false">
+    
+    <flow:interview name="Certificate_Renewal_Flow"  buttonLocation="bottom"  buttonStyle="btn" finishLocation="/{!Id}" >   
+     
+    </flow:interview>
+    
+
+</apex:page>

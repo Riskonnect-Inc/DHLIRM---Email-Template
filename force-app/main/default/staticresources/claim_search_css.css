@@ -1,0 +1,56 @@
+/****************************************************************
+                        Added to RK base RMIS product as 03/25/2013
+           *******************************************************************/
+.rkon-clmsrch-criteria {
+    border:solid rgb(214,214,214) 1px;
+    border-radius:4px;
+    background:rgb(248,248,248);
+    background:linear-gradient(-90deg, rgba(255,255,255, 1.00) 0%, rgba(238, 238, 238, 1.00) 100%);
+    background:-moz-linear-gradient(-90deg, rgba(255,255,255, 1.00) 0%, rgba(238, 238, 238, 1.00) 100%);
+    background:-webkit-linear-gradient(-90deg, rgba(255,255,255, 1.00) 0%, rgba(238, 238, 238, 1.00) 100%);
+    /*margin-top:5px;*/
+    padding:10px 10px;
+    /*min-height:65px;*/
+}
+
+.rkon-clmsrch-criteria-header {
+    margin-bottom:5px;
+}
+
+.rkon-clmsrch-criteria .dateRangeContainer .dateRangeInputs div {
+    display:inline-block;
+}
+
+.rkon-clmsrch-criteria .dateRangeContainer .dateRangeInputs {
+    white-space:nowrap;
+}
+
+.rkon-clmsrch-criteria table.filterElements .labelColumn {
+    font-weight:bold;
+    font-size:90%;
+    vertical-align:middle;
+    text-align:right;
+    color:#445;
+    padding:4px 5px 4px 2px;
+}
+
+.rkon-clmsrch-criteria table.filterElements .dataColumn {
+    vertical-align:middle;
+    text-align:left;
+    padding:3px 2px 3px 5px;
+}
+
+/* remove margins if we have no messages to show in the results block (i.e. results table only): */
+.apexp .bPageBlock.apexDefaultPageBlock .pbBody.rkon-clmsrch-pureResults {
+    margin:0px;
+}
+
+body .apexp .bPageBlock.apexDefaultPageBlock div.pbBottomButtons {
+    margin-top:5px;
+}
+
+
+#hideShowCriteria {
+    color:rgb(1,91,167);
+    cursor:pointer;
+}

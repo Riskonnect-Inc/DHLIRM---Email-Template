@@ -1,0 +1,299 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 03/25/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" extensions="ClaimLetterExt">
+         <apex:outputfield value="{!Claim__c.Name}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Owner}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.RecordType}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Driver_Gender__c}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Driver_Name__c}"  rendered="false"/>    
+         <apex:outputfield value="{!Claim__c.Third_Party_Insurance_Co__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Third_Party_Policy_Number__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Id_Number__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Make__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Model__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Plate_Number__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Plate_State__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Towed__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Year__c}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Accident_Address_Line1__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Accident_Address_Line2__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Accident_City__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Accident_Country__c}"  rendered="false"/>
+
+         <apex:outputfield value="{!Claim__c.Accident_Description__c}"  rendered="false"/>         
+         <apex:outputfield value="{!Claim__c.Accident_State__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Accident_Time__c}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Additional_Body_Parts__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Adjuster_Email__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Adjuster_Lookup__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Adjuster_Name__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Adjuster_Number__c}"  rendered="false"/>      
+         <apex:outputfield value="{!Claim__c.Attorney_Representation__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Medical_BI_Incurred__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Medical_BI_Outstanding__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Medical_BI_Paid__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Cause__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Cause_General__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Cause_SRC__c}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Claimant_Address_Line1__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_Address_Line2__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_Age__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_City__c}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Claimant_Country__c}"  rendered="false"/>     
+         <apex:outputfield value="{!Claim__c.Claimant_First_Name__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_Gender__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_Home_Phone__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_Last_Name__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_Marital_Status__c}"  rendered="false"/>       
+         <apex:outputfield value="{!Claim__c.Claimant_Middle_Initial__c}"  rendered="false"/>         
+         <apex:outputfield value="{!Claim__c.Claimant_Name__c}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Claimant_Postal_Code__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_SSN__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_SSN_Last_4__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claimant_State__c}"  rendered="false"/>       
+         <apex:outputfield value="{!Claim__c.Claimant_Work_Phone__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claim_Review_Status__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Claim_Type_SRC__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Client_Report_Lag__c}"  rendered="false"/>       
+         <apex:outputfield value="{!Claim__c.Coverage_Major__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Coverage_Major_Description__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Coverage_Major_SRC__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Coverage_Minor__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Coverage_Minor_SRC__c}"  rendered="false"/>     
+         <apex:outputfield value="{!Claim__c.Date_Attorney_Disclosure__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_Attorney_Representation__c}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Date_Closed__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_Data_Load_Insert__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_Data_Load_Update__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_Denied__c}"  rendered="false"/>        
+         <apex:outputfield value="{!Claim__c.Date_of_Last_Activity__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_of_Loss__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_Opened__c}"  rendered="false"/>      
+         <apex:outputfield value="{!Claim__c.Date_Reopened__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_Reported_to_Client__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_Reported_to_TPA__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Date_Suit_Filed__c}"  rendered="false"/>         
+         
+         <apex:outputfield value="{!Claim__c.Involved_Employee_Name__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Employee_Id__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Employee_Job_Title__c}"  rendered="false"/>     
+         <apex:outputfield value="{!Claim__c.Gross_Incurred__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Outstanding__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Gross_Paid__c}"  rendered="false"/>    
+         <apex:outputfield value="{!Claim__c.Indemnity_PD_Incurred__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Indemnity_PD_Outstanding__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Indemnity_PD_Paid__c}"  rendered="false"/>      
+         <apex:outputfield value="{!Claim__c.Injury_Description__c}"  rendered="false"/>     
+         <apex:outputfield value="{!Claim__c.Expense_Incurred__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Expense_Outstanding__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Expense_Paid__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Litigation_Name__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Location_SRC__c}"  rendered="false"/>      
+         <apex:outputfield value="{!Claim__c.Nature__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Nature_General__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Nature_SRC__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Net_Incurred__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Net_Outstanding__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Net_Paid__c}"  rendered="false"/>      
+         <apex:outputfield value="{!Claim__c.Number_of_Dependents__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Occupation__c}"  rendered="false"/>      
+         <apex:outputfield value="{!Claim__c.Part__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Part_General__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Part_SRC__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Policy_Lookup__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Policy_Number__c}"  rendered="false"/>   
+         <apex:outputfield value="{!Claim__c.Property_Damage_Description__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Property_Description__c}"  rendered="false"/>  
+         <apex:outputfield value="{!Claim__c.Recovery_Received__c}"  rendered="false"/>
+         
+         <apex:outputfield value="{!Claim__c.Claim_Key__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Occurrence_Number__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Source__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Source_General__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Source_SRC__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Status__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Status_Closed_Count__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Status_Count__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Status_Open_Count__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Subrogation_Indicator__c}"  rendered="false"/>       
+         <apex:outputfield value="{!Claim__c.Takeover_Indicator__c}"  rendered="false"/>       
+         <apex:outputfield value="{!Claim__c.TPA_Carrier__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Damage_Description__c}"  rendered="false"/>
+         <apex:outputfield value="{!Claim__c.Vehicle_Location__c}"  rendered="false"/>
+         
+       
+       <apex:outputfield value="{!Claim__c.Policy_Lookup__r.Carrier__r.name}"  rendered="false"/>
+    
+       <apex:outputfield value="{!Claim__c.Assets__r.Year__c}"  rendered="false"/>
+       <apex:outputfield value="{!Claim__c.Assets__r.Make__c}"  rendered="false"/>
+       <apex:outputfield value="{!Claim__c.Assets__r.Model__c}"  rendered="false"/>
+             <apex:outputfield value="{!Claim__c.Assets__r.VIN__c}"  rendered="false"/>
+             
+              
+              
+              <apex:outputfield value="{!Claim__c.Date_Claimant_Born__c}"  rendered="false"/>   
+                     
+              
+              
+                
+             
+   <apex:pageBlock ><p style = "font-size: 18px;">Select from the Correspondence Categories</p> <BR/><BR/><BR/>
+    
+<link rel="stylesheet" type="text/css" href="https://cdn.idtdna.com/superfish/css/superfish.css"/> 
+<link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/ui-lightness/jquery-ui.css"/> 
+<script  src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+<script  src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js" type="text/javascript"></script>
+<script  src="https://cdn.idtdna.com/superfish/js/superfish.js" type="text/javascript"></script>
+
+<style>
+.bContainer{
+float:left;
+margin: 7px;
+width:250px;
+text-align:center;
+}
+</style>
+
+
+
+<script>
+    function trimString(orgString){
+      return orgString.replace(/^\s+|\s+$/g, "");
+      }
+      
+    function clickLink(anchorText){
+        $('a').each(function(){ //check all links
+            var thisLink = trimString($(this).text());
+            if (thisLink == anchorText){ //if link matches clicked link
+                 $(this).trigger("click"); //click hidden command link
+            }
+        });
+    }
+</script>
+
+
+<select onchange="clickLink($(this).val())">
+    <option>General Correspondence</option> 
+    <option>Claim Acknowledgement</option>  
+    <option>Release General</option>   
+    <option>Power of Attorney Transfer Motor Vehicle</option> 
+    <option>HIPAA Release</option>
+    <option>Subro Notice</option>
+    <option>Subro Demand</option>
+    <option>Blank Letter</option> 
+    <option>Fax Cover Sheet</option>
+    <option>Memo</option>
+</select>   
+       
+<!--
+<select onchange="clickLink($(this).val())">
+    <option>Forms</option>  
+    <option>Fax Cover Sheet</option>
+    <option>Memo</option>
+</select> 
+-->
+       
+<br/><br/><br/>
+<apex:outputLink value="/{!Claim__c.id}" id="theLink">Return to Claim</apex:outputLink>
+
+<br/><br/>
+<div style="display:none">
+
+       <!-- START GENERAL LETTERS -->
+
+        
+        <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="Claim Acknowledgement" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmClaimAcknowledgement" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="Claim Acknowledgement Letter Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+            </apex:commandLink>     
+            </span>
+        </apex:form>   
+       
+         <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="Release General" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmReleaseGeneral" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="Release General Letter Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+            </apex:commandLink>     
+            </span>
+        </apex:form>  
+                
+         <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="Power of Attorney Transfer Motor Vehicle" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmTransferMotorVehicle" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="Power of Attorney Transfer Motor Vehicle Letter Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+            </apex:commandLink>     
+            </span>
+        </apex:form>   
+      
+        <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="HIPAA Release" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmHIPPARelease" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="HIPAA Release Form Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+            </apex:commandLink>     
+            </span>
+        </apex:form>   
+      
+      
+        <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="Subro Notice" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmSubroNotice" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="Subro Notice Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+            </apex:commandLink>     
+            </span>
+        </apex:form>   
+      
+      
+         <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="Subro Demand" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmSubroDemand" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="Subro Demand Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+            </apex:commandLink>     
+            </span>
+        </apex:form>   
+          
+      
+        <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="Blank Letter" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmGenBlank" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="Letter Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+            </apex:commandLink>     
+         </span></apex:form>
+        
+        <!--END GENERAL LETTERS-->
+        
+     
+  
+     
+         <!--Start Form Letters-->     
+      
+
+          <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="Fax Cover Sheet" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmFormFaxCoverSheet" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="Fax Cover Sheet Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+              </apex:commandLink>     
+            </span></apex:form>
+
+
+          <apex:form target="_top"><span class="bContainer">
+              <apex:commandLink value="Memo" action="{!attachLetter}">
+              <apex:param name="templateAPIName" value="mmFormMemo" assignTo="{!templateAPIName}"/>
+              <apex:param name="templateName" value="Memo Created {!TODAY()}" assignTo="{!templateName}"/>
+              <apex:param name="letterType" value="General" assignTo="{!letterType}"/>
+              </apex:commandLink>     
+            </span></apex:form>
+         
+
+</div>
+</apex:pageBlock>
+</apex:page>

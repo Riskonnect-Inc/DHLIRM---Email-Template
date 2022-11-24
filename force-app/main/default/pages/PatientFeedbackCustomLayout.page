@@ -1,0 +1,30 @@
+<apex:page standardController="Patient_Satisfaction__c" showHeader="true" sidebar="true">
+	<apex:detail relatedList="true" title="true" showChatter="true" subject="{!Patient_Satisfaction__c.Id}"
+	inlineEdit="{!Patient_Satisfaction__c.Status_of_Complaint__c == 'New' || Patient_Satisfaction__c.Status_of_Complaint__c == 'In Progress'}" />
+
+	<apex:includeScript value="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"/>
+	<script type="text/javascript">
+		if('{!Patient_Satisfaction__c.Status_of_Complaint__c}' != 'New' && '{!Patient_Satisfaction__c.Status_of_Complaint__c}' != 'In Progress' ) hideButton("edit");
+
+		function hideButton(edit) {
+			try{
+				var buttons = parent.document.getElementsByName(edit);
+				for (var i=0; i < buttons.length; i++){
+					buttons[i].className="btn";
+					buttons[i].disabled=true;
+					buttons[i].type='hidden';
+				}
+			}catch(e){
+
+			}
+		}
+
+		var j$ = jQuery.noConflict();
+        j$("iframe").each(function(){
+            j$(this).load(function() {
+                j$(this).height( j$(this).contents().find("body").height() );
+            });
+        });
+	</script>
+	
+</apex:page>

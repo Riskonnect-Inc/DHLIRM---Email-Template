@@ -1,0 +1,137 @@
+<aura:component implements="force:hasRecordId,force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,forceCommunity:availableForAllPageTypes" access="global" controller="RKHierarchyTree_Controller">
+
+	<aura:set attribute="auraPreInitBlock">
+		<!-- 
+			=== Storage for any "storable" server-side calls. ===
+			1. getCustomSetting
+		-->
+		<auraStorage:init name="actions"
+			persistent="false"
+			secure="true"
+			maxSize="2"/>
+	</aura:set>
+    
+    <!-- ATTRIBUTES: CONFIGURABLE VIA DESIGN-TIME APP BUILDER -->
+    <aura:attribute name="labelField" type="string" access="global" />
+    <aura:attribute name="levelsToExpand" type="integer" default="3" access="global" />
+    
+    <!-- ATTRIBUTES: CONFIGURABLE, INTENDED TO MAKE TREE GENERIC, NOT IMPLEMENTED -->
+    <aura:attribute name="sObjectName" type="string" access="global" />
+    <aura:attribute name="codeField" type="String" access="global"/>
+    <aura:attribute name="keyField" type="String" access="global"/>
+    <aura:attribute name="nameField" type="String" access="global"/>
+    <aura:attribute name="parentField" type="String" access="global"/>
+    <aura:attribute name="parentKeyField" type="String" access="global"/>
+    <aura:attribute name="isLeafField" type="string" access="global" />
+    <aura:attribute name="parentFieldLookup" type="string" access="global" />
+    
+    <!-- ATTRIBUTES: PUBLIC ASSIGNABLE -->
+    <aura:attribute name="rootNodes" type="SObject[]" access="public" />
+    <aura:attribute name="hideInactive" type="boolean" default="false" access="public" />
+    <aura:attribute name="rootNodeId" type="string" access="public" />
+    
+    <!-- ATTRIBUTES: PRIVATE -->
+    <aura:attribute name="asyncInitComplete" type="Boolean" access="private" default="false"/>
+    <aura:attribute name="nodesToExpand" type="String[]" default="[]" access="private" />
+    <aura:attribute name="rebuildJobId" type="Id" access="private"/>
+    <aura:attribute name="rebuildProgress" type="Decimal" access="private"/>
+    <aura:attribute name="selectedNode" type="Id" access="private"/>
+    
+    <!-- ATTRIBUTES: EDIT MODE NOT IMPLEMENTED -->
+    <aura:attribute name="editMode" type="boolean" default="false" />
+    
+    <!-- ATTRIBUTES: DRAG AND DROP REPARENTING FEATURE (REMOVED) -->
+    <aura:attribute name="dragSourceId" type="string" />
+    <aura:attribute name="dragTargetId" type="string" />
+    <aura:attribute name="dragSourceName" type="string" />
+    <aura:attribute name="dragTargetName" type="string" />
+    <aura:attribute name="dragSourceRecord" type="Object" />
+    <aura:attribute name="dragSourceRecordFields" type="Object" />
+    <aura:attribute name="toggleModal" type="boolean" default="false" />
+    
+    <!-- LIGHTNING DATA SERVICE: USED TO UPDATE DRAGGED RECORD UPON DRAG AND DROP -->
+    <aura:if isTrue="{!not(empty(v.dragSourceId))}">
+        <force:recordData aura:id="sourceRecordLoader"
+                          recordId="{!v.dragSourceId}"
+                          fields="Name,rkl__Parent_Node__c"
+                          mode="EDIT"
+                          targetRecord="{!v.dragSourceRecord}"
+                          targetFields="{!v.dragSourceRecordFields}" />
+    </aura:if>
+    
+    
+    <!-- EVENT HANDLERS -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.asyncInitComplete}" action="{!c.postAsyncInit}"/>
+
+    <aura:dependency resource="markup://c:RKHierarchyTree_SelectionChangeEvent" type="EVENT" />
+    <aura:handler name="itemSelectedEvent" event="c:RKHierarchyTree_SelectionChangeEvent" action="{!c.handleSelectionEvent}" includeFacets="true" phase="bubble"/>
+    
+    <!-- COMPONENT BODY -->
+
+    <lightning:notificationsLibrary aura:id="alertPopup"/>
+    
+    <div class="slds-grid">
+    	<div class="{!'slds-col ' + (v.recordId ? 'slds-size_12-of-12' : 'slds-size_4-of-12') + ' slds-scrollable_y'}" style="max-height: 100vh">
+		    <lightning:card iconName="standard:hierarchy">
+		        <aura:set attribute="title">
+		            <h2 class="slds-card__header-link slds-text-heading_small">Hierarchy Tree</h2>
+		        </aura:set>
+		        <div class="slds-m-left_medium slds-m-bottom_small">
+			        <lightning:button variant="brand" label="Rebuild" onclick="{!c.rebuildHierarchy}"/>
+			        <lightning:button variant="neutral" label="Refresh" onclick="{!c.refresh}"/>
+			        <lightning:button variant="neutral" label="Collapse" onclick="{!c.collapseTree}"/>
+			    </div>
+			    <aura:if isTrue="{! !empty(v.rebuildJobId)}">
+				    <div class="slds-grid slds-m-left_medium slds-m-bottom_small">
+						<div class="slds-col slds-size_3-of-12">
+							<lightning:progressBar value="{!v.rebuildProgress}" size="large" variant="circular" title="Rebuild in Progress. Please Refresh When Complete."/>
+						</div>
+				    </div>
+				</aura:if>
+		        <aura:if isTrue="{!not(empty(v.rootNodes))}">
+		            <ul class="slds-tree" role="tree" aria-labelledby="treeheading" aria-activedescendant="tree0-node0">
+		                <aura:iteration items="{!v.rootNodes}" var="node" indexVar="i">
+		                    <c:RKHierarchyTree_Item sObjectName="{!v.sObjectName}"
+								codeField="{!v.codeField}"
+								keyField="{!v.keyField}"
+								nameField="{!v.nameField}"
+								parentField="{!v.parentField}"
+								parentKeyField="{!v.parentKeyField}"
+								isLeafField="{!v.isLeafField}"
+
+								aura:id="treeNode"
+								record="{!node}"
+								selected="false"
+								index="{!i}"
+								level="1"
+								treeId="{!concat('tree0-node',i)}"
+								maxAutoExpandLevel="{!v.levelsToExpand}"
+								parentIds="{!v.nodesToExpand}"
+								selectedNode="{!v.recordId}"
+								/>
+		                </aura:iteration>
+		            </ul>
+		            <lightning:spinner aura:id="loadingSpinner" class="slds-hide" size="large" variant="brand" />
+		        </aura:if>
+		    </lightning:card>
+		</div>
+		<aura:if isTrue="{! empty(v.recordId)}">
+			<div class="slds-col slds-size_8-of-12 slds-scrollable_y" style="max-height: 100vh">
+				<aura:if isTrue="{! !empty(v.selectedNode)}">
+					<lightning:card title="Hierarchy Details" iconName="standard:hierarchy">
+
+						<!-- Links don't work -->
+						<force:recordView recordId="{!v.selectedNode}"/>
+
+						<!-- Doesn't render, even with forced reload -->
+						<!--<force:recordData aura:id="recordViewer" recordId="{!v.selectedNode}" mode="EDIT" layoutType="FULL"/>-->
+
+						<!-- Styles are all jacked up, lookups don't render either. All in all, real quality stuff -->
+						<!--<force:recordEdit recordId="{!v.selectedNode}"/>-->
+					</lightning:card>
+				</aura:if>
+			</div>
+		</aura:if>
+	</div>
+</aura:component>

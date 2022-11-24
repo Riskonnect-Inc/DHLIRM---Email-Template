@@ -1,0 +1,15 @@
+.THIS .not-complete-icon {
+    background-color: #DDDBDA;
+}
+
+.THIS .svg-bugfix {
+	line-height: 0.875;
+}
+
+.THIS .checklist-item-name {
+   vertical-align: middle;
+}
+
+.THIS .slds-card__body div:last-of-type {
+    margin: 0;
+}

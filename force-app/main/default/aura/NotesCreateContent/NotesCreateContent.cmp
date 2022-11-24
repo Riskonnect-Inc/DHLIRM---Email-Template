@@ -1,0 +1,24 @@
+<aura:component >
+    <aura:attribute name="meta" type="Object" access="Public"/>
+    <aura:attribute name="selectedRecordTypeIndex" type="Integer" default="0" access="Public"/>
+    
+    <div class="changeRecordTypeRow">
+        <div class="changeRecordTypeLeftColumn"> 
+            <legend class="form-element__legend slds-form-element__label">Select a Record Type</legend>
+        </div>
+        <aura:iteration items="{!v.meta.recordTypes}" var="recType" indexVar="typeIndex">
+            <label>
+                <div class="changeRecordTypeOptionLeftColumn">
+                    <div class="changeRecordTypeOptionRightColumn">
+                        <ui:inputRadio class="slds-form-element__label" text="{!recType.Id}" 
+                            value="{!v.selectedRecordTypeIndex == typeIndex}" name="recordTypesRadio" change="{!c.onRecordTypeChange}"/>
+                        &nbsp; &nbsp;{!recType.Name}
+                        <aura:if isTrue="{!recType.Description}">
+                            <div class="changeRecordTypeItemDescription">{!recType.Description}</div>
+                        </aura:if>
+                    </div>
+                </div>
+            </label>
+        </aura:iteration>
+    </div>
+</aura:component>

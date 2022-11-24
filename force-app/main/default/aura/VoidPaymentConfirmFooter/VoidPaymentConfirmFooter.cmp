@@ -1,0 +1,17 @@
+<aura:component controller="VoidPaymentController">
+    <!-- class VoidPaymentController.VoidableStatus: -->
+    <aura:attribute name="status" type="Object" access="Public"/>
+    <aura:attribute name="header" type="Aura.Component" access="Public"/>
+    <aura:attribute name="content" type="Aura.Component" access="Public"/>
+    <!-- class VoidPaymentController.VoidResult: -->
+    <aura:attribute name="voidResult" type="Object" access="Public"/>
+
+    <lightning:overlayLibrary aura:id="overlays"/>
+    <aura:if isTrue="{!and(v.status.isVoidable, !v.voidResult)}">
+        <lightning:button aura:id="cancelBtn" label="Cancel" onclick="{!c.onCancel}"/>
+        <lightning:button aura:id="submitBtn" label="Void" variant="brand" onclick="{!c.onVoid}"/>
+        <aura:set attribute="else">
+            <lightning:button label="Ok" onclick="{!c.onCancel}"/>
+        </aura:set>
+    </aura:if>
+</aura:component>

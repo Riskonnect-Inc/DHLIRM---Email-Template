@@ -1,0 +1,42 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   05/29/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" standardStylesheets="False" showheader="True" sidebar="True">
+<apex:stylesheet value="{!$Resource.WrapperCSSNew}" />
+<!--<style type="text/css">
+     .btn { 
+          float:left;
+          color:#050; 
+          font: bold 84% 'trebuchet ms',helvetica,sans-serif; 
+          background-color:#fed; 
+          border:2px solid; 
+          border-color: #696 #363 #363 #696; 
+      }
+      body {
+          margin-left: auto;
+          margin-right: auto;
+          width: 90%;
+      }
+      h1 {
+          font-family:"Times New Roman", Times, serif;
+          font-style: italic;
+          text-align: center;
+      }
+      .FlowContainer {
+          /*border-radius: 30px;*/
+          /*border: 6px solid #000066;*/
+          font-size: 14px;
+          font-family: Arial, Helvetica, sans-serif;
+          font-weight: bold;
+          line-height: 200%;
+          /*padding: 20px;*/
+          width:100%;
+           }
+  </style> -->
+    
+    <flow:interview name="Close_Claim_Flow"  buttonLocation="bottom"  buttonStyle="btn" finishLocation="/{!Id}" >   
+     
+    </flow:interview>
+    
+
+</apex:page>

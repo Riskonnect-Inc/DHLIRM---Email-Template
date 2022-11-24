@@ -1,0 +1,33 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/29/2013
+           ******************************************************************* -->
+<apex:page showHeader="false" id="Safety_Observation" standardStylesheets="True">
+<apex:stylesheet value="{!$Resource.WrapperCSSNew}" />
+
+
+<body>
+     <div class="container">
+      <div class="riskonnect-logo">
+        <apex:image id="RKlogo" value="{!$Resource.RiskonnectLogoMedium}" width="200" height="70" style="display:block;"/>
+      </div>
+
+
+
+  <div id ="content">
+         <apex:form >
+           <apex:commandLink value="Return Home" action="{!URLFOR('/apex/Main')}" >
+           </apex:commandlink>
+         </apex:form>
+         
+         <h1 style="font-family: verdana;text-align:center;font-weight:Regular; font-size: 120%;">Safety Observation Information</h1>
+
+
+     <br/><br/>   
+    <flow:interview name="Safety_Observation_BC2" buttonLocation="bottom" buttonStyle="btn" finishLocation="{!URLFOR('/a11/o')}">
+       
+     </flow:interview>
+     <br/><br/>
+     </div>
+     </div>
+    </body>
+</apex:page>

@@ -1,0 +1,20 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 6/01/2015
+           ******************************************************************* -->
+<apex:page controller="PropertyPortalSummaryController" sidebar="false" showHeader="false" standardStylesheets="false">
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+        <style>
+            body {
+                margin: 1em; 
+            }
+        </style>
+    </head>
+    <body>
+        <img src='{!$Resource.rkLogo2}' /><br/><br/><br/>
+        <b>Thank you for submitting the renewal information for property {!prop.Name}.  Your responses have been successfully recorded.<br /><br />  
+        You will no longer be able to make edits.  Please contact a system administrator if any changes are needed.</b>
+        <br /><br />
+        <a href='Property_Portal_Landing?userEmail={!userEmail}'>Return to Property Portal Home</a>
+    </body>
+</apex:page>

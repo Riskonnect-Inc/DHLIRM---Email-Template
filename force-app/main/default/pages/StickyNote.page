@@ -1,0 +1,17 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 11/05/2014
+           ******************************************************************* -->
+<apex:page StandardController="user" extensions="StickyNoteController"  showHeader="false" sidebar="false" >   
+   <apex:form >  
+   <apex:outputText value="Auto Saved at {!Now()}" style="font-size: 50%;" id="savemsg"/>
+    <apex:actionPoller action="{!SaveRecord}" reRender="savemsg" interval="180"/>         
+     <apex:pageBlock mode="edit">  
+       <apex:pageBlockButtons > 
+            <td style="center: 1px;">
+             <apex:commandButton action="{!SaveRecord}"   value="Save"/>  
+            </td>   
+       </apex:pageBlockButtons>  
+            <apex:inputTextarea value="{!stickynote}" richText="true" rows="20"/>   
+     </apex:pageBlock>
+   </apex:form>    
+</apex:page>

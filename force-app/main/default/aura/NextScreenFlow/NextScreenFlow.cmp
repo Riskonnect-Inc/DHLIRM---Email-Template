@@ -1,0 +1,134 @@
+<aura:component controller="ChangeStatus_Controller" access="global" implements="flexipage:availableForRecordHome,force:hasRecordId">
+    <aura:attribute name="record" type="Object" />
+    <aura:attribute name="hasErrors" type="Boolean" description="Indicate whether there were required field failures or not" />
+    <aura:attribute name="hasValidErrors" type="Boolean" description="Indicate whether there were validation failures or not" />
+    <aura:attribute name="selectedItem" type="String"/>
+    <aura:attribute name="validationMsg" type="String"/>
+    <aura:attribute name="claimId" type="String"/>
+    <aura:attribute name="closeAll" type="Boolean" default="false" />
+    <aura:attribute name="claimValues" type="Claim__c"/>
+    <aura:attribute name="claimRecord" type="Claim__c"/>    
+    <aura:attribute name="statusVal" type="String"/>
+    <aura:attribute name="currentDate" type="String"/>
+    <aura:attribute name="currentProfile" type="String"/>
+    <aura:attribute name="screenFlow" type="Object[]"/>
+    <aura:attribute name="layouts" type="Object[]"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <force:recordData aura:id="frd"  recordId="{!v.claimId}" 
+                      targetError="{!v.recordError}" mode="EDIT" layoutType="FULL"/>
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    
+        <aura:if isTrue="{!v.hasValidErrors}">
+        <div class="userCreateError">
+            <ui:message title="Error" severity="error" >
+                <p>{!v.validationMsg}</p>
+            </ui:message>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.hasErrors}">
+        <div class="userCreateError">
+            <ui:message title="Error" severity="error" >
+                Please fill in the required fields.
+            </ui:message>
+        </div>
+    </aura:if>
+     <div class="slds-modal__header" style="z-index:0">
+        <h2 class="slds-page-header__title slds-m-right--small slds-truncate slds-align-middle">{!v.screenFlow.formTitle}</h2>
+    </div>
+    <br/>
+  
+        <div class="slds-form--stacked" style = "padding:15px">
+            <aura:iteration items="{!v.layouts}" var="item">                 
+                <aura:if isTrue="{!item.type == 'DATE'}">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <ui:inputDate class="{!item.name}"  label="{!item.label}"  change="{!c.updateSelectedItem}" displayDatePicker="true" required='true' />
+                        </div>
+                    </div>
+                </aura:if>
+                <!--Picklist-->
+                <aura:if isTrue="{!item.type == 'PICKLIST'}">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            
+                            <ui:inputSelect class="{!item.name}" label="{!item.label}"  change="{!c.updateSelectedItem}" required='true' >
+                                <ui:inputSelectOption text="--None--" label="--None--"/>
+                                <aura:iteration items="{!item.picklistValues}" var="val">
+                                    <ui:inputSelectOption text="{!val}" label="{!val}"/>
+                                </aura:iteration>
+                            </ui:inputSelect>
+                            
+                        </div>
+                    </div>
+                </aura:if>
+                <!--MultiPicklist-->
+                <aura:if isTrue="{!item.type == 'MULTIPICKLIST'}">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            
+                            <ui:inputSelect multiple="true" class="{!item.name}" label="{!item.label}"  change="{!c.updateSelectedItem}" required='true' >
+                                <aura:iteration items="{!item.picklistValues}" var="val">
+                                    <ui:inputSelectOption text="{!val}" label="{!val}"/>
+                                </aura:iteration>
+                            </ui:inputSelect>
+                            
+                        </div>
+                    </div>
+                </aura:if>
+                <!--Text-->
+                <aura:if isTrue="{!or(item.type == 'STRING', item.type == 'URL')}">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <ui:inputText class="{!item.name}" label="{!item.label}" change="{!c.updateSelectedItem}" required="true"/>
+                        </div>
+                    </div>
+                </aura:if>
+                <!--Email-->
+                <aura:if isTrue="{!item.type == 'EMAIL'}">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <ui:inputEmail class="{!item.name}" label="{!item.label}" change="{!c.updateSelectedItem}" required="true"/>
+                        </div>
+                    </div>
+                </aura:if>
+                <!--Number-->
+                <aura:if isTrue="{!or(item.type == 'CURRENCY', item.type == 'DOUBLE', item.type == 'INTEGER', item.type == 'PERCENT')}">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <ui:inputNumber class="{!item.name}" label="{!item.label}" change="{!c.updateSelectedItem}" required="true"/>
+                        </div>
+                    </div>
+                </aura:if>
+                <!--Text Area-->
+                <aura:if isTrue="{!or(item.type == 'CURRENCY', item.type == 'DOUBLE', item.type == 'INTEGER', item.type == 'PERCENT')}">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <ui:inputTextArea class="{!item.name}" label="{!item.label}" change="{!c.updateSelectedItem}" required="true"/>
+                        </div>
+                    </div>
+                </aura:if>
+                <!--Checkbox-->
+                <aura:if isTrue="{!or(item.type == 'CURRENCY', item.type == 'DOUBLE', item.type == 'INTEGER', item.type == 'PERCENT')}">
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <ui:inputCheckbox class="{!item.name}" label="{!item.label}" change="{!c.updateSelectedItem}" required="true"/>
+                        </div>
+                    </div>
+                </aura:if>
+            </aura:iteration>
+            <aura:if isTrue="{!v.selectedItem == 'Closed'}">
+                <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+							<ui:inputCheckbox aura:id="closeAll" label="Close All Open Tasks:" value="{!v.closeAll}"/>
+                        </div>
+                    </div>
+                </aura:if>
+            <div class="slds-form-element slds-text-align_right" style="padding-top: 25px;">
+                <ui:button class="slds-button slds-button--neutral" press="{!c.cancel}" label="Cancel" />
+                <aura:iteration items="{!v.screenFlow.buttonLabels}" var="item">
+                    <ui:button class="slds-button slds-button--brand" press="{!c.nextScreen}" label="{!item}" />
+                </aura:iteration>
+            </div>
+        </div>
+</aura:component>

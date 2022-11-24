@@ -1,0 +1,36 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName,force:lightningQuickAction,force:appHostable" >
+
+	<aura:attribute name="mycolumns" type="List"/>
+	<aura:attribute name="filters" type="Object"/>	
+	<aura:attribute name="mydata" type="Object"/>
+	<aura:attribute name="rawData" type="Object"/>
+	<aura:attribute name="recCount" type="Integer"/>
+	<aura:attribute name="sortedBy" type="string" default="Name" />
+	<aura:attribute name="sortedDirection" type="string" default="asc" />
+
+	<div style="width: 18em;">
+		<lightning:select aura:id="reviewFilter" name="reviewFilter" onchange="{!c.filterData}">
+			<option value="ALL">All Reviews</option>
+			<aura:iteration items="{!v.filters}" var="item">
+				<option text="{!item.label}" value="{!item.fieldPath}" />
+			</aura:iteration>
+		</lightning:select>
+	</div>
+	<br/>
+	<div style="{!v.recCount > 4? '' :' height:250px;'}">
+		<lightning:datatable data="{! v.mydata }" 
+			columns="{! v.mycolumns }" 
+			keyField="Id"
+			onsort="{!c.updateColumnSorting}" 
+			sortedBy="{!v.sortedBy}"
+			sortedDirection="{!v.sortedDirection}"
+			hideCheckboxColumn="true"
+			class="myClass"
+			onrowaction="{! c.handleRowAction }"/>
+	</div>
+	<aura:if isTrue="{!v.mydata.length == 0}" >
+		<div style="text-align: center;padding: inherit;"> No records available.</div>
+	</aura:if>
+	<footer class="slds-card__footer"><br/></footer> 
+
+</aura:component>

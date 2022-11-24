@@ -1,0 +1,130 @@
+@IsTest
+public class PatientVisitCleanupTest {
+	public static testmethod void test_ScheduleClass() {
+        Test.startTest();
+        
+        System.schedule('testBasicScheduledApex',
+            '0 0 0 3 9 ? 2022', 
+            new PatientVisitCleanupSchedule());
+        
+        Test.stopTest();
+    }
+
+    public static testMethod void test_DeletionOlder() {
+    	//Test JSON data for cleanup batch
+    	//TODO: Convert this to use Test.loadData
+    	String testRecordsJSON = '[{"Name":"Visit One","Address_2__c":"Apt 19","Address__c":"1 First Street","Admission_Type__c":"Accident","Admit_Date__c":"2017-09-01","Admit_Diagnosis__c":"Concussion","Admit_Reason__c":"Consussion","Admit_Source__c":"Emergency room","Admit_Time__c":"13.27","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"Disoriented","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 1","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1970-01-15","Discharge_Date__c":"2017-09-02","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"9:15","Email__c":"TestOne@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 123-4567","Hospital_Service__c":"Emergency Service","MRN__c":"1234567","Marital_Status__c":"Married","Patient_Class__c":"Emergency","Patient_First_Name__c":"TestOne","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Emergency","Race__c":"White","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 101","SSN__c":"111-22-3333","State__c":"GA","Unit_Department__c":"Unit One","Zip_Code__c":"30144"},{"Name":"Visit Two","Address_2__c":"Apt 19","Address__c":"2 Second Street","Admission_Type__c":"Routine","Admit_Date__c":"2017-09-04","Admit_Diagnosis__c":"Reaction to bee sting","Admit_Reason__c":"Reaction to bee sting","Admit_Source__c":"Physician referral","Admit_Time__c":"10:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 2","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1990-02-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"3:40","Email__c":"TestTwo@email.com","Ethnic_Group__c":"Hispanic","Facility__c":"Hospital One","Gender__c":"Male","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Medical Service","MRN__c":"2345678","Marital_Status__c":"Single","Patient_Class__c":"Inpatient","Patient_First_Name__c":"TestTwo","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Inpatient","Race__c":"Other","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 202","SSN__c":"222-33-4444","State__c":"GA","Unit_Department__c":"Unit Two","Zip_Code__c":"30144"},{"Name":"Visit Three","Address_2__c":"Apt 19","Address__c":"3 Third Street","Admission_Type__c":"Emergency","Admit_Date__c":"2017-09-05","Admit_Diagnosis__c":"Broken wrist","Admit_Reason__c":"Broken wrist","Admit_Source__c":"Emergency room","Admit_Time__c":"3:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 3","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1985-03-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"7:10","Email__c":"TestThree@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Emergency Service","MRN__c":"2345678","Marital_Status__c":"Separated","Patient_Class__c":"Outpatient","Patient_First_Name__c":"TestThree","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Outpatient","Race__c":"Black or African American","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 303","SSN__c":"333-44-5555","State__c":"GA","Unit_Department__c":"Unit Three","Zip_Code__c":"30144"},{"Name":"Visit Three","Address_2__c":"Apt 19","Address__c":"3 Third Street","Admission_Type__c":"Emergency","Admit_Date__c":"2017-09-05","Admit_Diagnosis__c":"Broken wrist","Admit_Reason__c":"Broken wrist","Admit_Source__c":"Emergency room","Admit_Time__c":"3:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 3","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1985-03-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"7:10","Email__c":"TestThree@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Emergency Service","MRN__c":"2345678","Marital_Status__c":"Separated","Patient_Class__c":"Outpatient","Patient_First_Name__c":"TestThree","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Outpatient","Race__c":"Black or African American","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 303","SSN__c":"333-44-5555","State__c":"GA","Unit_Department__c":"Unit Three","Zip_Code__c":"30144"}]';
+    	
+    	//Create and insert test data
+    	Patient_Visit__c[] testRecords = (Patient_Visit__c[])JSON.deserialize(testRecordsJSON, List<Patient_Visit__c>.class);
+    	insert testRecords;
+
+    	//Modify CreatedDate field for all created records to ensure they are in the deletion range
+    	for (Patient_Visit__c testRecord : testRecords) {
+    		Test.setCreatedDate(testRecord.Id, System.today().addDays(-11));
+    	}
+
+    	//Configure custom setting to include the records that should be deleted
+    	HC_Custom_Settings__c testSettings = HC_Custom_Settings__c.getInstance();
+    	testSettings.Patient_Visit_Max_Age_Days__c = 10;
+    	insert testSettings;
+
+    	//Force the batch to execute
+    	Test.startTest();
+    	Database.executeBatch(new PatientVisitCleanupBatch());
+    	Test.stopTest();
+
+    	//Verify that all of the created records were deleted
+    	Patient_Visit__c[] remainingPatientVisitRecords = [SELECT Id FROM Patient_Visit__c];
+    	System.assertEquals(0, remainingPatientVisitRecords.size(), 'Expected all Patient_Visit__c test records to have been deleted.');
+    }
+
+    public static testMethod void test_DeletionSameDay() {
+    	//Test JSON data for cleanup batch
+    	//TODO: Convert this to use Test.loadData
+    	String testRecordsJSON = '[{"Name":"Visit One","Address_2__c":"Apt 19","Address__c":"1 First Street","Admission_Type__c":"Accident","Admit_Date__c":"2017-09-01","Admit_Diagnosis__c":"Concussion","Admit_Reason__c":"Consussion","Admit_Source__c":"Emergency room","Admit_Time__c":"13.27","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"Disoriented","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 1","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1970-01-15","Discharge_Date__c":"2017-09-02","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"9:15","Email__c":"TestOne@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 123-4567","Hospital_Service__c":"Emergency Service","MRN__c":"1234567","Marital_Status__c":"Married","Patient_Class__c":"Emergency","Patient_First_Name__c":"TestOne","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Emergency","Race__c":"White","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 101","SSN__c":"111-22-3333","State__c":"GA","Unit_Department__c":"Unit One","Zip_Code__c":"30144"},{"Name":"Visit Two","Address_2__c":"Apt 19","Address__c":"2 Second Street","Admission_Type__c":"Routine","Admit_Date__c":"2017-09-04","Admit_Diagnosis__c":"Reaction to bee sting","Admit_Reason__c":"Reaction to bee sting","Admit_Source__c":"Physician referral","Admit_Time__c":"10:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 2","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1990-02-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"3:40","Email__c":"TestTwo@email.com","Ethnic_Group__c":"Hispanic","Facility__c":"Hospital One","Gender__c":"Male","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Medical Service","MRN__c":"2345678","Marital_Status__c":"Single","Patient_Class__c":"Inpatient","Patient_First_Name__c":"TestTwo","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Inpatient","Race__c":"Other","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 202","SSN__c":"222-33-4444","State__c":"GA","Unit_Department__c":"Unit Two","Zip_Code__c":"30144"},{"Name":"Visit Three","Address_2__c":"Apt 19","Address__c":"3 Third Street","Admission_Type__c":"Emergency","Admit_Date__c":"2017-09-05","Admit_Diagnosis__c":"Broken wrist","Admit_Reason__c":"Broken wrist","Admit_Source__c":"Emergency room","Admit_Time__c":"3:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 3","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1985-03-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"7:10","Email__c":"TestThree@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Emergency Service","MRN__c":"2345678","Marital_Status__c":"Separated","Patient_Class__c":"Outpatient","Patient_First_Name__c":"TestThree","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Outpatient","Race__c":"Black or African American","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 303","SSN__c":"333-44-5555","State__c":"GA","Unit_Department__c":"Unit Three","Zip_Code__c":"30144"},{"Name":"Visit Three","Address_2__c":"Apt 19","Address__c":"3 Third Street","Admission_Type__c":"Emergency","Admit_Date__c":"2017-09-05","Admit_Diagnosis__c":"Broken wrist","Admit_Reason__c":"Broken wrist","Admit_Source__c":"Emergency room","Admit_Time__c":"3:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 3","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1985-03-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"7:10","Email__c":"TestThree@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Emergency Service","MRN__c":"2345678","Marital_Status__c":"Separated","Patient_Class__c":"Outpatient","Patient_First_Name__c":"TestThree","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Outpatient","Race__c":"Black or African American","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 303","SSN__c":"333-44-5555","State__c":"GA","Unit_Department__c":"Unit Three","Zip_Code__c":"30144"}]';
+    	
+    	//Create and insert test data
+    	Patient_Visit__c[] testRecords = (Patient_Visit__c[])JSON.deserialize(testRecordsJSON, List<Patient_Visit__c>.class);
+    	insert testRecords;
+
+    	//Modify CreatedDate field for all created records to ensure they are in the deletion range
+    	for (Patient_Visit__c testRecord : testRecords) {
+    		Test.setCreatedDate(testRecord.Id, System.today().addDays(-10));
+    	}
+
+    	//Configure custom setting to include the records that should be deleted
+    	HC_Custom_Settings__c testSettings = HC_Custom_Settings__c.getInstance();
+    	testSettings.Patient_Visit_Max_Age_Days__c = 10;
+    	insert testSettings;
+
+    	//Force the batch to execute
+    	Test.startTest();
+    	Database.executeBatch(new PatientVisitCleanupBatch());
+    	Test.stopTest();
+
+    	//Verify that all of the created records were deleted
+    	Patient_Visit__c[] remainingPatientVisitRecords = [SELECT Id FROM Patient_Visit__c];
+    	System.assertEquals(testRecords.size(), remainingPatientVisitRecords.size(), 'Expected all Patient_Visit__c test records to have been deleted.');
+    }
+
+    public static testMethod void test_DeletionNewer() {
+    	//Test JSON data for cleanup batch
+    	//TODO: Convert this to use Test.loadData
+    	String testRecordsJSON = '[{"Name":"Visit One","Address_2__c":"Apt 19","Address__c":"1 First Street","Admission_Type__c":"Accident","Admit_Date__c":"2017-09-01","Admit_Diagnosis__c":"Concussion","Admit_Reason__c":"Consussion","Admit_Source__c":"Emergency room","Admit_Time__c":"13.27","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"Disoriented","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 1","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1970-01-15","Discharge_Date__c":"2017-09-02","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"9:15","Email__c":"TestOne@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 123-4567","Hospital_Service__c":"Emergency Service","MRN__c":"1234567","Marital_Status__c":"Married","Patient_Class__c":"Emergency","Patient_First_Name__c":"TestOne","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Emergency","Race__c":"White","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 101","SSN__c":"111-22-3333","State__c":"GA","Unit_Department__c":"Unit One","Zip_Code__c":"30144"},{"Name":"Visit Two","Address_2__c":"Apt 19","Address__c":"2 Second Street","Admission_Type__c":"Routine","Admit_Date__c":"2017-09-04","Admit_Diagnosis__c":"Reaction to bee sting","Admit_Reason__c":"Reaction to bee sting","Admit_Source__c":"Physician referral","Admit_Time__c":"10:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 2","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1990-02-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"3:40","Email__c":"TestTwo@email.com","Ethnic_Group__c":"Hispanic","Facility__c":"Hospital One","Gender__c":"Male","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Medical Service","MRN__c":"2345678","Marital_Status__c":"Single","Patient_Class__c":"Inpatient","Patient_First_Name__c":"TestTwo","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Inpatient","Race__c":"Other","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 202","SSN__c":"222-33-4444","State__c":"GA","Unit_Department__c":"Unit Two","Zip_Code__c":"30144"},{"Name":"Visit Three","Address_2__c":"Apt 19","Address__c":"3 Third Street","Admission_Type__c":"Emergency","Admit_Date__c":"2017-09-05","Admit_Diagnosis__c":"Broken wrist","Admit_Reason__c":"Broken wrist","Admit_Source__c":"Emergency room","Admit_Time__c":"3:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 3","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1985-03-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"7:10","Email__c":"TestThree@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Emergency Service","MRN__c":"2345678","Marital_Status__c":"Separated","Patient_Class__c":"Outpatient","Patient_First_Name__c":"TestThree","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Outpatient","Race__c":"Black or African American","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 303","SSN__c":"333-44-5555","State__c":"GA","Unit_Department__c":"Unit Three","Zip_Code__c":"30144"},{"Name":"Visit Three","Address_2__c":"Apt 19","Address__c":"3 Third Street","Admission_Type__c":"Emergency","Admit_Date__c":"2017-09-05","Admit_Diagnosis__c":"Broken wrist","Admit_Reason__c":"Broken wrist","Admit_Source__c":"Emergency room","Admit_Time__c":"3:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 3","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1985-03-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"7:10","Email__c":"TestThree@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Emergency Service","MRN__c":"2345678","Marital_Status__c":"Separated","Patient_Class__c":"Outpatient","Patient_First_Name__c":"TestThree","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Outpatient","Race__c":"Black or African American","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 303","SSN__c":"333-44-5555","State__c":"GA","Unit_Department__c":"Unit Three","Zip_Code__c":"30144"}]';
+    	
+    	//Create and insert test data
+    	Patient_Visit__c[] testRecords = (Patient_Visit__c[])JSON.deserialize(testRecordsJSON, List<Patient_Visit__c>.class);
+    	insert testRecords;
+
+    	//Modify CreatedDate field for all created records to ensure they are in the deletion range
+    	for (Patient_Visit__c testRecord : testRecords) {
+    		Test.setCreatedDate(testRecord.Id, System.today().addDays(-9));
+    	}
+
+    	//Configure custom setting to include the records that should be deleted
+    	HC_Custom_Settings__c testSettings = HC_Custom_Settings__c.getInstance();
+    	testSettings.Patient_Visit_Max_Age_Days__c = 10;
+    	insert testSettings;
+
+    	//Force the batch to execute
+    	Test.startTest();
+    	Database.executeBatch(new PatientVisitCleanupBatch());
+    	Test.stopTest();
+
+    	//Verify that none of the created records were deleted
+    	Patient_Visit__c[] remainingPatientVisitRecords = [SELECT Id FROM Patient_Visit__c];
+    	System.assertEquals(testRecords.size(), remainingPatientVisitRecords.size(), 'Expected all Patient_Visit__c test records to have been deleted.');
+    }
+
+    public static testMethod void test_DeletionPartial() {
+    	//Test JSON data for cleanup batch
+    	//TODO: Convert this to use Test.loadData
+    	String testRecordsJSON = '[{"Name":"Visit One","Address_2__c":"Apt 19","Address__c":"1 First Street","Admission_Type__c":"Accident","Admit_Date__c":"2017-09-01","Admit_Diagnosis__c":"Concussion","Admit_Reason__c":"Consussion","Admit_Source__c":"Emergency room","Admit_Time__c":"13.27","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"Disoriented","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 1","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1970-01-15","Discharge_Date__c":"2017-09-02","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"9:15","Email__c":"TestOne@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 123-4567","Hospital_Service__c":"Emergency Service","MRN__c":"1234567","Marital_Status__c":"Married","Patient_Class__c":"Emergency","Patient_First_Name__c":"TestOne","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Emergency","Race__c":"White","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 101","SSN__c":"111-22-3333","State__c":"GA","Unit_Department__c":"Unit One","Zip_Code__c":"30144"},{"Name":"Visit Two","Address_2__c":"Apt 19","Address__c":"2 Second Street","Admission_Type__c":"Routine","Admit_Date__c":"2017-09-04","Admit_Diagnosis__c":"Reaction to bee sting","Admit_Reason__c":"Reaction to bee sting","Admit_Source__c":"Physician referral","Admit_Time__c":"10:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 2","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1990-02-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"3:40","Email__c":"TestTwo@email.com","Ethnic_Group__c":"Hispanic","Facility__c":"Hospital One","Gender__c":"Male","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Medical Service","MRN__c":"2345678","Marital_Status__c":"Single","Patient_Class__c":"Inpatient","Patient_First_Name__c":"TestTwo","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Inpatient","Race__c":"Other","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 202","SSN__c":"222-33-4444","State__c":"GA","Unit_Department__c":"Unit Two","Zip_Code__c":"30144"},{"Name":"Visit Three","Address_2__c":"Apt 19","Address__c":"3 Third Street","Admission_Type__c":"Emergency","Admit_Date__c":"2017-09-05","Admit_Diagnosis__c":"Broken wrist","Admit_Reason__c":"Broken wrist","Admit_Source__c":"Emergency room","Admit_Time__c":"3:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 3","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1985-03-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"7:10","Email__c":"TestThree@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Emergency Service","MRN__c":"2345678","Marital_Status__c":"Separated","Patient_Class__c":"Outpatient","Patient_First_Name__c":"TestThree","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Outpatient","Race__c":"Black or African American","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 303","SSN__c":"333-44-5555","State__c":"GA","Unit_Department__c":"Unit Three","Zip_Code__c":"30144"},{"Name":"Visit Three","Address_2__c":"Apt 19","Address__c":"3 Third Street","Admission_Type__c":"Emergency","Admit_Date__c":"2017-09-05","Admit_Diagnosis__c":"Broken wrist","Admit_Reason__c":"Broken wrist","Admit_Source__c":"Emergency room","Admit_Time__c":"3:15","Admitting_Physician__c":"Dr. Admitting","Ambulatory_Status__c":"No functional limitations","Attending_Physician__c":"Dr. Attending","Bed__c":"Bed 3","City__c":"Kennesaw","Consulting_Physician__c":"Dr. Consulting","Date_of_Birth__c":"1985-03-15","Discharge_Date__c":"2017-09-05","Discharge_Disposition__c":"Discharged to home or self","Discharge_Time__c":"7:10","Email__c":"TestThree@email.com","Ethnic_Group__c":"Non-Hispanic","Facility__c":"Hospital One","Gender__c":"Female","Home_Phone_Number__c":"(770) 234-5678","Hospital_Service__c":"Emergency Service","MRN__c":"2345678","Marital_Status__c":"Separated","Patient_Class__c":"Outpatient","Patient_First_Name__c":"TestThree","Patient_Last_Name__c":"Patient","Patient_Middle_Initial__c":"E","Patient_Type_c__c":"Outpatient","Race__c":"Black or African American","Readmission_Indicator__c":"None","Referring_Physician__c":"Dr. Referring","Religion__c":"Christian","Room__c":"Room 303","SSN__c":"333-44-5555","State__c":"GA","Unit_Department__c":"Unit Three","Zip_Code__c":"30144"}]';
+    	
+    	//Create and insert test data
+    	Patient_Visit__c[] testRecords = (Patient_Visit__c[])JSON.deserialize(testRecordsJSON, List<Patient_Visit__c>.class);
+    	insert testRecords;
+
+    	//Modify CreatedDate field for all created records to ensure they are in the deletion range
+    	for (Integer i = 0; i < testRecords.size(); i++) {
+    		if (i < testRecords.size() / 2) {
+    			Test.setCreatedDate(testRecords[i].Id, System.today().addDays(-11));
+			}
+    	}
+
+    	//Configure custom setting to include the records that should be deleted
+    	HC_Custom_Settings__c testSettings = HC_Custom_Settings__c.getInstance();
+    	testSettings.Patient_Visit_Max_Age_Days__c = 10;
+    	insert testSettings;
+
+    	//Force the batch to execute
+    	Test.startTest();
+    	Database.executeBatch(new PatientVisitCleanupBatch());
+    	Test.stopTest();
+
+    	//Verify that the appropriate created records were deleted
+    	Patient_Visit__c[] remainingPatientVisitRecords = [SELECT Id FROM Patient_Visit__c];
+    	System.assertEquals(testRecords.size() / 2, remainingPatientVisitRecords.size(), 'Expected ' + (testRecords.size() - (testRecords.size() / 2)) + ' Patient_Visit__c test records to have been deleted.');
+    }
+}

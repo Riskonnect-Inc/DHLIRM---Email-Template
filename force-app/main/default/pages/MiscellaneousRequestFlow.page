@@ -1,0 +1,25 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 08/18/2014
+           ******************************************************************* -->
+<apex:page showHeader="false" sidebar="false" standardStylesheets="true" lightningStylesheets="true">
+  <apex:stylesheet value="{!$Resource.WrapperCSSNew}" />
+   
+  <body>
+     <div class="container">
+      <div class="riskonnect-logo">
+        <apex:image id="RKlogo" value="{!$Resource.RiskonnectLogoMedium}" width="200" height="70" style="display:block;"/>
+      </div>
+        
+         <div id ="content">
+         <apex:form >
+           <apex:commandLink value="Return Home" action="{!URLFOR('/apex/requestcenter')}" >
+           </apex:commandlink>
+         </apex:form>
+
+
+  <flow:interview name="Miscellaneous_Request" buttonStyle="btn" finishlocation="{!URLFOR('/apex/requestcenter')}" buttonLocation="bottom"  >
+  </flow:interview>
+  </div>
+  </div>
+  </body>
+</apex:page>

@@ -1,0 +1,57 @@
+<!-- Mike Ulveling: Complete rewrite -->
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/27/2015
+           ******************************************************************* -->
+<apex:page standardController="RK_Occurrence__c" extensions="PITFinancials_Occurrence" sidebar="false" showheader="false">
+    <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/smoothness/jquery-ui.css" />
+    <apex:stylesheet value="{!$Resource.blocking_pane_css}" />
+    <apex:stylesheet value="{!$Resource.pit_claim_financials_css}" />
+    <apex:includeScript value="{!$Resource.jQuery}" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js" />
+    <apex:includeScript value="{!$Resource.pit_claim_financials_js}" />
+    <div class="blockingContainer">
+    
+        <c:BlockingPane />
+
+       <apex:pageBlock id="financialsBlock" title="Financial Matrix"  tabStyle="Claim__c" >  
+            <!-- Choices for filter on transaction type -->
+            <apex:form >
+            <table width="100%">
+            <tr><td width="50%" align="left">
+            <input id="radio_1" type="radio" name="type" onchange="rk_pit.save();" value="User">User</input>
+            <input id="radio_2" type="radio" name="type" onchange="rk_pit.save();" value="TPA">TPA</input>
+            <input id="radio_3" type="radio" name="type" onchange="rk_pit.save();" value="Both">Both</input>
+            </td>
+            <td width="50%" align="right">
+            <input id="radio_4" type="radio" name="claim" onchange="$('.claimSelect').prop('disabled',true);rk_pit.save();" value="All">All Claims</input>
+            <input id="radio_5" type="radio" name="claim" onchange="$('.claimSelect').prop('disabled',true);rk_pit.save();" value="Lead">Lead Claim</input>
+            <input id="radio_6" type="radio" name="claim" onchange="$('.claimSelect').prop('disabled',false);rk_pit.save();" value="Other">Other</input>
+            &nbsp;
+            <apex:selectList styleClass="claimSelect" value="{!selectClaim}" multiselect="false" size="1" onchange="rk_pit.save();">
+                <apex:selectOptions value="{!selectClaims}"/>
+            </apex:selectList>
+            
+            </td></tr></table>
+            </apex:form>
+            <apex:outputPanel id="tablepanel">
+            <apex:dynamicComponent componentValue="{!tableComponent}" />
+            <!-- script to fix rows styles due to our 'apex:column breakBefore="true"' hacking: -->
+            <script type="text/javascript"> 
+                rk_pit.adjustRowStyles();
+            </script>
+            
+            <!-- Messages for feedback from server-side calculations:   -->
+           <!--  <c:PageMessage severity="confirm" strength="3" summary="{!pitInfoHtml}" escape="false" rendered="{!showPITInfo}" /> -->
+            <c:PageMessage severity="error" strength="3" summary="{!pitErrorHtml}" escape="false" rendered="{!showPITError}" />
+           <br/>
+            </apex:outputPanel>
+            <br/><br/>
+
+            <c:PITFinancialsDatepicker_Occurrence cntrl="{!self}" />
+        </apex:pageBlock>
+        
+        
+      
+    </div>
+    
+</apex:page>

@@ -1,0 +1,85 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 2/24/2015
+           ******************************************************************* -->
+<apex:page standardController="Data_Source__c" contentType="text/css#SampleFieldMappingList.text"
+           showheader="false" sidebar="false"  >
+   
+<table  border="0" cellpadding="0" cellspacing="0" title="Field headers"><colgroup span="6"></colgroup>
+    <tbody >
+        <tr>
+            <td colspan="1">Object Name</td>
+            <td colspan="1">Source Field</td>
+            <td colspan="1">Target Field</td>
+            <td colspan="1">User Controlled (optional value Y)</td>
+            <td colspan="1">Target General Field (optional)</td>
+            <td colspan="1">Invalid Source Default (optional)</td> 
+            <td colspan="1">Comments (optional)</td>           
+        </tr>  
+        
+          <tr>
+          <td colspan="1">Claim__c</td>
+            <td colspan="1">Cause_src__c</td>
+            <td colspan="1">Cause__c</td>
+            <td colspan="1"></td>
+            <td colspan="1">Cause_general__c</td>
+            <td colspan="1">Not Mapped</td>
+            <td colspan="1">Standard Code Field</td>
+        </tr>
+        
+          <tr>
+          <td colspan="1">Claim__c</td>
+            <td colspan="1">Nature_src__c</td>
+            <td colspan="1">Nature__c</td>
+            <td colspan="1"></td>
+            <td colspan="1">Nature_general__c</td>
+            <td colspan="1">Not Mapped</td>
+            <td colspan="1">Standard Code Field</td>
+        </tr>
+        
+          <tr>
+          <td colspan="1">Claim__c</td>
+            <td colspan="1">Part_src__c</td>
+            <td colspan="1">Part__c</td>
+            <td colspan="1"></td>
+            <td colspan="1">Part_general__c</td>
+            <td colspan="1">Not Mapped</td>
+            <td colspan="1">Standard Code Field</td>
+        </tr>
+        
+          <tr>
+          <td colspan="1">Claim__c</td>
+            <td colspan="1">Source_src__c</td>
+            <td colspan="1">Source__c</td>
+            <td colspan="1"></td>
+            <td colspan="1">Source_general__c</td>
+            <td colspan="1">Not Mapped</td>
+            <td colspan="1">Standard Code Field</td>
+        </tr>
+        
+         <tr>
+            <td colspan="1">Claim__c</td>
+            <td colspan="1">Location_src__c</td>
+            <td colspan="1">Location_lookup__c</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1">Standard Lookup Field</td>
+        </tr>
+        
+         <tr>
+            <td colspan="1">Claim__c</td>
+            <td colspan="1">Property_src__c</td>
+            <td colspan="1">Property_lookup__c</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1">Standard Lookup Field</td>
+        </tr>
+                
+        
+    </tbody>
+</table>
+    
+    
+    
+</apex:page>

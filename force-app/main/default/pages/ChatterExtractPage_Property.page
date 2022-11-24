@@ -1,0 +1,178 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   05/06/2014
+           ******************************************************************* -->
+<apex:page sidebar="false" showHeader="false" standardController="Property__c" extensions="ChatterExtractPageController">
+    <head>
+        <style type="text/css">
+            .chatterExtractViewBtn {
+                background-image: url({!$Resource.ChatterExtractViewBtn});
+                background-repeat: no-repeat;
+                background-position: 0 0;
+                background-size: 50px 50px;
+                padding: 0px;
+                border: none;
+                background-color: white;
+                width: 50px;
+                height: 50px;
+                cursor: pointer;
+            }
+
+            .chatterExtractPrintBtn {
+                background-image: url({!$Resource.ChatterExtractPrintBtn});
+                background-repeat: no-repeat;
+                background-position: 0 0;
+                background-size: 50px 50px;
+                padding: 0px;
+                border: none;
+                background-color: white;
+                width: 50px;
+                height: 50px;
+                cursor: pointer;
+            }
+
+            .chatterExtractLogo {
+                height: 70px;
+                float: right;
+            }
+
+            .fieldLabelText {
+                float: right;
+                color: #1fa3c4;
+            }
+        </style>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.js"/>
+        <script type="text/javascript">
+            $.noConflict();
+            
+            var chatterFeedExtractor;
+            
+            (function($) {
+                if (typeof console === "undefined") {
+                    console = {};
+                }
+                if (!console.log) {
+                    console.log = function (data) {
+                        window.alert("" + data);
+                    };
+                }
+                if (!console.error) {
+                    console.error = function (data) {
+                        console.log("ERROR: " + data);
+                    }
+                }
+                
+                var shouldPrint = false;
+            
+                chatterFeedExtractor = {
+                    getChatterFeed: function() {
+                        shouldPrint = true;
+                        var id = '{!Property__c.ID}';
+                        var startDate = $(document.getElementById('{!$Component.mainForm.dateRangeStart}'))[0].value;
+                        var endDate = $(document.getElementById('{!$Component.mainForm.dateRangeEnd}'))[0].value;
+                        var hashtag = $(document.getElementById('{!$Component.mainForm.hashtagFilter}'))[0].value;
+                        console.log("Start Date: " + startDate);
+                        console.log("End Date: " + endDate);
+                        console.log("HashTag: " + hashtag);
+                        window.open('/apex/ChatterExtractFeedContainer?id=' + id + '&startDate=' + startDate + '&endDate=' + endDate + '&htfilter=' + hashtag, '_blank');
+                        $('#feedContainer').get(0).contentWindow.location.href = '/apex/ChatterExtractFeedContainer?id=' + id + '&startDate=' + startDate + '&endDate=' + endDate + '&htfilter=' + hashtag;
+                        $('#feedContainer').attr('style', 'display: none; margin: 0 auto; width: 99%; height: 0px;');
+                    }, 
+                    
+                    closeChatterFeed: function() {
+                        $('#feedContainer').attr('style', 'display: none;');
+                    },
+                    
+                    getURLParameter: function(name) {
+                        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+                    },
+                    
+                    printChatterFeed: function() {
+                        if (shouldPrint) {
+                            $("#feedContainer")[0].contentWindow.print();
+                        } else {
+                            console.error('The Chatter feed has not loaded yet.');
+                        }
+                    }
+                };
+                
+                $(document).ready(function() {
+                    
+                });
+            })(jQuery);
+        </script>
+    </head>
+    <apex:form id="mainForm" >
+        <form>
+
+            <table style="margin-left: auto; margin-right: auto;">
+                <tr>
+                    <td>
+                        <strong class="fieldLabelText">Date Range Filter Start: </strong>
+                    </td>
+                    <td>
+                        <apex:inputField value="{!dateRangeFilter.Start_Filter__c}" id="dateRangeStart"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong class="fieldLabelText">Date Range Filter End: </strong>
+                    </td>
+                    <td>
+                        <apex:inputField value="{!dateRangeFilter.End_Filter__c}" id="dateRangeEnd"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong class="fieldLabelText" style="margin-bottom:5px;">Topic Filter: </strong>
+                    </td>
+                    <td>
+                        <apex:inputText value="{!hashtagFilter}" id="hashtagFilter" style="width: 100%;margin-bottom:5px;"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img class="chatterExtractLogo" src="{!$Resource.ChatterExtractFeedLogo}"/>
+                    </td>
+                    <td style="display: block;">
+                        <div style="text-align: center; margin-top: 30px; margin-left: -18px;">
+                            <input class="chatterExtractViewBtn" type="button" onclick="chatterFeedExtractor.getChatterFeed();"/>
+                            <!-- <input class="btn" type="button" onclick="chatterFeedExtractor.closeChatterFeed();" value=" Close Chatter Feed "/> -->
+                            <input class="chatterExtractPrintBtn" type="button" onclick="chatterFeedExtractor.printChatterFeed();"/>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <iframe style="display:none;" id="feedContainer"/>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- <table width="100%">
+                <tr>
+                    <td style="text-align: center">
+                        <strong>Date Range Filter Start: </strong><apex:inputField value="{!dateRangeFilter.Start_Filter__c}" id="dateRangeStart"/>
+                        <br/>
+                        <br/>
+                        <strong>Date Range Filter End: </strong><apex:inputField value="{!dateRangeFilter.End_Filter__c}" id="dateRangeEnd"/>
+                        <br/>
+                        <br/>
+                        <strong>Topic Filter: </strong><apex:inputText value="{!hashtagFilter}" id="hashtagFilter" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; margin-top: 10px;">
+                        <img class="chatterExtractLogo" src="{!$Resource.ChatterExtractFeedLogo}"/>
+                        <input class="chatterExtractViewBtn" type="button" onclick="chatterFeedExtractor.getChatterFeed();"/>
+                        <input class="chatterExtractPrintBtn" type="button" onclick="chatterFeedExtractor.printChatterFeed();"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <iframe style="display:none;" id="feedContainer"/>
+                    </td>
+                </tr>
+            </table> -->
+        </form>
+    </apex:form>
+</apex:page>

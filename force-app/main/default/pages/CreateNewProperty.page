@@ -1,0 +1,164 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   06/01/2015
+           ******************************************************************* -->
+<apex:page controller="rkl.JS_Search" extensions="CreateNewPropertyController" sidebar="false" showHeader="false" standardStylesheets="false" cache="false">
+    <head>
+        <apex:includeScript value="{!$Resource.rkl__jquery1_8_3}"/>
+        <apex:stylesheet value="https://code.jquery.com/ui/1.10.3/themes/cupertino/jquery-ui.css"/>
+        <apex:includeScript value="https://code.jquery.com/ui/1.10.3/jquery-ui.js"/>
+        <apex:includeScript value="{!$Resource.rkl__jQuery_jController_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__jQuery_color_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__jQuery_scrollTo}"/>
+        <apex:includeScript value="{!$Resource.rkl__masked_input_js}"/>
+        
+        <apex:stylesheet value="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+        
+        <apex:stylesheet value="{!$Resource.rkl__portal_fullscreen_css}"/>
+        <apex:stylesheet value="{!$Resource.rkl__rkl_search_css}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKDebug_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKUtil_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKPortalUtil_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKIframe_JS}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKPortalModel_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKPortalUI_Accordion_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKSearch}"/>
+        <apex:includeScript value="{!$Resource.rkl__FileController_js}" />
+        <apex:stylesheet value="{!$Resource.rkl__FileController_css}" />
+        <apex:includeScript value="{!$Resource.rkl__childrelcontroller_js}" />
+        <apex:stylesheet value="{!$Resource.rkl__childrelcontroller_css}" />
+        <style type="text/css">
+            body {
+                background: rgb(240, 240, 240);
+            }
+            .inlineFileClientContainer {
+                height: 185px;
+            }
+            #finishLater {
+                margin-top: 20px;
+                margin-right: 10px;
+            }
+            .rk-cnavTop {
+                height: 75px;
+            }
+            .rk-cnavTop>h3 {
+                display: inline-block;
+                position: fixed;
+                margin-top: 25px;
+                left: 280px;
+            }
+            .rk-cnavBar {
+                top: 75px;
+            }
+            .rk-cnavMBody {
+                top: 75px;
+            }
+            
+            .rk-cnavSplitter {
+                top: 75px;
+            }
+        </style>
+        <script>
+  
+            // redirect to https
+            if (window.location.protocol != "https:") {
+                var path = window.location.pathname;
+                if(/^\/requestcenter/i.test(path)) {
+                    path = path.substring('/requestcenter'.length);
+                }
+                window.location.href = '{!$Site.BaseSecureUrl}' + path + window.location.search;
+            }
+            
+            namespace('rkl.portal.ui.fields.picklistDependency').__load('{!$Resource.Picklist_Dependency_Cache}');
+
+            (function($) {
+                "use strict";
+                $(document).on('programReady', function(event, program) {
+                  $('.initLoadScreen').fadeOut();
+                  var hideShow = function(srcSec, srcFld, showFun, showFields) {
+                    var hideShowFunc = function() {
+                      var show = showFun(srcSec.sobject().get(srcFld).value());
+                      $.each(showFields, function(i, f) {
+                        f.visible(show);
+                      });
+                    };
+                    srcSec.sobject().get(srcFld).on('localChange', hideShowFunc);
+                    hideShowFunc();
+                  }
+                  
+                  var is = function(x) { return function(v) { return v === x; }; };
+                  var isYes = is('Yes');
+                  var isNo = is('No');
+                  
+                  var sectionStatus = function(showFunc) {
+                      return function() {
+                          if(showFunc()) {
+                              if(prop.sobject().get('id').value()) return true;
+                              return 'disabled';
+                          }
+                          return false;
+                      };
+                  };
+                
+                  var prop = program.findSection('New_Property_Information');
+                    
+                  var cope = program.findSection('PVC_COPE');
+                  cope.visible(sectionStatus(function() { return true; }));
+                  
+                                
+                  // build out submit section
+                  var submit = program.findSection('Submit');
+                  submit.visible(sectionStatus(function() { return true; }));
+                  
+                  program.submitHooks({
+                    validations: [
+                        function() {
+                          var $def = new $.Deferred();
+                          prop.sobject().get('approval_status__c').value('Pending Review');
+                          prop.sobject().get('values_collection_email__c').value('{!userEmail}');
+                          $def.resolve();
+                          return $def.promise();
+                        }
+                    ],
+                    prune_safety: [{
+                            sobjectType: 'property__c',
+                            records: [],
+                            fields: ['*']
+                        },
+                    ],
+                    final_save_done: [
+                        function() {
+                          var $def = new $.Deferred();
+                          console.log('srs finally came here');
+                          window.location = 'Property_Portal_NewPropSummary?propertyId='+prop.sobject().get('id').value()+'&&userEmail={!userEmail}';
+                          $def.resolve();
+                          return $def.promise();
+                        }
+                    ]                  
+                  });
+                  var submitRestore = submit.restore;
+                                    
+                  program.init();
+                  
+                  if(program.$topBar) {
+                      $('<a id="finishLater" class="pull-right" href="{!$Site.BaseSecureUrl}/Property_Portal_Landing?userEmail={!userEmail}">Return Home</a>')
+                          .appendTo(program.$topBar);
+                      $('<img height="75" src="{!$Resource.rkLogo3}"></img>').appendTo(program.$topBar);
+                      $('<h3>New Property</h3>').appendTo(program.$topBar);
+                  }
+                });
+
+                {!uiBuilderJS}
+            })(jQuery);
+        </script>
+    </head>
+    <body>
+        <div class="ui-widget-overlay ui-front initLoadScreen" style="display: true;">
+            <div class="crMsg" style="text-align: center;font-weight: bold;">
+                Loading... <br/>
+                <img src="{!$Resource.rkl__ajax_loader_gif}" height="50" width="50"/> <br/>
+                Please Wait...
+            </div>
+        </div>
+        <div id="newPropertyRoot"></div>
+    </body>
+</apex:page>

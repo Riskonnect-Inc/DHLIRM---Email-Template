@@ -1,0 +1,213 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 11/13/2014
+           ******************************************************************* -->
+<apex:page controller="ReserveTransactionFlowController" standardStylesheets="true" showheader="False" sidebar="false">
+ <apex:stylesheet value="{!$Resource.WrapperCSS}"/>
+ 
+<head>
+    <script>
+        function setFocusOnLoad() {}
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="riskonnect-logo">
+            <br/>
+            <apex:image id="RKlogo" value="{!$Resource.RiskonnectLogoMedium}" width="200" height="70" style="display:block;"/>
+            <br/>
+        </div>
+
+<style type="text/css">
+
+     <!--
+     .interviewDisplayTextRow {xbackground-color:#aa6666; font: 100%; line-height:150%;}
+     .detailList {xbackground-color:#66aa66; font: 100%; line-height:150%;}  
+     .pbButton    {font: 100% 'trebuchet ms',helvetica,sans-serif;   }    
+     .pbButtonb   {font: 100% 'trebuchet ms',helvetica,sans-serif;   } 
+
+     .TextArea {
+        height: 64px;
+        width:310px;
+        }
+        
+    .FlowContainer {
+        border-radius: 10px;
+        border: 0px ridge #000000;
+        font-size: 13px;
+        padding-left:0px;
+        padding-right:0px;
+        width: 100%;
+        background-color:#4499ee;
+    }
+  
+   body {
+        width:80%;
+        margin-left:auto;
+        margin-right:auto;
+    }
+    -->
+    
+
+
+body {
+ background: url("images/background.jpg")  no-repeat scroll center 0 #f0f3f7;
+}
+
+#content {
+background-color:#f0f3f7;
+margin: auto;
+border:8px solid #f0f3f7;
+padding:0px 0px 0px 0px;
+}
+
+.flag {
+margin:0 0 0 -63px;
+}
+
+#content p {
+font-size:13px;
+color: #2F393A;
+line-height: 18px;
+font-family: "Lucida Grande","Lucida Sans Unicode","Lucida Sans",Arial,Helvetica,sans-serif;
+width:90%;
+text-align:left;   
+}
+
+#content h1 {
+
+color: #3C424E;
+font-family: 'OFLSortsMillGoudyRegular',Georgia,"Times New Roman",Times,serif;
+font-size: 48px;
+font-weight: normal;
+letter-spacing: -1px;
+line-height: 54px;
+width: 80%; 
+text-align:left;        
+}
+
+
+.heading-hr {
+border-color: #4B7CC5;
+color: #4B7CC5;
+  -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-color: -moz-use-text-color;
+    border-image: none;
+    border-right: medium none;
+    border-style: solid none none;
+    border-width: 7px medium medium;
+    clear: both;
+    display: block;
+    float: left;
+    height: 7px;
+    width: 225px;
+    margin:0;
+
+}
+
+#content h2 {
+color: #2A3753;
+font: 24px/26px Georgia,"Times New Roman",Times,serif;
+margin-bottom: 10px;
+text-align:center;   
+}
+
+#content h3{
+color: #2A3753;
+font: 18px Georgia,"Times New Roman",Times,serif;
+margin-bottom: 10px;
+text-align: center;
+}
+
+#content h4{
+color: #2A3753;
+font: 15px Georgia,"Times New Roman",Times,serif;
+margin-bottom: 10px;
+text-align: center;
+}
+
+#content li {
+font-size:13px;
+color: #2F393A;
+line-height: 18px;
+font-family: "Lucida Grande","Lucida Sans Unicode","Lucida Sans",Arial,Helvetica,sans-serif;
+width:90%;
+text-align:left;   
+margin-bottom:0px;
+}
+
+#content td {
+font-size:13px;
+color: #2F393A;
+line-height: 18px;
+font-family: "Lucida Grande","Lucida Sans Unicode","Lucida Sans",Arial,Helvetica,sans-serif; 
+}
+
+#content label {
+font-size:13px;
+color: #2F393A;
+line-height: 18px;
+font-family: "Lucida Grande","Lucida Sans Unicode","Lucida Sans",Arial,Helvetica,sans-serif;
+text-align:left;   
+margin-bottom:10px; 
+}
+
+.container {
+margin:auto;
+width:900px;
+}
+
+.riskonnect-logo {
+margin: 0px 0 0px 30px;
+}
+
+.welcome {
+color: #8C99B0;
+font-size: 14px;
+font-family: Arial,Helvetica,sans-serif;
+float:right;
+margin:-50px 40px 0 0;
+padding:0;
+}
+
+.welcome li {
+list-style:none;
+display:inline-block;
+margin-left:25px;
+}
+
+.footer {
+float:right;
+margin:5px 40px 0 0;
+}
+.footer a{
+color: #8C99B0;
+font-size: 14px;
+font-family: Arial,Helvetica,sans-serif;
+}
+
+.footer a:hover {
+color:#dee6f2;
+}
+
+.footer li {
+list-style:none;
+display:inline;
+margin-left:25px;
+}
+   
+</style>
+ 
+ 
+ 
+ 
+     <div id ="content">
+        <flow:interview name="ReserveTransactionFlow" interview="{!myflow}" buttonLocation="bottom" finishLocation="{!FinishLocation}"></flow:interview>
+    </div>
+    </div>
+</body>
+
+</apex:page>

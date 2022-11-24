@@ -1,0 +1,1 @@
+@isTest private class rkest_PatFeedbackEmailServiceTest { static testMethod void test_EmailService() { Messaging.InboundEmail email = new Messaging.InboundEmail(); Messaging.InboundEnvelope envelope = new Messaging.InboundEnvelope(); Messaging.InboundEmailResult res = new rkes_PatFeedbackEmailService().handleInboundEmail(email, envelope); } }

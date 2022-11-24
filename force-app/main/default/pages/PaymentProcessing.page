@@ -1,0 +1,11 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/26/2015
+           ******************************************************************* -->
+<apex:page standardController="Payment_Processing__c" extensions="PaymentProcessing,rkl.JS_Search" showHeader="true" sidebar="true" standardStylesheets="true" docType="html-5.0">
+    
+    <body>
+        <iframe src="paymentProcessing2" height="800px" width="100%"></iframe>
+
+    </body>
+        
+</apex:page>

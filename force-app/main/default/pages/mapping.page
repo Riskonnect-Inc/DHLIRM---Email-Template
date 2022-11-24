@@ -1,0 +1,54 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 03/25/2013
+           ******************************************************************* -->
+<apex:page standardController="Property__c"  showHeader="false" sidebar="false">
+
+    <!-- 
+    AD - 08-12-2011
+    Static Resources needed by this VF page:
+        mapping0           - js for geocoding and markers creation
+        jqueryAlternateMin - js file 
+        cssMap             - css file
+        locations_csv      - csv file with all properties to map 
+        submitJpg          - jpg image of Submit button 
+    -->
+ 
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Map</title>
+       <link rel="stylesheet" type="text/css" href="{!$Resource.mapCss}" />  
+      <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAL3DEBZVjuSLMUGri7caMORSEUXavY8RXwNje1Hwnx_r2aVIS_BTJPJJguiXMI4tFOzxdatH02sLd6A"></script>
+      
+      
+      <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+      <script type="text/javascript" src="{!$Resource.jqueryAlternateMin}"></script>
+      <script type="text/javascript">
+        var apiKey = "ABQIAAAAL3DEBZVjuSLMUGri7caMORSEUXavY8RXwNje1Hwnx_r2aVIS_BTJPJJguiXMI4tFOzxdatH02sLd6A";
+        var locationsFile = "{!URLFOR($Resource.locations_csv)}";      
+        $(document).ready(function (){window.setTimeout(function(){$('#submit-btn').trigger('click');}, 0)});
+      </script>
+      <script type="text/javascript" src="{!$Resource.mapping0}"></script> 
+    </head>
+    <body onload="">
+        <div id="page-header">
+        <div id="search-form">    
+            <form method="post" action="map.html" onsubmit="return false">
+                <div id="form-input">
+                    <label for="address">Enter Address or Zip Code:</label>
+                    <input type="text" size="40" id="address" name="address" value="{!Property__c.Address_Line1__c + ' ' + Property__c.Address_Line2__c + ' '  + Property__c.City__c + ' ' + Property__c.State__c + ' ' + Property__c.Country__c}"/>              
+                </div>       
+                <div id="submit-btn"><img src="{!$Resource.submitJpg}" border="0" width="70" height="25" alt="Submit" /></div>
+            </form>
+        </div>
+        </div>
+        <div id="map-container">
+            <div id="loc-list">
+            <ol type="A" id="list"></ol>
+        </div>   
+        <div id="map"></div>
+        
+        </div>
+    </body>
+    </html>
+</apex:page>

@@ -1,0 +1,19 @@
+<aura:component >
+        <aura:attribute name="message" type="String" />
+	<lightning:overlayLibrary aura:id="overlayLib"/>
+    
+     <div class="slds-modal__header" style="z-index:0">
+        <h2 class="slds-page-header__title slds-m-right--small slds-truncate slds-align-middle">Change Status</h2>
+    </div>
+    <br/>
+        <div class="slds-form--stacked" style = "padding:15px">
+            <div class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <p class="slds-text-heading--small">{!v.message}</p>  
+                </div>
+            </div>
+            <div class="slds-form-element slds-text-align_right" style="padding-top: 25px;">
+                <ui:button class="slds-button slds-button--brand" press="{!c.cancel}" label="OK" />
+            </div>
+        </div>
+</aura:component>

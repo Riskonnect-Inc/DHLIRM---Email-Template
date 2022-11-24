@@ -1,0 +1,64 @@
+<apex:component allowDML="true" access="global" >
+    <apex:attribute name="aspect" type="pRelatedListAspect" required="true" access="global" description="combines an item strategy with an action-aspect" />
+    <apex:attribute name="fullPath" type="String" required="true" description="full path to a relatedList's deleteDialog node" access="global" />
+    
+    <apex:variable var="props" value="{!aspect.dialogProps}" />
+    
+    <!-- Dialog title: -->
+    <div id="{!props.titleUpdateNodeDomId}" style="display:none">
+        <div>{!aspect.dialogTitle}</div>
+    </div>
+    <!-- Dialog scripts: -->
+    <div id="{!props.scriptsDivDomId}">
+        <!-- inlined version of c:InlineDialogScripts -->
+        <script type="text/javascript">
+            (function() {
+                var uiManager = {!props.uiManager.varName},
+                    dialogKey = "{!JSENCODE(props.dialogKeyName)}";
+                
+                uiManager.setDialogTitleDomId(dialogKey, "{!JSENCODE(props.titleUpdateNodeDomId)}");
+                if ("{!aspect.dialogSubmitFailure}" === "true") {
+                    uiManager.signalDialogSubmitFailure(dialogKey);
+                } else {
+                    uiManager.signalDialogSubmitSuccess(dialogKey);
+                }
+                uiManager.signalFreshDialogContentsReady(dialogKey);
+            })();
+        </script>
+    </div>  
+    <!-- Dialog contents: -->
+    <apex:outputPanel layout="block" id="contents">
+        <div class="{!props.styles.Header}">
+            <div style="margin-bottom:50px">
+                <c:PageMessage escape="false" severity="warning" strength="2" summary="{!aspect.instrucsHtml}" transientState="default" />
+                <c:PageMessage escape="{!NOT(aspect.dialog.errorTitleIsHtml)}" severity="error" strength="2" 
+                        title="{!aspect.dialog.errorTitle}" summary="{!aspect.dialog.completeErrorSummary}" transientState="submitFailure" />
+            </div>
+        </div>
+        
+        <div class="{!props.styles.CommandFooter}">
+            <span class="defaultTransient">
+                <apex:commandButton id="dialogSave" value=" Yes " rerender="none" onclick="return false;" />
+                <apex:commandButton value=" No " rerender="none" onclick="{!props.closeDialogScript}return false;" />
+            </span>
+            <span class="submitFailureTransient">
+                <apex:commandButton value=" Ok " rerender="none" onclick="{!props.closeDialogScript}return false;" />
+            </span>
+        </div>
+    </apex:outputPanel>
+    
+    <script type="text/javascript">
+        $cnode({!fullPath}, {
+            elements: {
+                inner: "{!$Component.contents}"
+            }
+        });
+        
+        $(document.getElementById('{!$Component.dialogSave}')).click(
+            function() {
+                $cnode({!fullPath}).getComponentApi().actions.save();
+            });
+            
+    </script>
+    
+</apex:component>

@@ -1,0 +1,10 @@
+<aura:component controller="ApproveRejectProperty_Controller">
+    <aura:attribute name="header" type="Aura.Component" access="Public" />
+    <aura:attribute name="content" type="Aura.Component" access="Public" />
+    <aura:attribute name="record" type="Object" />
+    <lightning:overlayLibrary aura:id="overlays" />
+    <lightning:button label="Cancel" variant="neutral" onclick="{!c.handleCancel}" />
+    <aura:if isTrue="{!v.record.Approval_Status__c == 'Pending Review'}">
+        <lightning:button label="Done" variant="brand" onclick="{!c.handleDone}" />
+    </aura:if>
+</aura:component>

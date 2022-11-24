@@ -1,0 +1,6 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   05/15/2014
+           ******************************************************************* -->
+<apex:page controller="TermsOfUseController" action="{!checkTOU}">
+    <!-- AD 9/25/2012 PST-00003842 -->
+</apex:page>

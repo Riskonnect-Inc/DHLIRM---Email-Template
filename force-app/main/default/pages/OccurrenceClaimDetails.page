@@ -1,0 +1,182 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/27/2015
+           ******************************************************************* -->
+<apex:page standardController="RK_Occurrence__c" extensions="OccurrenceClaimDetailsController">
+    <apex:includeScript value="{!$Resource.rkl__jquery1_8_3}"/>
+    <script> <!-- Force target into head for IE -->
+        jQuery.noConflict();
+        
+        (function($) {
+           $('head').append($('<base target="_top" />'));
+        })(jQuery);
+          
+    </script>
+    <apex:stylesheet value="/sCSS/33.0/sprites/1342034628000/Theme3/default/gc/versioning.css" />
+    <apex:variable value="{!strOccurrenceId}" var="occId" />
+    <apex:variable value="{!strOccurrenceName}" var="occName" />
+    <apex:form id="detForm">
+        <apex:pageBlock title="Claims">
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!URLFOR($Action.Claim__c.New, null, ['retURL'='/'+occId, 'saveURL'='/'+occId])}&{!strOccurrenceFieldId}={!URLENCODE(occName)}&{!strOccurrenceFieldId}_lkid={!occId}" value="New Claim"/>
+                <apex:commandButton action="{!resetFilter}" value="Reset Filter" rerender="detFilter" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="" columns="1">
+                <apex:pageBlockTable value="{!claims}" var="claim" rendered="{!NOT(ISNULL(claims))}" id="claimBlockTable">
+                    <apex:actionSupport event="onRowClick" action="{!filterDetails}" rerender="detFilter">
+                        <apex:param name="claimId" value="{!claim.Id}" />
+                        <apex:param name="claimName" value="{!claim.Name}" />  
+                        <apex:param name="claimStatus" value="{!claim.Status__c}" />
+                    </apex:actionSupport>
+                    <apex:column styleClass="actionColumn" headerValue="Action"> 
+                        <apex:commandLink styleClass="actionLink" action="{!filterDetails}" value="Select" id="lnkFilter" rerender="detFilter">
+                            <apex:param name="claimId" value="{!claim.Id}" />
+                            <apex:param name="claimName" value="{!claim.Name}" />
+                            <apex:param name="claimStatus" value="{!claim.Status__c}" />
+                        </apex:commandLink>&nbsp;|&nbsp;
+                        <apex:outputLink styleClass="actionLink" value="{!URLFOR($Action.Claim__c.Edit, claim.Id, ['retURL'='/'+occId])}">Edit</apex:outputLink>&nbsp;|&nbsp;
+                        <apex:outputLink styleClass="actionLink" value="{!URLFOR($Action.Claim__c.Delete, claim.Id, ['retURL'='/'+occId])}" onclick="return confirmDelete();">Del</apex:outputLink>
+                    </apex:column>
+                    <apex:column headerValue="Claim Number">
+                        <apex:outputLink value="/{!claim.Id}" target="_top">{!claim.Name}</apex:outputLink>
+                    </apex:column>
+                    <apex:column value="{!claim.Location_Name__c}"/> 
+                    <apex:column value="{!claim.Status__c}"/>
+                    <apex:column value="{!claim.Coverage_Minor__c}"/>
+                    <apex:column value="{!claim.Net_Paid__c}" style="text-align:right;" />
+                    <apex:column value="{!claim.Net_Incurred__c}" style="text-align:right;" /> 
+                    <apex:column value="{!claim.Net_Outstanding__c}" style="text-align:right;" />
+                </apex:pageBlockTable>
+                <c:SSCPagination setController="{!claimCon}" maxRecords="1000" rerender="claimBlockTable"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>  
+        <apex:pageBlock title="Details for Claim: {!Filter} " id="detFilter">            
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!URLFOR($Action.Adjuster_Notes__c.New, null, [retURL=URLFOR($Action.RK_Occurrence__c.View, occId), cancelURL=URLFOR($Action.RK_Occurrence__c.View, occId), saveURL=URLFOR($Action.RK_Occurrence__c.View, occId)], true)}&CF{!hardCodes.Occ_Adjuster_ClaimId__c}={!URLENCODE(strClaimName)}&CF{!hardCodes.Occ_Adjuster_ClaimId__c}_lkid={!strClaimId}" value="New Adjuster Note" rendered="{!NOT(ISNULL(strClaimId))}" /> <!--Cancel Does Not Work-->
+                <apex:commandButton action="/p/attach/NoteAttach?pid={!strClaimId}&parentname={!strClaimName}&retURL=%2F{!occId}" value="Add Attachment" rendered="{!NOT(ISNULL(strClaimId))}" />           
+                <apex:commandButton action="{!URLFOR($Action.Activity.NewTask, null, [what_id=strClaimId, retURL='/'+occId])}" value="New Task" rendered="{!NOT(ISNULL(strClaimId))}" /> 
+                <apex:commandButton action="{!URLFOR($Action.Claim_Transaction__c.New, null, [retURL='/'+occId, saveURL='/'+occId])}&CF{!hardCodes.Claim_Transaction_to_Claim_Lookup__c}={!URLENCODE(strClaimName)}&CF{!hardCodes.Claim_Transaction_to_Claim_Lookup__c}_lkid={!strClaimId}&ent={!hardCodes.Claim_Transaction_Object_Id_Long__c}&{!hardCodes.Claim_Transaction_Status__c}={!strClaimStatus}&Name={Will%20Auto-fill}" value="New Transaction" rendered="{!NOT(ISNULL(strClaimId))}" /> 
+                <apex:commandButton action="{!URLFOR($Action.Contact_Roles__c.New, null, [retURL='/'+occId, saveURL='/'+occId])}&CF{!hardCodes.Occ_ContactRole_ClaimId__c}={!URLENCODE(strClaimName)}&CF{!hardCodes.Occ_ContactRole_ClaimId__c}_lkid={!strClaimId}" value="New Contact Roles" rendered="{!NOT(ISNULL(strClaimId))}" />           
+            </apex:pageBlockButtons>
+            <apex:tabPanel switchType="client" id="tpClaimDetail">
+                <apex:tab label="Adjuster Notes" name="notes" id="notesTab">
+                    <apex:pageBlockTable value="{!adjusterNotes}" var="adNotes" id="tblNotes" rendered="{!NOT(ISNULL(adjusterNotes))}">
+                        <apex:column styleClass="actionColumn" headerValue="Action"> 
+                            <apex:outputLink styleClass="actionLink" value="{!URLFOR($Action.Adjuster_Notes__c.Edit, adNotes.Id, ['retURL'='/'+occId])}">Edit</apex:outputLink>&nbsp;|&nbsp;
+                            <apex:outputLink styleClass="actionLink" value="{!URLFOR($Action.Adjuster_Notes__c.Delete, adNotes.Id, ['retURL'='/'+occId])}" onclick="return confirmDelete();">Del</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Note Subject">
+                            <apex:outputLink value="/{!adNotes.Id}">{!adNotes.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Claim Number">
+                            <apex:outputLink value="/{!adNotes.Claim__c}">{!adNotes.Claim__r.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column value="{!adNotes.Note_Category__c}"/>
+                        <apex:column value="{!adNotes.Note_First_Line_of_Text__c}"/>
+                        <apex:column value="{!adNotes.CreatedById}"/>
+                        <apex:column value="{!adNotes.Note_Create_Date_Time__c}"/>
+                    </apex:pageBlockTable>
+                    <c:SSCPagination setController="{!notesCon}" maxRecords="1000" rerender="tblNotes"/>
+                </apex:tab>
+                <apex:tab label="Attachments" name="attachments" id="attachmentsTab">
+                    <apex:pageBlockTable value="{!attachments}" var="attachment" rendered="{!NOT(ISNULL(attachments))}" id="tblAttach">
+                        <apex:column styleClass="actionColumn" headerValue="Action"> 
+                            <apex:outputLink styleClass="actionLink" value="{!URLFOR($Action.Attachment__c.Edit, attachment.Id, ['retURL'='/'+occId])}">Edit</apex:outputLink>&nbsp;|&nbsp;
+                            <apex:outputLink styleClass="actionLink" value="{!URLFOR($Action.Attachment__c.Delete, attachment.Id, ['retURL'='/'+occId])}" onclick="return confirmDelete();">Del</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Attachment">
+                            <apex:outputLink value="/{!attachment.Id}">{!attachment.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Claim Number">
+                            <apex:outputLink value="/{!attachment.Claim__c}">{!attachment.Claim__r.Name}</apex:outputLink>
+                        </apex:column>                        
+                        <apex:column value="{!attachment.View__c}"/>
+                        <apex:column value="{!attachment.Name__c}"/>
+                        <apex:column value="{!attachment.Description__c}"/>
+                        <apex:column value="{!attachment.CreatedById}"/>
+                        <apex:column value="{!attachment.Date_Created__c}"/>
+                    </apex:pageBlockTable>      
+                    <c:SSCPagination setController="{!attachCon}" maxRecords="1000" rerender="tblAttach"/>
+                </apex:tab>
+                <apex:tab label="Open Activities" name="openActivities" id="openActTab">
+                    <apex:pageBlockTable value="{!openActivities}" var="openAct" rendered="{!NOT(ISNULL(openActivities))}">
+                        <apex:column styleClass="actionColumn" headerValue="Action"> 
+                            <apex:outputLink styleClass="actionLink" value="{!if(openAct.isTask, URLFOR($Action.Task.Edit, openAct.Id, ['retURL'='/'+occId]), URLFOR($Action.Event.Edit, openAct.Id, ['retURL'='/'+occId]))}">Edit</apex:outputLink>&nbsp;|&nbsp;
+                            <apex:outputLink styleClass="actionLink" value="{!if(openAct.isTask, URLFOR($Action.Task.Edit, openAct.Id, ['close'='1', 'retURL'='/'+occId]), URLFOR($Action.Event.Edit, openAct.Id, ['close'='1', 'retURL'='/'+occId]))}">Cls</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Claim Number">
+                            <apex:outputLink value="/{!openAct.WhatId}">{!openAct.What.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Subject">
+                            <apex:outputLink value="/{!openAct.Id}">{!openAct.Subject}</apex:outputLink>
+                        </apex:column>                       
+                        <apex:column headerValue="Due Date" value="{!openAct.ActivityDate}"/>
+                        <apex:column value="{!openAct.Priority}"/>
+                        <apex:column headerValue="Assigned To">
+                            <apex:outputLink value="/{!openAct.OwnerId}">{!openAct.Owner.Name}</apex:outputLink>
+                        </apex:column> 
+                    </apex:pageBlockTable>                  
+                </apex:tab>
+                <apex:tab label="Activity History" name="histActivities" id="histActTab">
+                    <apex:pageBlockTable value="{!histActivities}" var="histAct" rendered="{!NOT(ISNULL(histActivities))}">
+                        <apex:column styleClass="actionColumn" headerValue="Action"> 
+                            <apex:outputLink styleClass="actionLink" value="{!if(histAct.isTask, URLFOR($Action.Task.Edit, histAct.Id, ['retURL'='/'+occId]), URLFOR($Action.Event.Edit, histAct.Id, ['retURL'='/'+occId]))}">Edit</apex:outputLink>&nbsp;|&nbsp;
+                            <apex:outputLink styleClass="actionLink" value="{!if(histAct.isTask, URLFOR($Action.Task.Delete, histAct.Id, ['retURL'='/'+occId]), URLFOR($Action.Event.Delete, histAct.Id, ['retURL'='/'+occId]))}" onclick="return confirmDelete();">Del</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Subject">
+                            <apex:outputLink value="/{!histAct.Id}">{!histAct.Subject}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Claim Number">
+                            <apex:outputLink value="/{!histAct.WhatId}">{!histAct.What.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Name">
+                            <apex:outputLink value="/{!histAct.WhoId}">{!histAct.Who.Name}</apex:outputLink>
+                        </apex:column>                    
+                        <apex:column value="{!histAct.IsTask}"/>
+                        <apex:column value="{!histAct.ActivityDate}"/>
+                        <apex:column headerValue="Assigned To">
+                            <apex:outputLink value="/{!histAct.OwnerId}">{!histAct.Owner.Name}</apex:outputLink>
+                        </apex:column> 
+                        <apex:column value="{!histAct.LastModifiedDate}"/>
+                    </apex:pageBlockTable>
+                </apex:tab>
+                <apex:tab label="Transactions" name="transactions" id="transactionsTab">
+                    <apex:pageBlockTable value="{!transactions}" var="transaction" rendered="{!NOT(ISNULL(transactions))}" id="tblTrans">
+                        <apex:column headerValue="Transaction Description">
+                            <apex:outputLink value="/{!transaction.Id}">{!transaction.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Claim Number">
+                            <apex:outputLink value="/{!transaction.Claim__c}">{!transaction.Claim__r.Name}</apex:outputLink>
+                        </apex:column>                       
+                        <apex:column value="{!transaction.Transaction_Date__c}"/>
+                        <apex:column value="{!transaction.Transaction_Status__c}"/> 
+                        <apex:column value="{!transaction.Type__c}"/>
+                        <apex:column value="{!transaction.Category__c}"/>
+                        <apex:column value="{!transaction.Total_Reserve__c}" style="text-align:right;" />
+                        <apex:column value="{!transaction.Total_Net_Paid__c}" style="text-align:right;" />
+                        <apex:column value="{!transaction.Recovery_Paid__c}" style="text-align:right;" />                                                
+                    </apex:pageBlockTable>
+                    <c:SSCPagination setController="{!transCon}" maxRecords="1000" rerender="tblTrans"/>
+                </apex:tab>
+                <apex:tab label="Contact Roles" name="contactRoles" id="contactRolesTab">
+                    <apex:pageBlockTable value="{!contactRoles}" var="role" rendered="{!NOT(ISNULL(contactRoles))}" id="tblContact">
+                        <apex:column styleClass="actionColumn" headerValue="Action"> 
+                            <apex:outputLink styleClass="actionLink" value="{!URLFOR($Action.Contact_Roles__c.Edit, role.Id, ['retURL'='/'+occId])}">Edit</apex:outputLink>&nbsp;|&nbsp;
+                            <apex:outputLink styleClass="actionLink" value="{!URLFOR($Action.Contact_Roles__c.Delete, role.Id, ['retURL'='/'+occId])}" onclick="return confirmDelete();">Del</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Contact Link Name">
+                            <apex:outputLink value="/{!role.Id}">{!role.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Name">
+                            <apex:outputLink value="/{!role.Contact__c}">{!role.Contact__r.Name}</apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Account Name">
+                            <apex:outputLink value="/{!role.Account__c}">{!role.Account__r.Name}</apex:outputLink>
+                        </apex:column>                    
+                        <apex:column value="{!role.Role__c}"/>
+                    </apex:pageBlockTable>
+                    <c:SSCPagination setController="{!contactCon}" maxRecords="1000" rerender="tblContact"/>
+                </apex:tab>
+            </apex:tabPanel>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

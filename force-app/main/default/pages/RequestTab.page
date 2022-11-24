@@ -1,0 +1,34 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 4/8/2014
+           ******************************************************************* -->
+<apex:page tabStyle="Request_Center__c">
+<head>
+        <style>
+            #theIframe, #theIframe2 {
+                width: 100%;
+            }
+        </style>
+    </head>
+    <apex:stylesheet value="/sCSS/21.0/sprites/1297816277000/Theme3/default/gc/versioning.css" />   
+
+  
+
+
+    <apex:tabPanel style="margin: 0px; height:550px;" width="100%"  switchType="ajax" selectedTab="Request_View" id="theTabPanel" 
+                       styleClass="theTabPanel" tabClass="theTabPanel" contentClass="tabContent" activeTabClass="activeTab" inactiveTabClass="inactiveTab">
+  
+            <apex:tab label="Request Center View" name="Request_View" id="tabTwo">                
+                    <apex:enhancedList height="550" rowsPerPage="25" type="Request_Center__c"  id="requestlist" customizable="True" />
+            </apex:tab>
+            
+            <apex:tab label="Request Center Search" name="Request_Search" id="tabOne"> 
+                    <apex:iframe src="/apex/QuickSearch?config=RequestCenter&linkTarget=_top&showHeader=0" scrolling="true" id="theIframe" height="550px" width="1000px"/>
+            </apex:tab>
+            
+             <apex:tab label="Request Message View" name="Request_Message_View" id="tabThree">                
+                    <apex:enhancedList height="550" rowsPerPage="25" type="Request_Messages__c"  id="requestMessagelist" customizable="True" />
+            </apex:tab>
+            
+
+    </apex:tabPanel>
+</apex:page>

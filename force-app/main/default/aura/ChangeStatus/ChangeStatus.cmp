@@ -1,0 +1,30 @@
+<aura:component controller="ChangeStatus_Controller" implements="flexipage:availableForAllPageTypes,force:lightningQuickActionWithoutHeader,force:hasRecordId">	
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="selectedItem" type="String"/>
+    <aura:attribute name="picklistValues" type="List"/>
+    <aura:attribute name="apiInfo" type="Object"/>
+    <aura:attribute name="picklistItems" type="List"/>
+    <aura:attribute name="picklistMap" type="Object"/>
+    <aura:attribute name="message" type="String" default="The Status changed successfully!!"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    <div class="slds-modal__header" style="z-index:0">
+        <h2 class="slds-page-header__title slds-m-right--small slds-truncate slds-align-middle">Change Status</h2>
+    </div>
+            <div class="slds-form--stacked" style = "padding:15px">
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label">New Status:</label>
+                    <div class="slds-form-element__control">
+                        <ui:inputSelect aura:id="selectStatus" change="{!c.updateSelectedItem}">
+                            <aura:iteration items="{!v.picklistItems}" var="item">
+                                <ui:inputSelectOption text="{!item}" label="{!item}" />
+                            </aura:iteration>
+                        </ui:inputSelect>        
+                    </div>
+                </div>
+                <div class="slds-form-element slds-text-align_right" style="padding-top: 25px;">
+                    <ui:button class="slds-button slds-button--brand" press="{!c.finishScreen}" label="Finish" />
+                </div>
+            </div>
+</aura:component>

@@ -1,0 +1,38 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 6/24/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" showheader="false">
+ <p style="position:float;left:25px;">
+            <apex:outputtext value="{0,date,MMMMMMM' 'dd', 'yyyy}"><apex:param value="{!TODAY()}"></apex:param></apex:outputtext></p>
+<div style="margin-bottom: 0.0001pt; "></div>
+<div style="margin-bottom: 0.0001pt; "></div>
+<div style="margin-bottom: 0.0001pt; "></div>
+<div style="margin-bottom: 0.0001pt; "></div>
+<br/>
+<div style="margin-bottom: 0.0001pt; ">Re: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Your Claim No.:&nbsp; </div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Your Insured:&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Your Policy No.: &nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Our Claim No.:&nbsp; </div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Our Insured:&nbsp;{!Claim__c.Driver_Name__c} </div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date of Loss:&nbsp; {!Claim__c.Date_of_Loss__c}</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Place of Loss:&nbsp; {!Claim__c.Accident_City__c}, {!Claim__c.Accident_State__c}</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">Dear or To Whom It May Concern:</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">Please accept this correspondence as our subrogation notice on the above referenced captioned matter.&nbsp; GlobalCorp is the claims administrator for Discover Property and Casualty, the auto carrier for our above named insured.&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">We are in the early stages of our investigative process, but our preliminary investigation finds that your insured&rsquo;s negligence resulted in damages to our insured&rsquo;s  vehicle.&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">The Our vehicle is a specialty truck that our insured works out of daily.&nbsp; It has been referred to as a store on wheels.&nbsp; Thus, it is crucial to our insured&rsquo;s livelihood.&nbsp; If the truck is out of service only a short period of time, you can expect a claim for loss of use, loss of profits, etc.</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">We find that repairs on our truck can be quite expensive, so please consider that as you establish a reserve on your file.&nbsp; Therefore, we encourage that you conduct your own inspection of the damages, so if you would like to have an estimate or an appraisal completed on our insured&rsquo;s truck, please do so.&nbsp; If you need additional information on its present location, let us know.&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">Please acknowledge this correspondence within 5 days of receipt, and provide us with the contact information of your file handler.</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;</div>
+<div style="margin-bottom: 0.0001pt; ">Sincerely,</div>
+<div style="margin-bottom: 0.0001pt; ">&nbsp;</div>
+<div>  {!$User.FirstName}  {!$User.LastName}</div>
+<div>PO Box 1430</div>
+<div>Kenosha, WI 53143</div>
+<div>{!$User.Phone}&nbsp;</div>
+</apex:page>

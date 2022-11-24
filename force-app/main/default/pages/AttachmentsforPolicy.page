@@ -1,0 +1,69 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   03/25/2013
+           ******************************************************************* -->
+<apex:page standardController="Policy__c" extensions="VFFileUpload">
+  <apex:form >
+
+<style>
+    .activeTab {background-color: #5fa7aa; color:white; background-image:none}
+    .inactiveTab { background-color: lightgrey; color:black; background-image:none}
+    </style>
+
+
+<apex:pageBlock >
+<apex:panelGrid columns="2" id="theGrid5"> 
+
+
+<apex:outputLabel value="Description of the Attachments: " for="sheader" Style="font-weight:bold" />
+<apex:inputText id="sheader"    value="{!subjectheader}"/>
+</apex:panelGrid>
+
+<apex:tabPanel switchType="client" selectedTab="name1" id="AttachmentPanel"
+        tabClass="background-color: #5fa7aa; color:white; background-image:none" inactiveTabClass="inactiveTab">
+
+<apex:tab Style="font-weight:bold" label="Attachments 1 - 5" name="name1" id="tabOne">
+       
+<apex:panelGrid columns="4" id="theGrid1">      
+         
+<apex:outputLabel value="" Style="font-weight:bold" for="fileToUpload1"/>
+<apex:outputLabel value="File Name" Style="font-weight:bold" for="fileToUpload1"/>
+<apex:outputLabel value="Alternate File Name" Style="font-weight:bold" for="fAlias1"/>
+<apex:outputLabel value="Keywords" Style="font-weight:bold" for="fkeyword1"/>
+
+<apex:outputLabel value="1.  " Style="font-weight:bold" for="fileToUpload1"/>
+<apex:inputFile id="fileToUpload1"  size="30" value="{!fileBody1}" filename="{!fileName1}" />
+<apex:inputTextarea id="fAlias1"   cols="40" rows="1" value="{!fileAlias1}"/>
+<apex:inputTextarea id="fkeyword1"  cols="80" rows="1" value="{!fileKeyword1}"/>
+
+<apex:outputLabel value="2.  " Style="font-weight:bold" for="fileToUpload2"/>
+<apex:inputFile id="fileToUpload2"  size="30" value="{!fileBody2}" filename="{!fileName2}" />
+<apex:inputTextarea id="fAlias2"   cols="40" rows="1" value="{!fileAlias2}"/>
+<apex:inputTextarea id="fkeyword2"  cols="80" rows="1" value="{!fileKeyword2}"/>
+ 
+<apex:outputLabel value="3.  " Style="font-weight:bold" for="fileToUpload3"/>
+<apex:inputFile id="fileToUpload3"  size="30" value="{!fileBody3}" filename="{!fileName3}" />
+<apex:inputTextarea id="fAlias3"   cols="40" rows="1" value="{!fileAlias3}"/>
+<apex:inputTextarea id="fkeyword3"  cols="80" rows="1" value="{!fileKeyword3}"/>
+ 
+<apex:outputLabel value="4.  " Style="font-weight:bold" for="fileToUpload4"/>
+<apex:inputFile id="fileToUpload4"  size="30" value="{!fileBody4}" filename="{!fileName4}" />
+<apex:inputTextarea id="fAlias4"   cols="40" rows="1" value="{!fileAlias4}"/>
+<apex:inputTextarea id="fkeyword4"  cols="80" rows="1" value="{!fileKeyword4}"/>
+ 
+<apex:outputLabel value="5.  " Style="font-weight:bold" for="fileToUpload5"/>
+<apex:inputFile id="fileToUpload5"  size="30" value="{!fileBody5}" filename="{!fileName5}" />
+<apex:inputTextarea id="fAlias5"   cols="40" rows="1" value="{!fileAlias5}"/>
+<apex:inputTextarea id="fkeyword5"  cols="80" rows="1" value="{!fileKeyword5}"/>
+ 
+ 
+</apex:panelGrid>
+</apex:tab>
+</apex:tabpanel>
+
+</apex:pageBlock>
+
+<apex:commandButton value="Upload Attachments" action="{!UploadFileClaim}"/> 
+<apex:commandButton value="Cancel" action="{!Cancel}"/> 
+          
+  </apex:form>
+</apex:page>

@@ -1,0 +1,16 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 6/24/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" extensions="ClaimLetterExt">
+         <apex:outputfield value="{!Claim__c.Name}"  rendered="false"/>
+         
+
+
+<br/><br/><br/>
+<center><h2>There was an error generating the letter.  Please select another letter</h2></center>
+<br/><br/><br/>
+<apex:outputLink value="/{!Claim__c.id}" id="theLink">Return to Claim</apex:outputLink>
+          
+
+
+</apex:page>

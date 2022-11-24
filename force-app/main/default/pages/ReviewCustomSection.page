@@ -1,0 +1,483 @@
+<apex:page standardController="Review__c" extensions="extendReviewCustomSection">
+
+    <style type="text/css">
+        .btn{display:none;}
+        .actionLink{display:none;}
+        .actionColumn{display:none;}
+    </style>
+
+    <!-- Patient Event General Info (Always shows on page) -->
+    <apex:pageBlock >
+        <apex:pageBlockSection title="General Information" rendered="{!Review__c.Patient_Event_Record_Type__c!='Narcotic Discrepancy' && Review__c.Patient_Event_Record_Type__c!='Visitor Event'}">
+        <!-- Columns alternate per pageBlockSection (ex. Patient_Event_Status__c - Left Column, Patient_Account_Number__c - Right Column and so on) -->
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Event_Status__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Account_Number__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Full_Name__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Date_of_Event__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Report_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Primary_Location__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Discovery_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Secondary_Location__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Discovery_Time__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Event_Description__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Admit_Visit_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Location_Description__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Attending_Physician__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Class__c}" />
+        </apex:pageBlockSection>
+
+
+    <!-- Start Hide/Show section based on Patient_Event__c.RecordType.Name -->
+        <apex:pageBlockSection title="Adverse Drug Reaction" rendered="{!Review__c.Patient_Event_Record_Type__c='Adverse Drug Reaction'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.ADR_Reaction__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.ADR_Drug_Start_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Date_of_ADR_onset__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Diagnosis_or_Reason_for_Use__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Onset_of_ADR_Event__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Stop_Date_of_Suspected_ADR_Drug__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.ADR_Reappeared_after_Reintroduction__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.ADR_Reduced_after_Drug_Stopped_Reduced__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Drug_Given_to_Treat_ADR__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Dose_within_Recommend_Range__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.ADR_Risk_Factors__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.High_Risk_Drug__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Relevant_Test_Laboratory_Data__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Classification_of_ADR__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Recommendations_Actions__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Serious_ADR_Reaction_Outcome__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Anesthesia/Sedation" rendered="{!Review__c.Patient_Event_Record_Type__c='Anesthesia/Sedation'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_anesthesia_was_used__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Length_of_Anesthesia__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Level_of_Sedation__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Type_of_Airway_Management_Problem__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Anesthesia_supervision__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Airway_problem__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.anesthesia_only__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Anesthesia_event_category__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Who_Administered_Anesthesia__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Sedation_Issue__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Blood or Blood Product" rendered="{!Review__c.Patient_Event_Record_Type__c='Blood or Blood Product'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Blood_Product_Event_Category__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Incorrect_Action_Involved__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Blood_Product_Involved__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Blood_Product_Incorrect_Action__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Blood_Product_Involved__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.X2_person_3_way_check_documented__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.ISBT_Product_Code__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Volume__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Stage_event_discovered__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Stage_event_originated__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Blood_Stage_Discover_Other__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Blood_Stage_Event_Originated_Other__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Diagnostic Radiology" rendered="{!Review__c.Patient_Event_Record_Type__c='Diagnostic Radiology'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Diagnostic_Radiology_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Phase_of_Radiology_Process__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Facilities Related" rendered="{!Review__c.Patient_Event_Record_Type__c='Facilities Related'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Facility_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Facilities_Environmental_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Property_or_Premise_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Facility_Issue__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Fall" rendered="{!Review__c.Patient_Event_Record_Type__c='Fall'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Date_of_Fall_Risk_Assessment__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Fall_Unassisted_Assisted__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Fall_Risk_Assessment_Documented__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Was_fall_observed__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Risk_Factors_Present_at_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Who_observed_fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Measures_in_Place_to_Prevent_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Injury_from_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.On_Meds_Known_to_Increase_Fall_Risk__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Fall_Type_of_Injury__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Physical_Device_Contribute_to_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_at_Increased_Risk_for_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Activity_Prior_to_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Medication_Contributed_to_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Activity_Prior_to_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Activity_Prior_to_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Fall_Injury_Sustained__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Fall_Risk_Factors_Present_at_Fall__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Measures_in_Place_to_Prevent_Fall__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Healthcare-associated Infection" rendered="{!Review__c.Patient_Event_Record_Type__c='Healthcare-associated Infection'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_HAI__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Infection_Present_at_Admission__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Type_of_Infection__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.HAI_Trained__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Infection_Description__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Type_of_Infection_Not_Listed__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Type_of_Tube__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.CLABSI__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Central_Line__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.VAP__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.VAP_Classification__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.CAUTI__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Catheter_Status__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.CAUTI_Classification__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.SSI_Classification__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Input_Location__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Information Systems" rendered="{!Review__c.Patient_Event_Record_Type__c='Information Systems'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Admin_system_component__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.EHR_Type_Involved__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Ergonomic_Issue_Type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.HIT_Device_Issue_Type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.HIT_Device_Type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Admin_Billing_System_Component__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Ergonomic_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_HIT_Device_Related_to_Event__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Problem_From_Device_function__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Type_of_Device__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_type_of_EHR__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Result_of_Function_Problems__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="IV Related" rendered="{!Review__c.Patient_Event_Record_Type__c='IV Related'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Blistering_Ulceration__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Initial_Interventions__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Pain_Level__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Skin_Appearance__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Swelling__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Was_Surgery_Required__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Decreased_Perfusion__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Altered_Sensation__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Laboratory" rendered="{!Review__c.Patient_Event_Record_Type__c='Laboratory'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Diagnostic_Issue_for_Lab__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Phase_of_Lab_Process__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Medical Equipment/Device" rendered="{!Review__c.Patient_Event_Record_Type__c='Medical Equipment/Device'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Unique_Device_Identifier__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Device_Removed__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.lot_or_batch_number__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Unique_Product_Identifier__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_other_identifier__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Single_use_device_involved__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Was_Device_in_the_Patient__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.device_reused__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Device_Involved__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.What_is_the_expiration_date__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Medication or Other Substance" rendered="{!Review__c.Patient_Event_Record_Type__c='Medication or Other Substance'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Brand_Name__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Generic_Name__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Characterizes_Event__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Compounded_Preparation_Ingredients__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Incorrect_Action__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Drug_Classification__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Incorrect_Timing__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Strength__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Incorrect_Dosage__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Dosage_form__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Incorrect_Rate__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Name_of_Manufacturer__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Describe_Strength_or_Concentration__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Medication_Involved__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Expiration_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Medication_Type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Documented_History_Allergies__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Biological_Products__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.contraindication__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Lot_Number__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Event_Originated__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Nutritional_Product__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Intended_Route_of_Admin__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.List_Ingredients__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Actual_route_of_administration__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Med_Sub__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Med_Sub_Incorrect_action__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Nutritional_Product__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Substance__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Narcotic Discrepancy" rendered="{!Review__c.Patient_Event_Record_Type__c='Narcotic Discrepancy'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Discrepancy_Type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Primary_Employee__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Secondary_Employee__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Order__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Frequency__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Wasted__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Resolution__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Chart_Status__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Transaction_Type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Transaction_Time__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Station__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Qty__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Other" rendered="{!Review__c.Patient_Event_Record_Type__c='Other'}" >
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Patient Behavior" rendered="{!Review__c.Patient_Event_Record_Type__c='Patient Behavior'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Behavior_Issue__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Perinatal" rendered="{!Review__c.Patient_Event_Record_Type__c='Perinatal'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_did_event_involve__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Delivery_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Best_estimate_of_gestation__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Number_of_live_births__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Was_mother_primipara__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_outcome_did_fetus_sustain__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Fetuses_in_this_pregnancy__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Was_labor_induced__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Affected_by_event__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Mode_of_Delivery__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_outcome_did_mother_sustain__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Instrumentation_used_in_delivery__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_maternal_infections__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Instrumentation_used_in_delivery__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_body_part__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Neonate_Birthweight__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Apgar_score__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_outcome_did_neonate_sustain__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_birth_trauma__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.What_instrumentation_was_used__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Maternal_Infections__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Mother_Body_Part_Organ_Injured__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Neonate_Birth_Trauma_Injury__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Neonate_Outcome_s__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Privacy/Confidentiality" rendered="{!Review__c.Patient_Event_Record_Type__c='Privacy/Confidentiality'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Breach_Statutory_Exception__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Number_of_Individuals__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Actions_Taken_in_Response_to_Breach__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Amount_of_Fine__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Waiver__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.of_Breach__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Breach_End_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Breach_Flag__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Breach_Lag__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Data_with_PHI_De_Identified__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Data_Use_Agreement_Executed__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Date_HHS_OCR_Notified__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Date_HSS_OCR_Notified_Lag__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Date_OCR_Complaint_Received_Lag__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Date_of_Individual_Notice__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Date_of_OCR_Complaint_Received__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Event_Determined_Incidental__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Discovery_End_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Fines_Assessed__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.HIPAA_Compliance_Officer__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.HSS_OCR_Notified_Flag__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Individual_Authorization_Obtained__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Individual_Notice_Provided_End_Date__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Likelihood_of_Re_identification__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Limited_Data_Set__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Location_of_Breached_Information__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.OCR_Complaint_Lag_Indicator__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.OCR_Complaint_Received__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Actions_in_Response_to_Breach__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Type_of_Breach__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.PHI_Acquired_or_Viewed__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.PHI_Encrypted__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.PHI_Identifiers_Involved_in_Event__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Reasons_for_Delays_in_Notifications__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Risk_Assessment_Complete__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Safeguards_in_Place_Prior_to_Breach__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Breach__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_individual_access_PHI__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Report__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Was_Media_Notice_Required__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Was_Substitute_Notice_Required__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Privacy_Confidentiality_Category__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Privacy_Confidentiality_Detail__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Restraints/Seclusion" rendered="{!Review__c.Patient_Event_Record_Type__c='Restraints/Seclusion'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Restraints_Utilized__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Reason_for_Restraints__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Current_Order_for_Restraints__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Reason_for_Restraints__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Security" rendered="{!Review__c.Patient_Event_Record_Type__c='Security'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Property_Missing_Damaged__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Protection_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Personal_Property_Missing_Damaged__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Burn__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Security_Issue__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Skin Integrity" rendered="{!Review__c.Patient_Event_Record_Type__c='Skin Integrity'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Images__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Surgery" rendered="{!Review__c.Patient_Event_Record_Type__c='Surgery'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Count_performed__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.What_was_medical_specialty__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Retained_Object__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Specialty_of_Provider__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Type_of_Surgical_Event__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Reported_Count_Status__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Retained_Object_Radiopaque__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.incorrect_surgery_type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Object_retained__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Surgical_event_category__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.burn_fire_type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.xray_obtained_detect_object__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Treatment/Procedure" rendered="{!Review__c.Patient_Event_Record_Type__c='Treatment/Procedure'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Consent_Document_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Nutrition_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Consent_Invovled__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Treatment_Procedure__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Vent_Care_Issue__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Unplanned_Exubation__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Reintubated__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Wrong_Setting__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Other_Treatment_Procedure_Issue__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Venous Thromboembolism" rendered="{!Review__c.Patient_Event_Record_Type__c='Venous Thromboembolism'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.VTE_Type__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.VTE_Risk_Documented__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Location_of_DVT__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.VTE_prophylaxis_use_documented__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_test_confirmed_DVT__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Patient_Risk_of_VTE__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Which_test_confirmed_PE__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Risk_of_Bleeding__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Anticoagulant_Administered__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Was_prophylaxis_applied__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Why_was_anticoagulant_not_given__c}" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockSection title="Visitor Event" rendered="{!Review__c.Patient_Event_Record_Type__c='Visitor Event'}" >
+            <apex:outputField value="{!Review__c.Patient_Event__r.Medical_Treatment_Provided__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Witness_Name__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Witness_Contact_Information__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Involved_Party__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_First_Name__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_Last_Name__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_Phone__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_Email__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_Address_1__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_Address_2__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_City__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_State__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Involved_Party_Postal_Code__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Visitor_Non_Employee_Event__c}" />
+        </apex:pageBlockSection>
+    <!-- End Hide/Show section based on Patient_Event__c.RecordType.Name -->
+
+    <!-- Reporter Section from the Patient_Event__c page layout (Always shows on page) -->
+        <apex:pageBlockSection title="Reporter Information">
+            <apex:outputField value="{!Review__c.Patient_Event__r.Anonymous_Reporter__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Reporter_phone__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Reporter_Full_Name__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Reporter_Email__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Reporter_Job__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Who_Reported_Event__c}" />
+            <apex:outputField value="{!Review__c.Patient_Event__r.Type_of_Healthcare_Professional__c}" />
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+
+    <apex:pageBlock rendered="{!Review__c.Patient_Event_Record_Type__c!='Narcotic Discrepancy' && Review__c.Patient_Event_Record_Type__c!='Visitor Event'}">
+      <apex:pageBlockSection title="Other Reviews" columns="1">
+            <apex:pageBlockTable var="rev" value="{!reviews}" title="Other Reviews" columns="7" width="100%">
+                <apex:column headerValue="Review">
+                    <apex:outputField value="{!rev.Name}"/>
+                </apex:column>
+          <apex:column headerValue="Assigned Reviewer">
+            <apex:outputField value="{!rev.Assigned_Reviewer__r.Name}"/>
+          </apex:column>
+          <apex:column headerValue="Comments">
+            <apex:outputField value="{!rev.Reviewer_Comments__c}"/>
+          </apex:column>
+          <apex:column headerValue="Recommended changes">
+            <apex:outputField value="{!rev.Recommended_Changes_for_Prevention__c}"/>
+          </apex:column>
+          <apex:column headerValue="Patient Notified">
+            <apex:outputField value="{!rev.Patient_Notified_of_Incident__c}"/>
+          </apex:column>
+          <apex:column headerValue="Intervention Taken">
+            <apex:outputField value="{!rev.Interventions_Taken__c}"/>
+          </apex:column>
+          <apex:column headerValue="Associated with Hand-Off">
+            <apex:outputField value="{!rev.Associated_with_Hand_Off__c}"/>
+          </apex:column>
+            </apex:pageBlockTable>
+      </apex:pageBlockSection>
+    </apex:pageBlock>
+
+    <!-- This block creates a table of sibling Review__c records for all reviews that are: 'Visitor Event' bc there can be questions specific to the Visitor Event RecordType -->
+    <apex:pageBlock rendered="{!Review__c.Patient_Event_Record_Type__c='Visitor Event'}">
+      <apex:pageBlockSection title="Other Reviews" columns="1">
+            <apex:pageBlockTable var="rev" value="{!reviews}" title="Other Reviews" columns="7" width="100%">
+                <apex:column headerValue="Review">
+                    <apex:outputField value="{!rev.Name}"/>
+                </apex:column>
+          <apex:column headerValue="Assigned Reviewer">
+            <apex:outputField value="{!rev.Assigned_Reviewer__r.Name}"/>
+          </apex:column>
+          <apex:column headerValue="Status">
+            <apex:outputField value="{!rev.Status__c}"/>
+          </apex:column>
+          <apex:column headerValue="Reviewer Comments">
+            <apex:outputField value="{!rev.Reviewer_Comments__c}"/>
+          </apex:column>
+          <apex:column headerValue="Cause">
+            <apex:outputField value="{!rev.Why_did_this_event_occur__c}"/>
+          </apex:column>
+          <apex:column headerValue="Handoff?">
+            <apex:outputField value="{!rev.Associated_with_Handoff__c}"/>
+          </apex:column>
+          <!--Add a new column by filling out the template below -->
+          <!--<apex:column headerValue=""> <-Fill in the column header here.
+            <apex:outputField value="{!rev.New_Field__API__c}"/> <-This new field needs to be added the the query in the 'extendReviewCustomSection' controller.
+          </apex:column>-->
+            </apex:pageBlockTable>
+      </apex:pageBlockSection>
+    </apex:pageBlock>
+
+    <!-- This block creates a table of sibling Review__c records for all reviews that are: 'Narcotic Discrepancy' bc there can be questions specific to the Narcotic Discrepancy RecordType -->
+    <apex:pageBlock rendered="{!Review__c.Patient_Event_Record_Type__c='Narcotic Discrepancy'}">
+      <apex:pageBlockSection title="Other Reviews" columns="1">
+            <apex:pageBlockTable var="rev" value="{!reviews}" title="Other Reviews" columns="7" width="100%">
+                <apex:column headerValue="Review">
+                    <apex:outputField value="{!rev.Name}"/>
+                </apex:column>
+          <apex:column headerValue="Assigned Reviewer">
+            <apex:outputField value="{!rev.Assigned_Reviewer__r.Name}"/>
+          </apex:column>
+          <apex:column headerValue="Status">
+            <apex:outputField value="{!rev.Status__c}"/>
+          </apex:column>
+          <apex:column headerValue="Reviewer Comments">
+            <apex:outputField value="{!rev.Reviewer_Comments__c}"/>
+          </apex:column>
+          <apex:column headerValue="Cause">
+            <apex:outputField value="{!rev.Why_did_this_event_occur__c}"/>
+          </apex:column>
+          <apex:column headerValue="Handoff?">
+            <apex:outputField value="{!rev.Associated_with_Handoff__c}"/>
+          </apex:column>
+          <!--Add a new column by filling out the template below -->
+          <!--<apex:column headerValue=""> <-Fill in the column header here.
+            <apex:outputField value="{!rev.New_Field__API__c}"/> <-This new field needs to be added the the query in the 'extendReviewCustomSection' controller.
+          </apex:column>-->
+            </apex:pageBlockTable>
+      </apex:pageBlockSection>
+    </apex:pageBlock>
+
+    <!--<apex:relatedList list="Contact_Roles__r" subject="{!Review__c.Patient_Event__r}" title="Involved Employees" />-->
+</apex:page>

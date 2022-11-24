@@ -1,0 +1,234 @@
+<!--CustomRelatedList-->
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" controller="CustomRelatedList_Controller" access="global">
+    
+    <!-- General parameters -->
+    <aura:attribute name="objectAPI" type="String" />
+    <aura:attribute name="relFldAPI" type="String" />
+    <aura:attribute name="fieldsetName" type="String" />
+    <aura:attribute name="iconType" type="String" />
+    <aura:attribute name="newBtnView" type="Boolean" />
+    <aura:attribute name="hscroll" type="Boolean" default="true" />
+    <aura:attribute name="recordLimit" type="Integer" default="6" />
+
+    <!--attributes-->
+    <aura:attribute name="recordCount" type="Integer" />
+    <aura:attribute name="iconComp" type="String" />
+    <aura:attribute name="plusCheck" type="Boolean" default="false" />
+
+    <aura:attribute name="initialSortExpr" type="String" description="Sort expression applied to the initial display of this list"/>
+    <aura:attribute name="initialSortDir" type="String" description="Default ASC or DESC to be applied to terms of the initial sort expression that didn't specify either"/>
+    <aura:attribute name="loadError" type="String" 
+        description="If an error was returned from the server-side load, it's stashed here for display. These are expected to be configuration errors, with an informative diagnostic message."/>
+
+    <aura:attribute name="res" type="Object" description="Full result payload returned from the server; contains resolved columns, record data, etc"/>
+    <aura:attribute name="rows" type="List" description="Prepared row results, processed from the result payload, ready for tabular/grid display"/>
+
+    <aura:attribute name="promptRecordTypes" type="Boolean" default="false" description="ugh"/>
+    <aura:attribute name="selectedRecordTypeIndex" type="Integer" default="false" description="ugh"/>
+
+    <!--Handlers-->
+    <aura:handler event="force:showToast" action="{!c.onSystemToast}"/> 
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <lightning:overlayLibrary aura:id="overlays"/>
+
+    <article class="slds-card slds-card_boundary slds-is-relative" style="min-height: 5em;">
+        <lightning:spinner variant="brand" size="medium" aura:id="spinner"/>
+
+        <aura:if isTrue="{!v.loadError}">
+            <div>
+                <h3 class="slds-text-color_error slds-text-heading_small"><strong>Error</strong>&nbsp;{!v.loadError}</h3>
+            </div>
+        </aura:if>
+
+        <aura:if isTrue="{!and(!v.loadError, v.res)}">
+            <div class="slds-card__header slds-grid">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                    <div class="{!v.iconComp ? '' : 'slds-hide'}">
+                        <lightning:icon iconName="{!v.iconComp}" size="small"  class="slds-m-right_medium"/>
+                    </div>
+                    <div class="slds-media__body">
+                        <aura:if isTrue="{!v.res.filesTargetAPI}">
+                            <a onclick="{!c.gotoFilesTarget}" class="slds-card__header-link slds-truncate">
+                                <span class="slds-text-heading_small">{!v.res.filesTargetLabel} > {!v.res.filesTargetName}</span>
+                            </a>
+                            <aura:set attribute="else">
+                                <a name="{!v.res.childRelName}" onclick="{!c.gotoRelatedList}" class="slds-card__header-link slds-truncate" title="{!v.res.objLabelPlural}">
+                                    <span class="slds-text-heading_small">{!v.res.objLabelPlural} ({!v.recordCount}<span class="{!v.plusCheck ? '' : 'slds-hide'}">+</span>)</span>
+                                </a>
+                            </aura:set>
+                        </aura:if>
+                    </div>
+                </header>
+                
+                <aura:if isTrue="{!v.res.filesTargetAPI}">
+                     <div class="slds-media__body">
+                        <span class="slds-text-heading_small slds-float_right slds-card__header-link slds-truncate" title="Files">Files ({!v.recordCount}<span class="{!v.plusCheck ? '' : 'slds-hide'}">+</span>)</span>
+                    </div>
+                    <aura:set attribute="else">
+                        <aura:if isTrue="{!and(v.res.isCreateable, v.newBtnView)}">
+                            <div class="slds-no-flex">
+                                <button class="slds-button slds-button_neutral" title="New" onclick="{!c.startNewChildRecord}">New</button>
+                            </div>
+                        </aura:if>
+                    </aura:set>
+                </aura:if>
+            </div>
+            <aura:if isTrue="{!v.recordCount}">
+                <div class="{!'slds-card__body ' + (v.hscroll ? 'hscroll' : '')}">
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer slds-has-flexi-truncate slds-table_resizable-cols">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <aura:iteration items="{!v.res.cols}" var="col" indexVar="colIndex">
+                                    <aura:if isTrue="{!col.value.isSortable}">
+                                        <!--<th class="{!'slds-is-sortable slds-text-title_caps ' + col.headerAlign}" scope="col">-->
+                                            <!--<a href="javascript:void(0);" class="slds-th__action slds-text-link_reset" style="display:inline-flex" role="button" data-value="{!colIndex}" onclick="{!c.clickSortColumn}">-->
+                                        <th class="slds-is-sortable slds-text-title_caps" scope="col">
+                                            <div class="{!'slds-th__action slds-text-link_reset ' + col.headerAlign}" style="display: flex;" data-value="{!colIndex}" onclick="{!c.clickSortColumn}">
+                                                <a href="javascript:void(0);" role="button" class="slds-text-link_reset">
+                                                    <span class="slds-assistive-text">Sort By:</span>
+                                                    <span class="slds-truncate" title="{!col.value.label}">{!col.value.label}</span>
+                                                    <aura:if isTrue="{!and(v.res.activeSortIndex == colIndex, v.res.activeSortDir == 'DESC')}">&nbsp;&#9660;</aura:if>  
+                                                    <aura:if isTrue="{!and(v.res.activeSortIndex == colIndex, v.res.activeSortDir == 'ASC')}"> &nbsp;&#9650;</aura:if>
+                                                </a>
+                                            </div>
+                                        </th>
+                                    </aura:if>
+                                    <aura:if isTrue="{!!col.value.isSortable}">
+                                        <!--<th class="{!'slds-text-title_caps ' + col.headerAlign}" scope="col">-->
+                                            <!--<div class="slds-truncate" title="{!col.value.label}">{!col.value.label}</div>-->
+
+                                        <th class="slds-text-title_caps" scope="col">
+                                            <div class="{!col.headerAlign}" style="display: flex;" title="{!col.value.label}">
+                                                {!col.value.label}
+                                            </div>
+                                        </th>
+                                    </aura:if>
+                                </aura:iteration>
+                                <aura:if isTrue="{!or(v.res.isDeletable, v.res.isUpdateable)}">
+                                    <!--
+                                    <th class="slds-text-title_caps slds-text-align_center" scope="row">
+                                        Action
+                                    </th>
+                                    -->
+                                    <th class="slds-text-title_caps" scope="row">
+                                        <div class="headerAlign_center" style="display: flex;" title="Action">
+                                            Action
+                                        </div>
+                                    </th>
+                                </aura:if>
+                            </tr>
+                        </thead>
+                        <tbody>                   
+                            <aura:iteration items="{!v.rows}" var="row" indexVar="i">
+                                <tr>
+                                    <aura:iteration items="{!row}" var="cell">
+                                        <td scope="col" class="{!cell.col.cellAlign + ' ' + cell.col.styleClass}">
+                                            <div>
+                                                <aura:if isTrue="{!cell.isLink}">
+                                                    <!-- TODO: c.recordView controller method... -->
+                                                    <a data-value="{!cell.linkTo}" onclick="{!c.recordView}" href="javascript:void(0);">{!cell.value}</a>
+                                                    <aura:set attribute="else">
+                                                        <aura:if isTrue="{!cell.isCurrency}">
+                                                            <lightning:formattedNumber value="{!cell.value}" style="currency"/>
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!cell.isPercent}">
+                                                            <lightning:formattedNumber value="{!cell.value}" style="percent"/>
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!cell.isDecimal}">
+                                                            <lightning:formattedNumber value="{!cell.value}" style="decimal"/>
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!cell.isCheck}">
+                                                            <lightning:buttonIcon iconName="utility:check" class="checkboxValue" iconClass="{!cell.value ? 'checked' : 'unchecked'}" 
+                                                                variant="border-filled" alternativeText="{!cell.value ? 'checked' : 'unchecked'}" size="x-small" />
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!cell.isPlain}">
+                                                            {!cell.value}
+                                                        </aura:if>
+                                                    </aura:set>
+                                                </aura:if>
+                                            </div>
+                                        </td>
+                                    </aura:iteration>
+                                    <aura:if isTrue="{!or(v.res.isDeletable, v.res.isUpdateable)}">
+                                        <td scope="row" class="slds-text-align_center">
+                                            <lightning:buttonMenu iconSize="x-small" class="{!'slds-nubbin_top-left ' + (row.popUpwards ? 'lastRowMenuPopUpwards' : '')}" onselect="{!c.onRowActionSelect}" menuAlignment="center">
+                                                <lightning:menuItem class="{!v.res.isUpdateable ? 'slds-dropdown_actions slds-dropdown_bottom' : 'slds-hide'}" 
+                                                    label="Edit" value="{!'edit__' + row.Id + (row.name ? '__' + row.name : '')}"/>
+                                                <aura:if isTrue="{!v.res.filesTargetAPI}">
+                                                    <lightning:menuItem class="slds-dropdown_actions slds-dropdown_bottom" 
+                                                        label="View" value="{!'view__' + row.ContentDocumentId + '__' + row.name}"/>
+                                                    <lightning:menuItem class="slds-dropdown_actions slds-dropdown_bottom" 
+                                                        label="Delete" value="{!'delete__' + row.ContentDocumentId + '__' + row.name}"/>
+                                                    <aura:set attribute="else">
+                                                        <lightning:menuItem class="{!v.res.isDeletable ? 'slds-dropdown_actions slds-dropdown_bottom' : 'slds-hide'}" 
+                                                            label="Delete" value="{!'delete__' + row.Id + (row.name ? '__' + row.name : '')}"/>
+                                                    </aura:set>
+                                                </aura:if>
+                                            </lightning:buttonMenu>  
+                                        </td>
+                                    </aura:if>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <aura:if isTrue="{!v.plusCheck}">
+                    <a name="{!v.res.childRelName}" onclick="{!c.onViewAll}">
+                        <footer class="slds-card__footer">View All</footer>
+                    </a>
+                </aura:if>
+                
+            </aura:if>
+            <!--
+            TODO: hiding this for now, as per Josh McJenkin
+            <aura:if isTrue="{!!v.recordCount}">
+                <div class="slds-card__body slds-card__body_inner">
+                    <h3 class="slds-text-body_small">No {!v.res.objLabelPlural}</h3>
+                </div>
+            </aura:if>
+            -->
+        </aura:if>
+
+    </article>
+
+    <!-- TODO: make this a real dialog!! -->
+    <aura:if isTrue="{!and(v.promptRecordTypes, !v.loadError, v.res)}">
+        <div class="demo-only" style="height: 640px;">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal scrollable slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-modal__close slds-button--icon-inverse slds-button__icon--large" title="Close" onclick="{!c.closeNewChildModal}">X<span class="slds-assistive-text">Cancel</span>
+                    </button>
+                    <h2 id="header43" class="slds-text-heading--medium">New {!v.res.objLabel}</h2>
+                </header>
+                 <div class="modal-body scrollable slds-modal__content slds-p-around--medium">
+                    <div class="changeRecordTypeRow">
+                        <div class="changeRecordTypeLeftColumn"> 
+                            <legend class="form-element__legend slds-form-element__label">Select a Record Type</legend>
+                        </div>
+                        <aura:iteration items="{!v.res.recordTypes}" var="recType" indexVar="typeIndex">
+                            <label>
+                                <div class="changeRecordTypeOptionLeftColumn">
+                                    <div class="changeRecordTypeOptionRightColumn">
+                                        <ui:inputRadio class="slds-form-element__label" text="{!recType.id}" value="{!v.selectedRecordTypeIndex == typeIndex}" name="recordTypesRadio" change="{!c.onRadio}" />
+                                        &nbsp; &nbsp;{!recType.label}
+                                        <div class="changeRecordTypeItemDescription">{!recType.descrip}</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </aura:iteration>
+                    </div>          
+                </div>
+                <div class="slds-modal__footer">
+                    <lightning:button class="slds-button slds-button--neutral" onclick="{!c.closeNewChildModal}">Cancel</lightning:button>
+                    <lightning:button class="slds-button slds-button--brand" onclick="{!c.createNewChildRecord}">Next</lightning:button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop--open"></div>
+        </div>
+    </aura:if>
+
+</aura:component>

@@ -1,0 +1,10 @@
+.THIS .slds-select_container{
+    padding-left: 2em;
+}
+.THIS .myClass{
+	overflow :visible;
+}
+.THIS .slds-scrollable_y{
+	overflow: unset;
+    overflow-y: unset;
+}

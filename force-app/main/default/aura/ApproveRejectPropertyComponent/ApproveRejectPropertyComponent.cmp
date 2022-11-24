@@ -1,0 +1,17 @@
+<aura:component controller="ApproveRejectProperty_Controller" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="property" type="Object"/>
+    <aura:attribute name="propertyFields" type="Object"/>
+    <force:recordData aura:id="propertyRecordLoader"
+                      recordId="{!v.recordId}"
+                      fields="Name,Approval_Status__c,Approval_Comments__c"
+                      targetRecord="{!v.property}"
+                      targetFields="{!v.propertyFields}"
+                      mode="EDIT"
+                      />
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+
+    <lightning:overlayLibrary aura:id="overlays" />
+    <div class="slds-is-relative slds-text-align_center" style="height: 120px">
+        <lightning:spinner aura:id="spinner" variant="brand"/>
+    </div>
+</aura:component>

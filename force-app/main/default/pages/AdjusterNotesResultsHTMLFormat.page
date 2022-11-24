@@ -1,0 +1,85 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   07/31/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" extensions="AdjusterNotesDisplayController" showheader="false" sidebar="false" standardStylesheets="true" >
+
+<html>
+    <head>
+        <!-- TCD copied from LDS original MDU June 2010  -->
+        <style type="text/css">     
+            .headerImage {
+                padding:10px 10px 5px 10px;
+            }
+               
+            .claimDetails {
+                padding:5px 10px 5px 10px;
+            }
+            
+            .taskList {
+                padding:5px 10px 10px 10px;
+            }
+            
+            .taskHeaderCell {
+                margin:0 0 0 15px;
+            }
+            
+            body div.taskList div.taskDescription a {
+                color:#000000;
+            }
+            
+        </style>
+        
+        <script type="text/javascript">
+            var _resultsWidth = "{!htmlResultsWindowWidth}";
+            var _resultsHeight = "{!htmlResultsWindowHeight}";
+            if (dojo.render.html.ie){
+                window.resizeTo(_resultsWidth, _resultsHeight);
+            }
+            else{
+                window.outerWidth = _resultsWidth;
+                window.outerHeight = _resultsHeight;
+            }
+        </script>
+    </head>
+    
+    <div class="headerImage">
+    <!--apex:image url="/resource/1270685806000/LdsRkLogo"/--> 
+    </div>
+    <div class="claimDetails">                  
+        <apex:outputText >Claim Number: <a href="{!domainURL}{!Claim__c.Id}" target="{!htmlResultsEmbeddedLinkTarget}">{!Claim.Name}</a></apex:outputText><br/>
+        <apex:outputText >Claimant Name: {!Claim.Claimant_Name__c} </apex:outputText><br/>
+        <apex:outputText >Major Coverage: {!Claim.Coverage_Major__c} </apex:outputText><br/>
+        <apex:outputText >Minor Coverage: {!Claim.Coverage_Minor__c} </apex:outputText><br/>
+        <apex:outputText value=" {0,date,MM/dd/yyyy}">
+            Date of Loss: <apex:param value="{!Claim.Date_of_Loss__c}"/>
+        </apex:outputText>  <br/>
+        <apex:outputText >Adjuster Notes</apex:outputText><br/>
+        <apex:outputText >Privileged and Confidential</apex:outputText>
+    </div> 
+    
+    <div class="taskList">
+        <apex:pageBlock >
+            <apex:repeat value="{!Activities}" var="each">
+                <apex:pageBlockSection columns="1"  collapsible="false">
+                    <apex:facet name="header">
+                        <a style="color: #000000" href='{!domainURL}{!each.Id}' target="{!htmlResultsEmbeddedLinkTarget}">{!each.Name}</a>
+                    </apex:facet>
+                    <div>
+                        <span class="taskHeaderCell">
+                            <apex:outputText value="{!each.Note_Category__c}" />
+                        </span>
+                        <span class="taskHeaderCell"><apex:outputField value="{!each.createdby.name}" label="Note Author"/> </span
+                        > <!-- <span class="taskHeaderCell">Note Id Number: {!each.Name}</span 
+
+                        > <span class="taskHeaderCell"> --><apex:outputField value="{!each.Note_Create_Date_Time__c}" />
+                    </div>
+                    <div styleClass="taskDescription">
+                        <apex:outputText value="{!each.Note_Text_Rich__c}" escape="false" />
+                    </div>
+                </apex:pageBlockSection>
+            </apex:repeat>
+        </apex:pageBlock>
+    </div>
+    
+</html>
+</apex:page>

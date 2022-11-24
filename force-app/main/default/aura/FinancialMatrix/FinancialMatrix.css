@@ -1,0 +1,6 @@
+.THIS .picklist-label-hidden .slds-form-element__label{
+    display: none;
+}
+.THIS .noLabel .slds-form-element__label{
+	display: none;
+}

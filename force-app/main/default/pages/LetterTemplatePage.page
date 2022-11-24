@@ -1,0 +1,27 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 02/24/2015
+           ******************************************************************* -->
+<apex:page Controller="LetterTemplateMethod" sidebar="false" showHeader="false"    standardStylesheets="true"  >    
+ 
+  
+    <apex:stylesheet value="{!$Resource.WrapperCSSNew}" /> 
+    <body onload="resizeTo(500,300);window.moveTo(((screen.width - 600) / 2), ((screen.height - 900) / 2));">
+    <apex:form >
+       <apex:sectionHeader title="Letters" subtitle="Select Template" / >
+        <Div style="margin-left: 100px;">
+            <br/><br/>         
+            <apex:selectList style="font-size: 100%;" value="{!selection}" label="Type" size="1">
+               <apex:selectOptions value="{!Options}"/>
+            </apex:selectList><br/><br/><br/>
+            <apex:commandButton action="{!letterCreate}" value="Create Letter"  id="letterbutton" style="width:100px;" disabled="{!dimCreateLetter}"  />
+             &nbsp;&nbsp;&nbsp;&nbsp;
+            <apex:commandButton action="{!cancelButton}" value="Cancel"  id="cancelbutton" style="width:100px;"  /> 
+            <br/><br/><br/>
+        </div> 
+        <apex:pagemessages />               
+   </apex:form>  
+   </body>
+   
+
+   
+</apex:page>

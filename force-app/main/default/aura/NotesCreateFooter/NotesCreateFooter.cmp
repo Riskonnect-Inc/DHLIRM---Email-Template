@@ -1,0 +1,9 @@
+<aura:component access="public">
+    <aura:attribute name="meta" type="Object" access="Public"/>
+    <aura:attribute name="newNoteMethod" type="Object"/>
+    <aura:attribute name="content" type="Aura.Component" description="The record types modal content coupled to this footer" />
+
+    <lightning:overlayLibrary aura:id="overlays"/>
+    <lightning:button class="slds-button slds-button--neutral" onclick="{!c.closeModal}">Cancel</lightning:button>
+    <lightning:button class="slds-button slds-button--brand" onclick="{!c.newNote}">Next</lightning:button>
+</aura:component>

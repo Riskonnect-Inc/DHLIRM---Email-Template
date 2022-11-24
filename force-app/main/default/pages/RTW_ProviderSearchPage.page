@@ -1,0 +1,220 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 04/15/2016
+           ******************************************************************* -->
+<apex:page standardController="RTW_Assessment__c" extensions="RTW_ProviderSearchController" sidebar="false" action="{!init}" applyHtmlTag="true" applyBodyTag="false" docType="html-5.0" showHeader="{!not(renderAsPDF)}" renderAs="{!renderAs}" >
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <head>
+            <apex:stylesheet value="{!URLFOR($Resource.SLDS100, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+            <script type="text/javascript">
+                function saveSelected(physicianID){
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.RTW_ProviderSearchController.selectProvider}',
+                        '{!RTW_Assessment__c.Id}',
+                        physicianID,
+                        function(result,event){
+                            if(event.status){
+                                window.location.href = '/' + '{!RTW_Assessment__c.Id}';
+                            } else {
+                                alert(event.message);
+                            }
+                        },
+                        {escape: true}
+                    );
+                }
+            
+                function openPrintable(){
+                    var newWinHeight=400;
+                    var newWinWidth=400;
+                    
+                    var newWinPutX=50;
+                    var newWinPutY=50;
+                    
+                    newWin = window.open(window.location.href + '&printable=1',
+                                         'printableWin',
+                                         'fullscreen=yes,toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=yes');
+                    
+                    //newWin.resizeTo(newWinHeight,newWinWidth);
+                    //newWin.moveTo(newWinPutX,newWinPutY);
+                }
+            
+                function sendEmail( sendTo ) {
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.RTW_ProviderSearchController.sendEmailResults}',
+                        sendTo,
+                        '{!RTW_Assessment__c.Id}',
+                        '',
+                        '',
+                        600,
+                        function(result,event){
+                            if(event.status){
+                                alert(result);
+                            } else {
+                                alert(event.message);
+                            }
+                        },
+                        {escape: true}
+                    );
+                }
+            </script>
+        </head>
+        
+        <body>
+            <div class="slds">
+                <div class="slds-page-header" role="banner">
+                    <div class="slds-grid">
+                        <div class="slds-col">
+                            <div class="slds-media">
+                                
+                                <div class="slds-media__figure">
+                                    <span class="slds-icon__container">
+                                        <svg aria-hidden="true" class="slds-icon slds-icon--large slds-icon-text-default">
+                                            <use xlink:href="{!URLFOR($Resource.SLDS100, '/assets/icons/utility-sprite/svg/symbols.svg#search')}"></use>
+                                        </svg>
+                                    </span>
+                                </div>
+                                
+                                <div class="slds-media__body">
+                                    <p class="slds-text-heading--medium">
+                                        Provider Search
+                                    </p>
+                                    <p class="slds-text-body--small slds-page-header-info">
+                                        Search and select a provider near: {!RTW_Assessment__c.Claimant_Name__c} - {!RTW_Assessment__c.Claimant_Address__c}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-col slds-no-flex slds-align-bottom">
+                            <div class="slds-button-group" role="group">
+                                <button class="slds-button slds-button--neutral" onClick="javascript:openPrintable();">Print</button>
+                                <button class="slds-button slds-button--neutral" onClick="javascript:window.location.href='/{!RTW_Assessment__c.Id}';">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="slds-grid">
+                    <div class="slds-col slds-size-5-of-6">
+                        <ul class="slds-list--vertical slds-has-cards--space slds-has-selections slds-has-list-interactions">
+                            <apex:repeat value="{!searchResults}" var="result">
+                                <li class="slds-list__item" onclick="javascript:saveSelected('{!result.providerContact.Id}');">
+                                    <div class="slds-tile slds-tile--board">
+                                        <div class="slds-tile__detail">
+                                            <div class="slds-grid slds-wrap">
+                                                <p class="slds-col slds-size--2-of-4 slds-text-heading--small">
+                                                    {!result.providerContact.Name} <br />
+                                                    
+                                                    <span class="slds-text-body--regular">
+                                                        Phone: {!result.providerContact.Phone}<br />
+                                                        Email: {!result.providerContact.Email}
+                                                    </span>
+                                                </p>
+                                                <p class="slds-col slds-size--1-of-4 slds-truncate">
+                                                    {!result.providerContact.MailingStreet}<br />
+                                                    {!result.providerContact.MailingCity}, {!result.providerContact.MailingState} {!result.providerContact.MailingPostalCode}
+                                                </p>
+                                                <p class="slds-col slds-size--1-of-4 slds-truncate slds-text-align--right">
+                                                    <apex:outputText value="{0, number, ###,##0.0}">
+                                                        <apex:param value="{!result.distanceFromClaimant}" />
+                                                    </apex:outputText> miles away
+                                                </p>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </li>
+                            </apex:repeat>
+                        </ul>
+                    </div>
+                    <apex:outputPanel rendered="{!not(renderAsPDF)}">
+                        <apex:form >
+                            <div class="slds-col--padded slds-size-1-of-6" style="max-width:400px">
+                                <div class="slds-card">
+                                    <div class="slds-card__header slds-grid">
+                                        <span class="slds-icon__container">
+                                            <svg aria-hidden="true" class="slds-icon slds-icon--small slds-icon-text-default">
+                                                <use xlink:href="{!URLFOR($Resource.SLDS100, '/assets/icons/utility-sprite/svg/symbols.svg#filter')}"></use>
+                                            </svg>
+                                        </span>
+                                        <span class="slds-text-heading--small">
+                                            &nbsp;Filters
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="slds-card__body slds-grid">
+                                        
+                                        <div class="slds-form--stacked slds-col--padded">
+                                            <div class="slds-form-element">
+                                                <label class="slds-form-element__label" for="text-input-01">Distance (miles)</label>
+                                                <div class="slds-form-element__control">
+                                                    <apex:inputText id="text-input-01" styleclass="slds-input" value="{!distanceRange}"/>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element">
+                                                <label class="slds-form-element__label" for="select-01">Provider Type</label>
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-select_container">
+                                                        <apex:selectList styleClass="slds-select" size="1" value="{!providerType}">
+                                                            <apex:selectOptions value="{!TypeOptions}" />
+                                                        </apex:selectList>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-form-element">
+                                                <label class="slds-form-element__label" for="select-01">Provider Specialization</label>
+                                                <div class="slds-form-element__control">
+                                                    <div class="slds-select_container">
+                                                        <apex:selectList styleClass="slds-select" size="1" value="{!providerSpecialization}">
+                                                            <apex:selectOptions value="{!SpecializationOptions}" />
+                                                        </apex:selectList>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-card__footer slds-grid">
+                                        
+                                        <apex:commandbutton styleClass="slds-button slds-button--brand" value="Apply Filters" action="{!doSearch}" />
+                                        <apex:commandbutton styleClass="slds-button slds-button--neutral" value="Reset Filters" action="{!resetSearch}" />
+                                    </div>
+                                </div>
+                                <!--
+                                <div class="slds-card">
+                                    <div class="slds-card__header slds-grid">
+                                        <span class="slds-icon__container">
+                                            <svg aria-hidden="true" class="slds-icon slds-icon--small slds-icon-text-default">
+                                                <use xlink:href="{!URLFOR($Resource.SLDS100, '/assets/icons/utility-sprite/svg/symbols.svg#share')}"></use>
+                                            </svg>
+                                        </span>
+                                        <span class="slds-text-heading--small">
+                                            &nbsp;Email Results
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="slds-card__body slds-grid">
+                                        
+                                        <div class="slds-form--stacked slds-col--padded">
+                                            <div class="slds-form-element">
+                                                <label class="slds-form-element__label" for="text-input-01">Email</label>
+                                                <div class="slds-form-element__control">
+                                                    <apex:inputText styleclass="slds-input" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="slds-card__footer slds-grid">
+                                        <a class="slds-button slds-button--brand" onClick="javascript:sendEmail('jakranz33@gmail.com');" >
+                                            Send Email
+                                        </a>
+                                    </div>
+                                </div>
+                                -->
+                            </div>
+                        </apex:form>
+                    </apex:outputPanel>
+                </div>
+            </div>
+        </body>
+        
+    </html>  
+</apex:page>

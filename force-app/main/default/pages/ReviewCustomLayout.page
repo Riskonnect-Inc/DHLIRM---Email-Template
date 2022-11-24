@@ -1,0 +1,72 @@
+<apex:page standardController="Review__c" showHeader="true" sidebar="true">
+	<apex:detail relatedList="false" inlineEdit="{!Review__c.Status__c == 'In Progress'}" subject="{!Review__c.Id}" oncomplete="location.reload()" />
+	<apex:includeScript value="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"/>
+    <apex:includeScript value="/soap/ajax/35.0/connection.js"/>
+    <script>
+    if('{!Review__c.Status__c}' != 'New') hideButton("start_review");
+
+        function hideButton(start_review){
+            try{
+                var buttons = parent.document.getElementsByName(start_review);
+                for (var i=0; i < buttons.length; i++){
+                    buttons[i].className="btn";
+                    buttons[i].disabled=true;
+                    buttons[i].type='hidden';
+                }
+            }catch(e){
+
+            }
+        }
+
+        if('{!Review__c.Status__c}' != 'In Progress') hideButton("complete_review");
+
+        function hideButton(complete_review){
+            try{
+                var buttons = parent.document.getElementsByName(complete_review);
+                for (var i=0; i < buttons.length; i++){
+                    buttons[i].className="btn";
+                    buttons[i].disabled=true;
+                    buttons[i].type='hidden';
+                }
+            }catch(e){
+
+            }
+        }
+
+        var j$ = jQuery.noConflict();
+        j$("iframe").each(function(){
+            j$(this).load(function() {
+                j$(this).height( j$(this).contents().find("body").height() );
+            });
+        });
+                    j$(document).ready(function(){
+
+                       function hideSection(label){
+                           var test = j$('[alt="'+label+'"]');
+                           var $header = test.parent();
+                           $header.addClass('doMyMagic').css('display','none');
+                           var $container = test.parent().parent();
+                           var children = $container.children();
+                           //console.log(children);
+                           for(var i=0;i<children.length;i++){
+                               if(j$(children[i]).hasClass('doMyMagic')){
+                                   //console.log('found');
+                                   j$(children[i+1]).addClass('banana').css('display','none');
+                               }
+                           }
+                       }
+                       var pert = '{!Review__c.Patient_Event_Record_Type__c}';
+                       if(pert == "Visitor Event"){
+                         hideSection('Hide Section - Narcotic Discrepancies');
+                       }
+                       else if(pert == "Narcotic Discrepancy"){
+                         hideSection('Hide Section - Visitor Questions');
+                       }
+                       else{
+                         hideSection('Hide Section - Visitor Questions');
+                         hideSection('Hide Section - Narcotic Discrepancies');
+                       }
+                       //test.click();
+                    })
+    </script>
+</apex:page>

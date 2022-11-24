@@ -1,0 +1,56 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 4/8/2014
+           ******************************************************************* -->
+<apex:page standardController="Request_Center__c"    showHeader="true"  tabStyle="Request_Center__c" title="{!Request_Center__c.Name} " showChat="false"  >
+  <apex:stylesheet value="/sCSS/21.0/sprites/1297816277000/Theme3/default/gc/versioning.css" />   
+ 
+    
+<apex:variable var="ifWR" value="{!if(Request_Center__c.Type__c == 'Waiver Request',True,False)}" />   
+<apex:variable var="renderTabs" value="{!if($Setup.RMISPersonalSettings__c.Use_Tabbed_Interface__c == TRUE,TRUE,FALSE)}" /> 
+<apex:variable var="renderDetailSection" value="{!if($Setup.RMISPersonalSettings__c.Use_Tabbed_Interface__c == TRUE,FALSE,TRUE)}" /> 
+
+<chatter:feedWithFollowers rendered="{!$Setup.ChatterStatus__c.Request_Center_Chatter__c}" entityId="{!Request_Center__c.id}"/>
+<apex:detail relatedList="true" title="true" inlineEdit="true" rendered="{!renderDetailSection}"/>
+
+
+
+   <apex:tabPanel switchType="client" selectedTab="tabdetails"  width="1200px" id="TabPanel" tabClass="activeTab"  inactiveTabClass="inactiveTab" rendered="{!renderTabs}">   
+     
+      <apex:tab label="{!Request_Center__c.Name} " name="Details" id="tabdetails" style="background-color: white; font-size:9pt;" >
+         <apex:detail relatedList="false" title="true"   inlineEdit="true"/>
+      </apex:tab>
+       
+       
+       <apex:tab label="Agreements"  name="Agreements" id="tabAgreements" rendered="{!ifWR}">
+         <apex:relatedList list="agreements__r"/>         
+      </apex:tab>  
+      
+      
+      <apex:tab label="Tasks"  name="Tasks" id="tabTasks">            
+        <apex:relatedList title="Open Tasks" subject="{!Request_Center__c}" list="OpenActivities" />
+         <apex:relatedList title="Activity History" subject="{!Request_Center__c}" list="ActivityHistories" />
+      </apex:tab>    
+         
+           
+         <apex:tab label="Notes and Attachments" name="NotesAndAttachments" id="tabNoteAtt">
+         <apex:relatedList subject="{!Request_Center__c}" list="NotesAndAttachments" />
+      </apex:tab>
+         
+        
+         
+         
+     <!---These tabs are being commented out to hide them. They can be added by moving then out of the commented area.
+         
+       
+        
+            
+      
+      
+ 
+   <apex:tab label="History"  name="History" id="tabHistory">
+         <c:GenericHistoryComponent recordLimit="50" myObject="{!Audit__c}"/>
+   </apex:tab>
+ --->
+ 
+   </apex:tabPanel>
+</apex:page>

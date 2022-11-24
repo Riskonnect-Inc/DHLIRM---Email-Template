@@ -1,0 +1,66 @@
+<apex:page controller="rkl.JS_Search" extensions="DemoPortalLanding_Old_Controller" action="{!checkValidity}" showHeader="false" sidebar="false" standardStylesheets="false" cache="false">
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+        <apex:includeScript value="{!$Resource.rkl__jquery1_8_3}"/>
+        <apex:stylesheet value="https://code.jquery.com/ui/1.11.0/themes/cupertino/jquery-ui.css"/>
+        <apex:includeScript value="https://code.jquery.com/ui/1.11.0/jquery-ui.js"/>
+        <apex:includeScript value="{!$Resource.rkl__RKDebug_js}" />
+        <apex:includeScript value="{!$Resource.rkl__RKSearch}" />
+        <apex:includeScript value="{!$Resource.rkl__RKUtil_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKIframe_JS}"/>
+        <style>
+            #NewBtn {
+                margin-top: 20px;
+            }
+
+            #instructions {
+                margin: 10px;
+            }
+        </style>
+        <script type="text/javascript">
+            ;
+            (function($) {$(function() {
+                "use strict";
+
+
+            })})(jQuery);
+
+            $(document).ready(function() {
+                var inputObj = {
+                    serverData: $.parseJSON({!pageData}),
+                    $parent: $('#jsSearch'),
+                    remoteActionClass: rkl.JS_Search
+                };
+                var masterGS = rkl.genericSearchs.createGenericSearch(inputObj);
+
+                masterGS.editFun = function(id){
+                    window.location.href = ('DemoPortal_Old?incId='+id);
+                }
+
+                masterGS.disabled = false;
+                masterGS.doSearch();
+                $('#jsSearch').find('.panel-heading').remove();
+                $('#jsSearch').children().removeClass('panel');
+            });
+        </script>
+    </head>
+    <body>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-xs-6 col-md-4'>
+                    <img height='75px' src="{!$Resource.RKLogo3}" />
+                </div>
+                <div class='col-xs-6 col-md-4 text-center'>
+                    <a id='NewBtn' class='btn btn-default btn-primary' href='{!$Page.DemoPortal_Old}'>Create a new incident</a>
+                </div>
+            </div>
+            <div>
+            </div>
+            <div id="instructions">
+                <h5>Below is a list of your incomplete incident reports</h5>
+            </div>
+
+            <div id="jsSearch"></div>
+        </div>
+    </body>
+</apex:page>

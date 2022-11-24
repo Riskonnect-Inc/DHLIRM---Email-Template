@@ -1,0 +1,125 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   04/08/2014
+           ******************************************************************* -->
+<apex:page controller="ChatterExtractFeedContainerController" showHeader="false" sidebar="false">
+    <style>
+        body {
+            /*border: 5px solid #EF591F;*/
+            padding: 10px;
+        }
+        
+        .commentDiv {
+            line-height: 150%;
+            margin-left: 30px;
+            background-color: #EFF7FA;
+            border-bottom: 1px solid #C6CBCF;
+            border-left: 1px solid #DEE5EA;
+            padding: 5px;
+        }
+
+        .commentDiv:after {
+            content: "";
+            display: block;
+            height: 0;
+            clear: both;
+        }
+        
+        .commentDivContent {
+            float: left;
+            font-size: 1.1em;
+        }
+        
+        .postDiv {
+            page-break-inside:avoid;
+            line-height: 150%;
+            border-top: 2px solid #E6E6E6;
+            padding: 5px;
+        }
+
+        .postDiv:after {
+            content: "";
+            display: block;
+            height: 0;
+            clear: both;
+        }
+        
+        .postDivContent {
+            float: left;
+            font-size: 1.1em;
+        }
+        
+        .timeOfPostComment {
+            float: right;
+            font-size: 1.1em;
+        }
+        
+        .timeOfPostFeed {
+            float: right;
+            font-size: 1.1em;
+        }
+        
+        .errorMessage {
+            font-size: 1em;
+            color: red;
+        }
+        
+        .header {
+            font-size: 3em;
+            text-align: right;
+            color: #1fa3c4;
+        }
+
+        .header:after {
+            content: "";
+            display: block;
+            height: 0;
+            clear: both;
+        }
+
+        .headerLeft {
+            float: left;
+            font-size: 1.1em;
+            background-image: url({!$Resource.ChatterExtractFeedLogo});
+            background-repeat: no-repeat;
+            background-position: 0 0;
+            background-size: 252px 94px;
+            background-color: white;
+            width: 252px;
+            height: 94px;
+        }
+
+        .headerRight {
+            float: right;
+            font-size: 0.7em;
+            font-weight: bold;
+            font-family: "Helvetica Neue";
+        }
+        
+        .userPhoto {
+            height: 35px;
+            margin-right: 5px;
+        }
+
+        .userName {
+            vertical-align: top;
+        }
+
+        .imgFooter:after {
+            content: "";
+            display: block;
+            height: 0;
+            clear: both;
+        }
+
+        .rkLogo {
+            float: right;
+            right: 0;
+            bottom: 0;
+        }
+    </style>
+
+    <apex:dynamicComponent componentValue="{!thePanel}"/>
+    <footer class="imgFooter">
+        <img src="http://riskonnect.com/site/wp-content/uploads/2013/02/riskonnect_logo.png" class="rkLogo"/>
+    </footer>
+</apex:page>

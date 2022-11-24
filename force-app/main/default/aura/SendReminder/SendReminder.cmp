@@ -1,0 +1,18 @@
+<aura:component controller="PropertyValuesReminderExecute" implements="flexipage:availableForRecordHome,force:appHostable,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global">
+    <!-- Declared component attributes -->
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="message" type="String" />
+    <aura:attribute name="isSuccess" type="Boolean" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <header class="slds-modal__header">
+        <h2 class="slds-text-heading_medium" id="prompt-heading-id">Reminders Status</h2>
+    </header>
+    <div class="slds-modal__content slds-p-around_medium" id="prompt-message-wrapper">
+        <p style="text-align: center"><strong>{!v.message}</strong></p>
+    </div>
+    <footer class="slds-modal__footer slds-theme_default">
+        <button class="slds-button slds-button--brand " onclick="{!c.onOkClick}">OK</button>
+    </footer>
+
+</aura:component>

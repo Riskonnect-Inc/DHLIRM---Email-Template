@@ -1,0 +1,49 @@
+.THIS .slds-file-selector__dropzone, .THIS .slds-file-selector {
+    width: 100%;
+}
+
+.THIS .slds-form-element__label {
+    display: none;
+}
+
+.THIS .files .slds-file-selector__dropzone {
+    height: 10rem;
+    display: flex;
+    align-items: center;
+}
+
+.THIS .files .slds-file-selector__body {
+    display: inline-block;
+    margin: auto;
+} 
+
+.THIS .files .slds-file-selector__text {
+    text-align: center;
+}
+
+.THIS .files .slds-file-selector { 
+    padding: 1rem;
+}
+
+.THIS .slds-dropdown-trigger button {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.THIS .view-all {
+    width: 100%;
+    border-radius: 0 !important;
+    border-left: none;
+    border-right: none;
+    padding: 5px;
+    cursor: pointer;
+}
+.THIS.modalheader {
+    
+    style: ".forceStyle .viewport .oneHeader.slds-global-header_container {z-index:0} .forceStyle.desktop .viewport{overflow:hidden}";
+    
+}
+.THIS.slds-spinner_container {  
+    z-index: 10000;
+    position: fixed;   
+}

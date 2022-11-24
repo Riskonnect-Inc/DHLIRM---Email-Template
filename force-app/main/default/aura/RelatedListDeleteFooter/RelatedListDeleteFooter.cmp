@@ -1,0 +1,8 @@
+<aura:component access="global" controller="CustomRelatedList_Controller">
+    <aura:attribute name="content" type="Aura.Component" description="The delete-modal content component coupled to this footer" />
+    <aura:attribute name="target" type="Object" />
+
+    <lightning:overlayLibrary aura:id="overlays"/>
+    <lightning:button aura:id="cancelBtn" label="Cancel" onclick="{!c.onCancel}"/>
+    <lightning:button aura:id="submitBtn" label="Delete" variant="brand" onclick="{!c.onDelete}"/>
+</aura:component>

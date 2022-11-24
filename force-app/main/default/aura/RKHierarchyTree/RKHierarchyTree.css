@@ -1,0 +1,5 @@
+.THIS.container {
+    height: 78vh;
+    flex: 1 1 100%;
+    min-height:0;
+}

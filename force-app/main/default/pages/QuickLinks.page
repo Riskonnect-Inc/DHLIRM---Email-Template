@@ -1,0 +1,49 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/29/2013
+           ******************************************************************* -->
+<apex:page >
+  <apex:form >
+
+<apex:outputLink value="/00X?setupid=CommunicationTemplatesEmail&retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DCommunicationTemplates/Grid?gname=Exposure&gv=6.0&ro=1" 
+id="theLink1a">Email Templates</apex:outputLink> <BR/><BR/>
+
+<apex:outputLink value="/01W?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DWorkflow&setupid=WorkflowEmails" 
+id="theLink1">Add/Edit Email Alerts</apex:outputLink> <BR/><BR/>
+
+<apex:outputLink value="/01Q?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DWorkflow&setupid=WorkflowRules" 
+id="theLink2">Add/Edit Workflow</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="/p/setup/custent/CustomObjectsPage?setupid=CustomObjects&retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DDevTools" 
+id="theLink3">Add/Edit Custom Objects</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="/01I1t000000aQ3c?setupid=CustomObjects" 
+id="theLink3a">Add/Edit Fields in Claim</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="/setup/ui/orghomepageedit.jsp?id=00D1t000000Ll33&retURL=%2Fsetup%2Fui%2Fhomepagecomponents.jsp%3FretURL%3D%252Fui%252Fsetup%252FSetup%253Fsetupid%253DHome%26setupid%3DHomePageComponents&ul=1&setupid=HomePageComponents" 
+id="theLink4">Add/Edit Custom Links</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="/grape/grape.apexp?Id=04a1t000000Xf5z" 
+id="theLink5">Single Level Payment Approval Process Diagram</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="/flow/OSHA/3011t000000POsYAAM"
+id="theLink6">Flow for OSHA data collection</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="https://gbliterk.na5.visual.force.com/apex/AllGrids?sfdc.tabName=01r1t000000LoeQ" 
+id="theLink7">Inline Edit Grids</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="/ui/setup/imp/ImportWizardWelcomePage?setupid=DataManagementImportWizard&retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DDataManagement" 
+id="theLink8">Load External Data</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="/{!$User.Id}/e?retURL=%2F{!$User.Id}%3Fnoredirect%3D1%26retURL%3D%252Fui%252Fsetup%252FSetup%253Fsetupid%253DPersonalInfo%26setupid%3DPersonalInformation" 
+id="theLink9">Multi-lingual</apex:outputLink><BR/><BR/>
+
+<apex:outputLink value="https://help.salesforce.com/apex/HTViewHelpDoc?id=admin_supported_currencies.htm&language=en" 
+id="theLink11">Multi-Lingual</apex:outputLink><BR/><BR/>
+
+
+<apex:outputLink value="/email/admin/listEmailServicesFunction.apexp?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DDevToolsIntegrate&setupid=EmailToApexFunction" 
+id="theLink10">Email Services</apex:outputLink><BR/><BR/>
+
+          
+  </apex:form>
+</apex:page>

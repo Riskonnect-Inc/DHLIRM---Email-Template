@@ -1,0 +1,164 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as    05/29/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" extensions="DGDialogController" sidebar="true" showHeader="true" >
+    
+    <!-- AD 3/5/2013 -->
+
+    <style>
+        .activeTab {background-color: #1797c0; color:white; background-image:none}
+        .inactiveTab { background-color: lightgrey; color:black; background-image:none}
+    </style>
+        
+    <apex:form >
+       <apex:pageMessages />
+        <style>.bPageBlock .pbTitle { width: 75%; }
+             
+        </style>
+        
+        <apex:pageBlock title="Claim Number: {!Claim__c.Name} - Claimant Name: {!Claim__c.Claimant_Name__c}" >
+            <apex:pageBlockSection columns="2" collapsible="false" >
+                <apex:inputField label="ICD9 Code" value="{!searchInputs.ICD_9_CM1__c}"/>
+                <apex:outputText label="Claimant Age" value="{0, number, 0}">
+                    <apex:param value="{!Claim__c.Claimant_Age__c}" />
+                </apex:outputText>
+                <apex:inputField label="Comorbid Code 1" value="{!searchInputs.ICD9_Diagnosis_Co_Existing_Condition_1__c}"/>  
+                <apex:outputText value="{!Claim__c.Claimant_Gender__c}"/>                
+                <apex:inputField label="Comorbid Code 2" value="{!searchInputs.ICD9_Diagnosis_Co_Existing_Condition_2__c}"/>                 
+                <apex:outputText label="Year Incurred " value="{0,date,yyyy}">
+                   <apex:param value="{!Claim__c.Date_of_Loss__c}" />
+                </apex:outputText>                           
+                <apex:inputField label="Comorbid Code 3" value="{!searchInputs.ICD9_Diagnosis_Co_Existing_Condition_3__c}"/> 
+                <apex:outputText label="Coverage" value="{!Claim__c.Coverage_Major__c}"/>                 
+                <apex:inputField required="true" value="{!searchInputs.Job_Class__c}"/> 
+                <apex:outputText label="Postal Code" value="{!Claim__c.Claimant_Postal_Code__c}"/>                                        
+            </apex:pageBlockSection>
+                <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!searchAction}" value="Search For Guidelines"/>
+                </apex:pageBlockButtons>
+        </apex:pageBlock>
+        
+        <apex:tabPanel style="margin: 0px; height:390px;" width="100%" switchType="client" selectedTab="Durations" id="theTabPanel"
+                       tabClass="activeTab" inactiveTabClass="inactiveTab">
+            <apex:tab label="Durations" name="Durations" id="tabOne">
+                <apex:pageBlock title="Select from the guidelines tables and click Save:" >             
+                <apex:pageBlockSection collapsible="false" rendered="{!durTables == null}" title="No data available. Select an ICD9 Code and run a search."/>               
+                <div style="width: 100%; height: 250px; overflow: auto;">
+                   <apex:repeat value="{!durTables}" var="d">
+                    <div style="width: 100%; background-color: #fff;" >
+                        <div style="border: 1px solid #000; padding: 2px; width: 99%; color: #fff; background-color: #1797c0; font-size: 12px;">
+                             <input type="radio" name="selectedRadio" value="{!d.factor}"/>
+                             <b>{!d.medCode} - {!d.factor}</b>
+                        </div>
+                        <table style="width: 99%; background-color: #d4eaf3;">
+                            <tr> 
+                                <td>
+                                    <table style="width: 100%; border: 1px solid #000">
+                                        <tr><td><b><u>Sedentary</u></b></td></tr>
+                                        <tr><td>Minimum: {!d.jobs[0].minVal}</td></tr>
+                                        <tr><td>Optimum: {!d.jobs[0].optimum}</td></tr>
+                                        <tr><td>Maximum: {!d.jobs[0].maxVal}</td></tr>
+                                    </table>
+                                </td>
+                                <td>
+                                    <table style="width: 100%; border: 1px solid #000">
+                                        <tr><td><b><u>Light</u></b></td></tr>
+                                        <tr><td>Minimum: {!d.jobs[1].minVal}</td></tr>
+                                        <tr><td>Optimum: {!d.jobs[1].optimum}</td></tr>
+                                        <tr><td>Maximum: {!d.jobs[1].maxVal}</td></tr>                                        
+                                    </table>
+                                </td>
+                                <td>
+                                    <table style="width: 100%; border: 1px solid #000">
+                                        <tr><td><b><u>Medium</u></b></td></tr>
+                                        <tr><td>Minimum: {!d.jobs[2].minVal}</td></tr>
+                                        <tr><td>Optimum: {!d.jobs[2].optimum}</td></tr>
+                                        <tr><td>Maximum: {!d.jobs[2].maxVal}</td></tr>                                        
+                                    </table>
+                                </td>
+                                <td>
+                                    <table style="width: 100%; border: 1px solid #000">
+                                        <tr><td><b><u>Heavy</u></b></td></tr>
+                                        <tr><td>Minimum: {!d.jobs[3].minVal}</td></tr>
+                                        <tr><td>Optimum: {!d.jobs[3].optimum}</td></tr>
+                                        <tr><td>Maximum: {!d.jobs[3].maxVal}</td></tr>                                        
+                                    </table>
+                                </td>   
+                                <td>
+                                    <table style="width: 100%; border: 1px solid #000">
+                                        <tr><td><b><u>Very Heavy</u></b></td></tr>
+                                        <tr><td>Minimum: {!d.jobs[4].minVal}</td></tr>
+                                        <tr><td>Optimum: {!d.jobs[4].optimum}</td></tr>
+                                        <tr><td>Maximum: {!d.jobs[4].maxVal}</td></tr>                                        
+                                    </table>
+                                </td>                                                                                                                           
+                            </tr>
+                        </table>
+                    </div>
+                    <br/>
+                </apex:repeat>
+                </div>
+                <apex:pageBlockButtons location="top">
+                <apex:commandButton action="{!saveGuidelinesAction}" value="Save"/>
+                <apex:commandButton action="{!cancel}" value="Cancel"/>
+                </apex:pageBlockButtons>
+                </apex:pageBlock>
+            </apex:tab>
+            <apex:tab label="Predictive Modeling" name="Predictive_Modeling" id="tabTwo">
+                <apex:pageBlock title="Predictive Model information:" > 
+                    <apex:pageBlockSection collapsible="false" rendered="{!predictiveModelInfo == null}" title="No predictive model data available."/>
+                    <div style="width: 100%; height: 290px; overflow: auto;">
+                       
+                        <div style="width: 100%; background-color: #fff;" >
+                        <div style="border: 1px solid #000; padding: 2px; width: 99%; color: #fff; background-color: #fff; font-size: 12px;">
+                            <table style="width: 99%;" >                        
+                                     <tr>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Predictive Days Of Disability:</b></td>
+                                        <td><b>{!predictiveModelInfo.predictiveValue} Days</b></td>
+                                    </tr>                                     
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Trend Graph Density:</b></td>
+                                        <td><img src="{!predictiveModelInfo.trendGraphDensityUrl}"/></td>
+                                    </tr> 
+                                    <tr>
+                                        <td><b>Trend Graph Cumulative:</b></td>
+                                        <td><img src="{!predictiveModelInfo.trendGraphCumulativeUrl}"/></td>
+                                    </tr> 
+                                                                                           
+                            </table>
+                        </div>
+                        </div>
+                    </div>
+                </apex:pageBlock>              
+            </apex:tab>
+            <apex:tab label="Monograph" name="Monograph" id="tabThree">
+                <apex:pageBlock title="Monograph information:" > 
+                    <apex:pageBlockSection collapsible="false" rendered="{!durTables == null}" title="No Monograph data available."/>
+                    <div style="width: 100%; height: 290px; overflow: auto;">
+                       
+                        <div style="width: 100%; background-color: #fff;" >
+                        <div style="border: 1px solid #000; padding: 2px; width: 99%; color: #fff; background-color: #1797c0; font-size: 12px;">
+                            <table style="width: 99%;" >
+                                <apex:repeat value="{!monographInfo}" var="m">
+                                    <tr>
+                                        <td>&#9658;</td>
+                                        <td><a style="color: #fff;" href="{!m.monographUrl}" target="__blank"><b>{!m.monograph}</b></a></td>
+                                    </tr> 
+                                </apex:repeat>                 
+                            </table>
+                        </div>
+                        </div>
+                    </div>
+                </apex:pageBlock>
+            </apex:tab>
+        </apex:tabPanel>
+     </apex:form>   
+</apex:page>

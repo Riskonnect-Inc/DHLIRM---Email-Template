@@ -1,0 +1,105 @@
+<aura:component access="public" controller="RKHierarchyTree_Controller" >
+    
+    <aura:set attribute="auraPreInitBlock">
+        <!-- 
+            === Storage for any "storable" server-side calls. ===
+            1. getCustomSetting
+        -->
+        <auraStorage:init name="actions"
+            persistent="false"
+            secure="true"
+            maxSize="1024"/>
+    </aura:set>
+
+    <!-- ATTRIBUTES: CONFIGURABLE, INTENDED TO MAKE TREE GENERIC, NOT IMPLEMENTED -->
+    <aura:attribute name="sObjectName" type="string" access="public" />
+    <aura:attribute name="codeField" type="String" access="public"/>
+    <aura:attribute name="keyField" type="String" access="public"/>
+    <aura:attribute name="nameField" type="String" access="public"/>
+    <aura:attribute name="parentField" type="String" access="public"/>
+    <aura:attribute name="parentKeyField" type="String" access="public"/>
+    <aura:attribute name="isLeafField" type="string" access="public" />
+
+    <!-- ATTRIBUTES -->
+    <aura:attribute name="asyncInitComplete" type="Boolean" access="private" default="false"/>
+    <aura:attribute name="record" type="SObject" access="public"/>
+    <aura:attribute name="selected" type="boolean" default="false" access="public" description="True/False to indicate whether or not this item is selected" />
+    <aura:attribute name="recordId" type="string" default="" access="public" description="Record Id of the record this item represents" />
+    <aura:attribute name="itemLabel" type="string" default="Item Label" access="public" description="Label for the item. Usually Node Name" />
+    <aura:attribute name="children" type="Object[]" access="public" description="List of direct children of the item" />
+    <aura:attribute name="index" type="integer" default="0" access="public" description="Index within this item's sibling list" />
+    <aura:attribute name="level" type="integer" default="1" access="public" description="Level of the hierarchy"/>
+    <aura:attribute name="treeId" type="string" access="public" description="TreeX-NodeX ID used in the tree markup" />
+    <aura:attribute name="maxAutoExpandLevel" type="integer" access="public" default="3" description="Maximum number of levels the hierarchy should auto-expand to upon load" /> 
+    <aura:attribute name="expanded" type="boolean" access="public" default="false" description="True/False to indicate if the node has been expanded" />
+    <aura:attribute name="dragging" type="boolean" access="private" default="false" description="State of whether or not a drag-and-drop node move is currently being executed" />
+    <aura:attribute name="parentIds" type="String[]" access="public" default="[]" description="List of parent record Ids of the selected record for auto-expanding to the current record" />
+    <aura:attribute name="selectedNode" type="string" access="public" description="Record ID of the currently selected Node" />
+    <aura:attribute name="isSelectedParent" type="boolean" access="private" />
+    
+    <!-- ATTRIBUTES: DRAG AND DROP (REMOVED) -->
+    <aura:attribute name="currentlyDraggedId" type="string" access="private" />
+    <aura:attribute name="currentlyDraggedName" type="string" access="private" />
+
+
+    <!-- METHODS -->
+    <aura:method name="resetCollapsedToDefault" action="{!c.resetCollapsedToDefault}"/>
+    
+    <!-- DEPENDENCIES -->
+    <aura:dependency resource="markup://c:RKHierarchyTree_SelectionChangeEvent" type="EVENT" />
+    <aura:registerEvent name="itemSelectedEvent" type="c:RKHierarchyTree_SelectionChangeEvent"/>
+
+    <!-- EVENT HANDLERS -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="change" value="{!v.asyncInitComplete}" action="{!c.postAsyncInit}"/>
+    <!--<aura:handler event="c:RKHierarchyTree_SelectionChangeEvent" action="{!c.toggleSelection}" />-->
+    <!-- <aura:handler event="c:HierarchyTreeDragEvent" action="{!c.acceptDrag}" /> -->
+    
+    <!-- COMPONENT BODY -->
+    <li id="{!v.treeId}" aura:id="{!v.treeId}" role="treeitem" aria-level="{!v.level}" aria-expanded="{!v.expanded}">
+        <div aura:id="itemDiv" class="slds-tree__item" draggable="false" ondragover="{!c.dragOver}" ondrop="{!c.dragDrop}" ondragstart="{!c.startDrag}" ondragend="{!c.endDrag}" ondragenter="{!c.dragEnter}" ondragleave="{!c.dragLeave}">
+
+            <button aura:id="itemBtn" class="slds-button slds-button_icon slds-button_icon slds-m-right_x-small slds-is-disabled" aria-controls="{!v.treeId}" disabled="" onclick="{!c.expandClick}" title="Toggle">
+                <lightning:icon class="slds-button__icon" iconName="utility:chevronright" size="x-small" variant="default" />
+                <lightning:spinner aura:id="spinner" size="small" />
+                <span class="slds-assistive-text">Toggle</span>
+            </button>
+            <a id="{!concat(v.treeId,'__label')}" aura:id="itemLink" href="javascript:void(0);" tabindex="-1" role="presentation" class="slds-truncate" title="Tree Item" onclick="{!c.itemClick}">{!v.itemLabel}</a>
+            
+            <!-- Icon to indicate you can drag-and-drop items 
+            <aura:if isTrue="{!v.selected}">
+                <lightning:buttonIcon class="slds-float_right" iconName="utility:move" size="small" variant="bare"/>
+                <aura:set attribute="else">
+                    &nbsp;
+                </aura:set>
+            </aura:if> -->
+            
+        </div>
+        
+        <!-- RENDER CHILDREN RECORDS AS CHILD TREE COMPONENTS IF/WHEN EXPANDED -->
+        <aura:if isTrue="{!v.expanded}">
+            <ul class="slds-is-expanded" role="group" aria-labelledby="{!concat(v.treeId,'__label')}">
+                <aura:iteration items="{!v.children}" var="childNode" indexVar="childIndex" >
+                    <c:RKHierarchyTree_Item aura:id="treeNode"
+
+                        sObjectName="{!v.sObjectName}"
+                        codeField="{!v.codeField}"
+                        keyField="{!v.keyField}"
+                        nameField="{!v.nameField}"
+                        parentField="{!v.parentField}"
+                        parentKeyField="{!v.parentKeyField}"
+                        isLeafField="{!v.isLeafField}"
+
+                        record="{!childNode}"
+                        index="{!childIndex}" 
+                        level="{!v.level+1}" 
+                        treeId="{!v.treeId}" 
+                        maxAutoExpandLevel="{!v.maxAutoExpandLevel}" 
+                        parentIds="{!v.parentIds}"
+                        selectedNode="{!v.selectedNode}" />
+                </aura:iteration>
+            </ul>
+        </aura:if>
+    </li>
+        
+</aura:component>

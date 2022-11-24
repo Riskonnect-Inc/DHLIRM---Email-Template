@@ -1,0 +1,76 @@
+.THIS #no-data-wrapper {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    
+}
+
+.THIS #no-data {
+    width: 100%;
+    text-align:center;
+    padding: 20px;
+}
+
+.THIS .slds-illustration-medium{
+    height: 125px;
+    margin-bottom: 20px;
+}
+
+.THIS .slds-text-body_regular {
+    padding: 5px;
+}
+
+.THIS .slds-form-element__label {
+      display : none;
+      visibility : hidden;
+}
+
+
+
+.THIS #notes {
+    border-top: 1px solid #dbdbdb;
+    margin-top: 15px;
+}
+
+.THIS .notes-menu {
+    padding:0 3px;
+}
+
+.THIS .notes-menu svg {
+    margin:0;
+}
+
+.THIS .note {
+    border-bottom: 1px solid #dbdbdb;
+    padding-bottom: 15px;
+}
+
+.THIS .note-wrapper {
+    padding: 15px 15px 0 15px;
+}
+
+.THIS .note-wrapper:last-of-type {
+    padding-bottom: 15px;
+}
+
+.THIS .slds-dropdown-trigger button {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+
+
+@media all and (min-width: 980px) {
+    .THIS .slds-form-element__control {  
+        margin-right: 15px;
+    }
+}
+
+@media all and (max-width: 980px) {
+    .THIS .slds-form-element__control, .THIS .slds-text-heading_small {  
+        margin-bottom: 10px;
+    }
+    .THIS table {
+        width: 100% !important;
+    }
+}

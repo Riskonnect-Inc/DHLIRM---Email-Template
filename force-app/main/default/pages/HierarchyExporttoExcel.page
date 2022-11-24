@@ -1,0 +1,52 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/29/2013
+           ******************************************************************* -->
+<apex:page standardController="rkl__RK_Hierarchy_Node__c" recordSetvar="locations"   cache="true" 
+   extensions="PageSizeExt"   contentType="application/vnd.ms-excel#locationlist.xls" showheader="false" sidebar="false"   >
+    <!-- Andrew Barnhart 4/12/13 modified from ClaimExporttoExcel -->
+        <apex:dataTable title="Location List" value="{!locations}" var="c" id="loc_table">
+
+            <!-- Fields to be exported  START -->
+ 
+                 <apex:column >
+                     <apex:facet name="header">Node</apex:facet>
+                     <apex:outputLink value="{!URLFOR(LEFT($Api.Partner_Server_URL_140,FIND('.com',$Api.Partner_Server_URL_140)+4)+c.id)}" id="theLink"> {!c.name}</apex:outputLink>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Parent Node</apex:facet>
+                     <apex:outputLink value="{!URLFOR(LEFT($Api.Partner_Server_URL_140,FIND('.com',$Api.Partner_Server_URL_140)+4)+c.rkl__Parent_Node__c)}" id="theLink2"> {!c.rkl__Parent_Node__r.Name}</apex:outputLink>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Node Name</apex:facet>
+                     <apex:outputText id="rkl__Node_Name__c" value="{!c.rkl__Node_Name__c}"></apex:outputText>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Node Level</apex:facet>
+                     <apex:outputText id="rkl__Node_Level__c" value="{!c.rkl__Node_Level__c}"></apex:outputText>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Node Code</apex:facet>
+                     <apex:outputText id="rkl__Node_Code__c" value="{!c.rkl__Node_Code__c}"></apex:outputText>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Date Active</apex:facet>
+                     <apex:outputText value="{0,date,MM'/'dd'/'yyyy}" id="rkl__Date_Active__c"><apex:param value="{!c.rkl__Date_Active__c}" /></apex:outputText>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Date Inactive</apex:facet>
+                     <apex:outputText value="{0,date,MM'/'dd'/'yyyy}" id="rkl__Date_Inactive__c"><apex:param value="{!c.rkl__Date_Inactive__c}" /></apex:outputText>
+                 </apex:column>
+
+
+                
+            <!-- Fields to be exported  END  -->  
+    
+        </apex:dataTable>
+    
+</apex:page>

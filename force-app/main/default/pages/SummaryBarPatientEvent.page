@@ -1,0 +1,195 @@
+<apex:page standardController="Patient_Event__c" extensions="rkl.SummaryBarExtension" showHeader="false" tabStyle="Patient_Event__c" standardStyleSheets="True">
+    
+    <style>
+   	<!-- http://www.daniweb.com/web-development/web-design-html-and-css/threads/869765/problem-with-site-layout# -->
+        .StatusHeader {background-attachment: scroll;
+            background-clip: border-box;
+            background-color: #1797C0;
+            background-origin: padding-box;
+            background-position: -209px -2px;
+            background-repeat: no-repeat;
+            background-size: auto;
+            border-bottom-color: white;
+            border-collapse: separate;
+            border-left-color: white;
+            border-right-color: white;
+            border-top-color: white;
+            color: white;
+            display: block;
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 0px;
+            margin-left: 0px;
+            margin-right: 0px;
+            margin-top: 0px;
+            padding-bottom: 4px;
+            padding-left: 4px;
+            padding-right: 10px;
+            padding-top: 4px;
+            box-sizing: border-box;
+            border-top-right-radius:4px;
+            border-bottom-right-radius:4px;
+            border-top-left-radius:4px;
+            border-bottom-left-radius:4px;}
+        .StatusContent {
+            background-color: #ffffff;
+            border-bottom-color: white;
+            border-collapse: separate;
+            border-left-color: white;
+            border-right-color: white;
+            border-top-color: white;
+            color: black;
+            display: block;
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 16px;
+            font-size: 12px;
+            font-weight: normal;
+            margin-bottom: 0px;
+            margin-left: 0px;
+            margin-right: 0px;
+            margin-top: 0px;
+            padding-bottom: 4px;
+            padding-left: 4px;
+            padding-right: 8px;
+            padding-top: 4px;
+            box-sizing: border-box;
+            border-top-right-radius:4px;
+            border-bottom-right-radius:4px;
+            border-top-left-radius:4px;
+            border-bottom-left-radius:4px;}  
+        .activeTab {background-color: #236FBD; color:white; background-image:none;  }
+        .inactiveTab { background-color: lightgrey; color:black; background-image:none; }
+        .bPageBlock {background-color:#d4eaf3!important; clear:both!important; text-align:left!important; padding: 0px!important; margin: 0px!important; }   
+    </style>
+    <apex:stylesheet value="{!$Resource.rkl__tipsycss}"/>
+    <apex:includeScript value="{!$Resource.rkme__jquery_1_8}"/>
+    <apex:includeScript value="{!$Resource.rkl__jquerytipsyjs}" />
+
+	<apex:variable id="iconCompleteURL" var="iconCompleteURL" value="/img/msg_icons/confirm24.png" />
+    <apex:variable id="iconIncompleteURL" var="iconIncompleteURL" value="/img/msg_icons/error24.png" />
+    
+    <div style="width:100%">
+        <apex:pageBlock id="givemewidth">
+            <span class="mainTable" style="width:100%"></span>
+            
+        </apex:pageBlock>
+    </div>
+    <script type='text/javascript'>
+    
+    
+    var winHeight = window.innerHeight;
+    
+    window.addEventListener('resize', function(event){
+        buildHeaderTable();
+    });
+    
+    function buildHeaderTable (){
+        //do Maths
+        var usableWidth = 	1.00	*	jQuery('.pbBody').width();//0.85
+        var leftTable = 	0.35	*	usableWidth;
+        var leftTableLabel = 0.40   *   leftTable;
+        var leftTableValue = 0.60   *   leftTable;
+        var centerTable = 	0.30	*	usableWidth;
+        var rightTable = 	0.35	*	usableWidth;
+        
+        
+        var mainTable = '<table width="'+usableWidth+'px"><tr><td width="'+leftTable+'px" align="left"><span class="FirstData"></span></td>';
+            mainTable+= '<td width="'+centerTable+'px" align="center"><span class="SecondData"></span></td>';
+            mainTable+= '<td width="'+rightTable+'px" align="center"><span class="ThirdData"></span></td></tr></table>';
+        
+        jQuery('.mainTable').html(mainTable);
+        
+        var tableData ={!tableJSON};
+        var tableHTML = '<table >';
+        var index = 0;
+        for(index=0; index<tableData.length; index++){
+            var rowHTML = '<tr ><td class="leftLabel'+index+'"></td><td class="leftValue'+index+'"></td></tr>';
+            tableHTML += rowHTML;
+        }
+        tableHTML += '</table>';
+        jQuery('.FirstData').html(tableHTML);
+        for(index=0; index<tableData.length; index++){
+            var rowLab = '<span style="padding-left:6px; width:'+ leftTableLabel +'px;" class="StatusHeader">'+ tableData[index].label +'</span>';
+            var leftLabelName = '.leftLabel'+index
+            jQuery(leftLabelName).html(rowLab);
+        }
+        for(index=0; index<tableData.length; index++){
+            var rowValue = tableData[index].value;
+            if(rowValue==null){
+                rowValue = '';
+            }
+            var leftValueName = '.leftValue'+index
+            var rowVal = '<span style="word-wrap: break-word; width:'+ leftTableValue +'px;" class="StatusContent">'+ rowValue +'</span>';
+            jQuery(leftValueName).html(rowVal);
+        }
+
+        var progressData ={!progressJSON};
+        var progressHTML = '<table><tr><td align="center"><span style="padding-left:6px; word-wrap: break-word;  width:'+centerTable+'px;" class="StatusHeader">'+ '{!header}' +'</span></td></tr><tr><td align="center"><table><tr>';
+        var progressHTMLClose = '</tr><tr><td colspan="'+progressData.length+'" class="hoverIcon"></td></tr></table></td></tr></table>';
+        for(index=0; index<progressData.length; index++){
+            //console.log(progressData[index]);   
+            var rowValue = progressData[index].value;
+            var goodORbad = false;
+            if(rowValue==null){
+                rowValue = '';
+            }
+            
+            if(progressData[index].fieldType==="good?"){
+                if(rowValue.toLowerCase()==='true' || rowValue.toLowerCase()==='yes' || rowValue.toLowerCase()==='n/a' || rowValue.toLowerCase()==='not applicable'){
+                    goodORbad = true;
+                }
+            }
+            if(progressData[index].fieldType.indexOf("populated?")!=-1){
+                if(rowValue.toLowerCase()!=''){
+                    goodORbad = true;
+                }
+            }
+            if(progressData[index].fieldType.indexOf("notZero?")!=-1){
+                if(rowValue!='' && parseInt(rowValue)!=0){
+                    goodORbad = true;
+                }
+            }
+            
+            var rowHTML = '';
+            if(goodORbad){
+                rowHTML = '<td>&nbsp;<img src="{!iconCompleteURL}" title="'+ progressData[index].label +'" alt="'+ progressData[index].label +'" class="progressHover"></img></td>';
+            }
+            else{
+                rowHTML = '<td>&nbsp;<img src="{!iconIncompleteURL}" title="'+ progressData[index].label +'" alt="'+ progressData[index].label +'" class="progressHover"></img></td>';
+            }
+            progressHTML += rowHTML;
+        }
+        progressHTML += progressHTMLClose;
+        jQuery('.SecondData').html(progressHTML);
+        
+        var groupData ={!groupJSON};
+        var groupHTML = '<table><tr>';
+        for(index=0; index<groupData.length; index++){
+            var rowValue = groupData[index].value;
+            if(rowValue==null){
+                rowValue = '';
+            }
+            var rowSubValue = groupData[index].subValue;
+            if(rowSubValue==null){
+                rowSubValue = '';
+            }
+            
+            var rowHTML = '<td><table><tr><td align="center" width="'+(centerTable/groupData.length)+'px"><span style="padding-left:6px;padding-right:6px; word-wrap: break-word;  width:inherit;" class="StatusHeader">'+ groupData[index].label +'</span></td></tr>'
+            rowHTML += '<tr><td align="center" width="'+(centerTable/groupData.length)+'px"><span style="word-wrap: break-word;  width:inherit;" class="StatusContent"><span style="font-size: 16pt;font-weight:bold; word-wrap: break-word;  width:inherit;">'+ rowValue +'</span><br/><span style=" word-wrap: break-word;  width:inherit;">'+ rowSubValue +'</span></span></td></tr></table></td>'
+            groupHTML += rowHTML;
+        }
+        groupHTML += '</tr></table>';
+        jQuery('.ThirdData').html(groupHTML);
+    }
+    
+    buildHeaderTable();
+
+    $(function($) {
+        $('.progressHover').tipsy();
+    });
+    
+    
+    </script>
+</apex:page>

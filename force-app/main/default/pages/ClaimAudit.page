@@ -1,0 +1,446 @@
+<!-- Mike Ulveling -->
+<apex:page controller="rkl.ClmAuditSearch" showHeader="false" sidebar="false" lightningStylesheets="true">
+    <apex:includeLightning />
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+    <head>
+        <!-- <apex:stylesheet value="{!URLFOR($Resource.rkl__aristo,'Aristo.css')}" /> -->
+        <apex:stylesheet value="{!$Resource.rkl__aristo_overrides}" />
+        <!-- the following block of scripts/styles is needed for the GenericSearch-based related lists: -->
+        <apex:includeScript value="{!$Resource.rkl__jquery_1_8}" />
+        <apex:includeScript value="https://code.jquery.com/ui/1.10.4/jquery-ui.js" />
+        <apex:includeScript value="{!$Resource.rkl__cnode}" />
+        <!--<apex:includeScript value="{!$Resource.rkl__gridLayout_js}" /> -->
+        <apex:includeScript value="{!$Resource.gridLayout_js_1}" />
+        <apex:includeScript value="{!$Resource.rkl__gs_filters_js}" />
+        <apex:includeScript value="{!$Resource.slds_paginator_js}" />
+        <apex:stylesheet value="{!$Resource.slds_paginator_css}" />
+        <apex:includeScript value="{!$Resource.rkl__json2_js}" />
+        <apex:stylesheet value="{!$Resource.rkl__gridLayout_css}" />
+        <apex:stylesheet value="{!$Resource.rkl__sortable_column_header_css}" />
+        <apex:stylesheet value="{!$Resource.rkl__gs_filters_css}" />
+        <!--<apex:stylesheet value="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/> 
+        <apex:stylesheet value="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+        <apex:includeScript value="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"/>
+        <apex:includeScript value="//cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.5/js/bootstrap-dialog.min.js"/> -->
+        <apex:slds />
+        <style>
+        /* allows GenericSearch (adjuster notes search tab) to employ managed-height logic for its search results: */
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            overflow-y: hidden;
+        }
+
+        div.rkgl-colset-head {
+            background-image: none;
+            /* undoing default styling from rkl__gridlayout*/
+        }
+
+        div.rkgl-colset-head.rkgl-locked-head {
+            box-shadow: none;
+        }
+
+        div.rkgl-colset.rkgl-locked {
+            box-shadow: none;
+        }
+
+        tr.rkgl-header>th {
+            background: rgb(235, 234, 234);
+        }
+
+        tr.rkgl-header>th .rkgl-head-outer .rkgl-left-inner-edge {
+            background: none;
+        }
+
+        tr.rkgl-header>th .rkgl-head-outer .rkgl-left-outer-edge {
+            background: #bfbfbf;
+        }
+
+        body .gs-search-btn {
+            margin-right: 0.5em;
+        }
+
+        .gs-inputs {
+            background: white;
+            /*rgb(235,234,234);*/
+        }
+
+        .gs-inputs table.filterElements .labelColumn {
+            white-space: nowrap;
+        }
+
+        table.filterElements .dataColumn.sampleParams label {
+            font-style: italic;
+            margin: 0 0.5em;
+        }
+
+        table.filterElements .dataColumn .fieldInputBlock {
+            width: 250px;
+            padding: 5px;
+        }
+
+        tr.rkgl-data.odd>td {
+            background-color: white;
+        }
+
+        tr.rkgl-data.even>td {
+            background-color: white;
+        }
+
+        body .gs-search-btn.gs-btn-hover {
+            background-image: unset;
+        }
+
+        div.rkgl-root {
+            border: unset;
+        }
+
+        div.fieldInputBlock>span.lookupInput {
+            display: block;
+        }
+
+        body.rk-standalone.slds-scope form[method=post] {
+            float: none;
+            min-width: auto;
+        }
+
+        body.rk-nested.slds-scope form[method=post] {
+            float: none;
+            min-width: auto;
+        }
+
+        .slds-scope .listViewport .bottomNav {
+            background: none;
+            border: none;
+        }
+
+        .slds-scope .selectionPaginator .listViewport .bottomNav {
+            border: none;
+        }
+
+        body.slds-scope .paginator .pageInput {
+            margin: 0 0.2rem;
+        }
+
+        body.slds-scope .paginator img.next,
+        body.slds-scope .paginator img.nextoff {
+            margin: 0 0.5rem 0 0;
+            vertical-align: middle !important;
+        }
+
+        body.slds-scope .paginator img.prev,
+        body.slds-scope .paginator img.prevoff {
+            margin: 0 0 0 0.5rem;
+            vertical-align: middle !important;
+        }
+
+        .slds-scope .paginator table {
+            width: auto;
+        }
+
+        body.slds-scope .paginator .selector {
+            right: 0;
+            left: auto;
+        }
+
+        .slds-scope .slds-button label {
+            margin-right: 0;
+            line-height: inherit;
+            font-size: inherit;
+        }
+        </style>
+    </head>
+
+    <body>
+        <div id="alert" class="slds-notify__content" style="display:none;">
+            <div class="slds-notify_container slds-is-relative">
+                <div class="slds-notify slds-notify_toast slds-theme_success" role="alert">
+                    <span class="slds-assistive-text">success</span>
+                    <span class="slds-icon_container slds-icon-utility-success slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+                        <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#success" />
+                        </svg>
+                    </span>
+                    <div class="slds-notify__content">
+                        <span id="auditText" />
+                    </div>
+                    <button id="closebtn" class="slds-button slds-button_icon slds-notify__close slds-button_icon-inverse" title="Close">
+                        <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#close" />
+                        </svg>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="slds-scope">
+            <apex:form id="f">
+                <div id="shell">
+                    <!-- the search filters and results can now be decoupled in the layout, yet they will retain their logical data connection (e.g. cross-component rerenders): -->
+                    <rkl:pGenericSearchFilters searchModel="{!searchModel}" initCollapsed="false" />
+                    <apex:outputPanel id="addToAudit">
+                        <apex:actionSupport event="onfocus" action="{!addToAudit}" rerender="{!searchModel.curryRerender}" />
+                    </apex:outputPanel>
+                    <script type="text/javascript">
+                    window.SLDS = true;
+
+                    (function($) {
+                        $("select").addClass("slds-select");
+                        $("input").addClass("slds-input");
+                        $('#closebtn').click(function() {
+                            $('#alert').css({ 'display': 'none' });
+                        });
+
+                        var filtersNode = $cnode.last,
+                            filtersApi = filtersNode.getComponentApi(),
+                            filtersElmts = filtersApi.elements,
+                            filtersScope = filtersElmts.$gsFilters[0];
+
+                        // define a custom "addToAudit" action method on the filters cnode component:
+                        $cnode.mixinApiProps(filtersNode, {
+                            actions: {
+                                addToAudit: {
+                                    binding: "{!$Component.addToAudit}",
+                                    parameters: {
+                                        auditSampleSet: function() {
+                                            var resultsNode = $cnode(".results"),
+                                                resultsApi = resultsNode.getComponentApi();
+                                            var sampleSet = resultsApi.elements.auditSampleSet;
+                                            return JSON.stringify(sampleSet ? sampleSet : []);
+                                        },
+
+                                        curryRerender: function() {
+                                            return [];
+                                        }
+                                    },
+
+                                    oncomplete: function() {
+                                        filtersElmts.$gsFilters.gsFiltersApi().refreshInputs();
+                                        if (window.opener && $.isFunction(window.opener.refreshRelatedListGrid)) {
+                                            window.opener.refreshRelatedListGrid();
+                                        }
+
+                                        var auditsCount = filtersElmts.newAuditsCount;
+                                        if (auditsCount > 0) {
+                                            window.setTimeout(function() {
+                                                /*$('#auditText').text('Added ' + auditsCount + ' claim' + (auditsCount === 1 ? '' : 's') + ' to audit');
+                                                $('#alert').css({ 'display': 'block' });
+                                                setTimeout(function() {
+                                                    $('#alert').css({ 'display': 'none' });
+                                                }, 5000);*/
+
+                                                if (SfdcApp && SfdcApp.projectOneNavigator && SfdcApp.projectOneNavigator.fireContainerEvent) {
+                                                    SfdcApp.projectOneNavigator.fireContainerEvent("force:refreshView", "");
+                                                }
+                                                window.location.reload();
+
+                                                // alert('Added ' + auditsCount + ' claim' + (auditsCount === 1 ? '' : 's') + ' to audit');
+                                            }, 0);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        // create an "Add to Audit" button, and bind its click event to the "addToAudit" action method:
+                        var $addBtn = $('<span class="slds-button slds-button_brand" style="cursor: pointer;"/>')
+                            .appendTo($("div.gs-btns"))
+                            .text("Add to Audit");
+                        filtersElmts.$addToAuditBtn = $addBtn;
+
+                        $addBtn
+                            .hover(
+                                function() {
+                                    $addBtn.addClass("gs-btn-hover");
+                                },
+                                function() {
+                                    $addBtn.removeClass("gs-btn-hover gs-btn-active");
+                                })
+                            .mousedown(function() {
+                                $addBtn.addClass("gs-btn-active");
+                            })
+                            .mouseup(function() {
+                                if ($addBtn.is(".gs-btn-hover.gs-btn-hover")) {
+                                    //_uiManager.onStartAction('Searching...');
+                                    $(".dateRangeContainer", filtersScope).each(function() {
+                                        $(this).rkDateRangeApi().beforeSave();
+                                    });
+                                    filtersApi.actions.addToAudit();
+                                }
+                                $addBtn.removeClass("gs-btn-active");
+                            });
+                        //PAL PT 45992 - Removed by JLB for RK User Experience (View is now embedded in tab instead of popup)
+                        /*var $closeBtn = $('<span class="slds-button slds-button_brand" style="cursor: pointer;" />')
+                            .appendTo($("div.gs-btns"))
+                            .text("Close");
+                        $closeBtn
+                            .hover(
+                                function() {
+                                    $closeBtn.addClass("gs-btn-hover");
+                                },
+                                function() {
+                                    $closeBtn.removeClass("gs-btn-hover gs-btn-active");
+                                })
+                            .mousedown(function() {
+                                $closeBtn.addClass("gs-btn-active");
+                            })
+                            .mouseup(function() {
+                                if ($closeBtn.is(".gs-btn-hover.gs-btn-hover")) {
+                                    var currentWindow = window.location;
+                                    var basePage = currentWindow.origin + '/';
+                                    var id = currentWindow.search;
+                                    id = id.split('?');
+                                    if (id.length == 2) {
+                                        id = id[1].split('&');
+                                    }
+                                    if (id.length > 1) {
+                                        for (var i = 0; i < id.length; i++) {
+                                            if (id[i].contains('id=')) {
+                                                id = id[i];
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (id.length == 1) {
+                                        id = id[0].split('=');
+                                        basePage += id[1];
+                                        window.location.href = basePage;
+                                    }
+                                }
+                                $closeBtn.removeClass("gs-btn-active");
+                            });*/
+                        // add in the "refreshAuditPropsAndFilters" visualforce id as an additional rerender to the search and addToAudit actions:
+                        filtersNode.offOnSelf("beforeAJAX.search beforeAJAX.addToAudit", function(evt, props) {
+                            props.parameters = props.parameters || {};
+                            props.parameters.curryRerender = String((props.parameters.curryRerender ? [String(props.parameters.curryRerender)] : [])
+                                .concat("{!$Component.refreshAuditPropsAndFilters}"));
+                        });
+                    })(jQuery);
+                    </script>
+                    <rkl:GenericSearchResults search="{!searchModel}" immediateSearch="true" fieldMetaDecorator="both" showPaginator="true">
+                        <script type="text/javascript">
+                        $cnode.last
+                            .offOnSelf("beforeDataLoad",
+                                function(evt, data) {
+                                    /*
+                                    var fieldMeta = data.context.fieldMeta;
+                                    for (var i=0; i < fieldMeta.length; i++) {
+                                        if (/Note_Text_Rich/i.test(fieldMeta[i].field)) {
+                                            data.cellRenderers = jQuery.extend({}, data.cellRenderers);
+                                            data.cellRenderers[i] = "html";
+                                        }
+                                    }
+                                    */
+                                });
+                        </script>
+                    </rkl:GenericSearchResults>
+                    <apex:outputPanel id="refreshAuditPropsAndFilters">
+                        <script type="text/javascript">
+                        (function($) {
+                            $("select").addClass("slds-select");
+                            $("input").addClass("slds-input");
+                            // load the sample set IDs from the prior search:
+                            var resultsNode = $cnode(".results"),
+                                resultsApi = resultsNode.getComponentApi(),
+                                auditSampleSet;
+
+                            var filtersNode = $cnode(".filters"),
+                                filtersApi = filtersNode.getComponentApi(),
+                                filtersElmts = filtersApi.elements;
+
+                            resultsApi.elements.auditSampleSet = auditSampleSet = {!auditSampleSetJSON };
+                            filtersElmts.newAuditsCount = {!newAuditsCount };
+
+                            // update the "Add to Audit" button with the # of records in the sample set:
+                            filtersElmts.$addToAuditBtn.find(".auditSize").remove();
+                            $('<span class="auditSize"/>').text(' (' + (auditSampleSet ? auditSampleSet.length : 0) + ')').appendTo(filtersElmts.$addToAuditBtn);
+
+                            // initialize the special sample limit, randomizer checkbox, and audit status filter:
+
+                            // cleanup from prior inits:
+                            $("table.filterElements tr.customFilters").remove();
+
+                            // create two custom unbound "filters": a row limiter and a claim-audit-status picklist:
+                            var $tbody = $("table.filterElements>tbody");
+                            var $tr = $('<tr class="customFilters"/>').appendTo($tbody);
+
+                            // === INPUT - SAMPLE SIZE ===
+                            // Label Column
+                            $('<td class="labelColumn">').append(
+                                $('<label/>').text("Sample Size")
+                            ).appendTo($tr);
+
+                            // Input Column
+                            var $sampleSizeColumn = $('<td class="dataColumn sampleParams">')
+                                .appendTo($tr);
+                            var $sampleSizeFilterPlaceholder = $('<div class="filterElementPlaceholder">')
+                                .appendTo($sampleSizeColumn);
+                            var $sampleSizeFilterElement = $('<span class="filterElement">')
+                                .appendTo($sampleSizeFilterPlaceholder);
+                            var $sampleSizeFilterElementContainer = $('<div/>')
+                                .appendTo($sampleSizeFilterElement);
+                            var $sampleSizeFieldInputBlock = $('<div class="fieldInputBlock">')
+                                .appendTo($sampleSizeFilterElementContainer);
+
+                            // Input Column - Actual Inputs
+                            $('<input class="slds-input" name="auditLimit" type="text" size="10"/>')
+                                .val({!searchModel.resultsLimit })
+                                .appendTo($sampleSizeFieldInputBlock);
+
+                            $('<label class="slds-checkbox__label" for="rk-randomizeSample"/>')
+                                .text("Random Sample:")
+                                .appendTo($sampleSizeFieldInputBlock);
+                            $('<input class="slds-checkbox" id="rk-randomizeSample" name="randomizeSample" type="checkbox"/>')
+                                .prop("checked", {!randomizeSample })
+                                .appendTo($sampleSizeFieldInputBlock);
+
+                            // === INPUT - AUDIT CONTROL STATUS ===
+                            // Label Column
+                            $('<td class="labelColumn">').append(
+                                $('<label/>').text("Audit Control Status")
+                            ).appendTo($tr);
+
+                            // Input Column
+                            var $auditColumn = $('<td class="dataColumn sampleParams">')
+                                .appendTo($tr);
+                            var $auditFilterPlaceholder = $('<div class="filterElementPlaceholder">')
+                                .appendTo($auditColumn);
+                            var $auditFilterElement = $('<span class="filterElement">')
+                                .appendTo($auditFilterPlaceholder);
+                            var $auditFilterElementContainer = $('<div/>')
+                                .appendTo($auditFilterElement);
+                            var $auditFieldInputBlock = $('<div class="fieldInputBlock">')
+                                .appendTo($auditFilterElementContainer);
+
+                            // Input Column - Actual Inputs
+                            var $auditSelect = $('<select class="slds-select" name="auditStatus" size="1"/>').appendTo($auditFieldInputBlock);
+                            $('<option value="includeAll">').text("Show All Claims").prop("selected", true).appendTo($auditSelect);
+                            $('<option value="excludeThis">').text("Hide Claims Under This Control").appendTo($auditSelect);
+                            $('<option value="excludeAny">').text("Hide Claims Under Any Control").appendTo($auditSelect);
+
+                            $auditSelect.val("{!auditStatus}");
+                        })(jQuery);
+                        </script>
+                    </apex:outputPanel>
+                    <!-- setup this grid with a managed height strategy: -->
+                    <script type="text/javascript">
+                    (function($) {
+                        $cnode(".results").getComponentApi().elements.gridApi.setHeight("managed", {
+                            shell: function() {
+                                return $("#shell").outerHeight();
+                            }
+                        });
+                    })(jQuery);
+                    </script>
+                </div>
+            </apex:form>
+        </div>
+    </body>
+
+    </html>
+</apex:page>

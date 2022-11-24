@@ -1,0 +1,18 @@
+<aura:component >
+    <aura:attribute name="status" type="Object" access="Public"/>
+    <aura:attribute name="header" type="Aura.Component" access="Public"/>
+    <aura:attribute name="content" type="Aura.Component" access="Public"/>
+    <aura:attribute name="optionSelected" type="Boolean"/>
+    <aura:attribute name="recordId" type="Id"/>
+    <aura:attribute name="sObjectName" type="String" />
+    
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    
+    <lightning:overlayLibrary aura:id="overlays"/>   
+    <div aura:id="modalFooter">
+        <lightning:button label="Cancel" variant="neutral"
+                          onclick="{!c.handleCancel}"/>
+        <lightning:button label="View Abstract" variant="brand"
+                          onclick="{!c.handleExport}"/>
+    </div>
+</aura:component>

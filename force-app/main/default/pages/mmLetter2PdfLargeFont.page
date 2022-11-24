@@ -1,0 +1,23 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 03/25/2013
+           ******************************************************************* -->
+<apex:page standardController="Letter__c" standardStylesheets="false" showHeader="false" renderAs="pdf">
+   <head>
+<style type="text/css">
+    @page {
+    @page{
+    margin:0.3in;
+    }
+    
+    body { 
+    font-family: Arial Unicode MS;
+    font-size: 11pt;
+    }
+  
+</style>
+</head>
+<body >
+<apex:image id="theImage" value="{!$Resource.rkLogo2}" width="170" height="43"  rendered="{!IF(Letter__c.Letter_Template__c =='custom'||Letter__c.Letter_Template__c =='text',True,False)}" />
+  <apex:outputfield value="{!Letter__c.Letter_Text_Body__c}"  />
+</body>
+</apex:page>

@@ -1,0 +1,42 @@
+<design:component label="Hierarchy Tree Selector">
+	<design:attribute
+		name="sObjectName"
+		label="SObject API Name"
+		default="rkl__RK_Hierarchy_Node__c"
+		description="API Name of the SObject to display in this tree"/>
+	<design:attribute
+		name="parentField"
+		label="Parent Lookup API Name"
+		default="rkl__Parent_Node__c"
+		description="API Name of Lookup Field to Parent"/>
+	<design:attribute
+		name="codeField"
+		label="Node Code Field API Name"
+		default="rkl__Node_Code__c"
+		description="API Name of Node Code Field"/>
+	<design:attribute
+		name="keyField"
+		label="Node Key Field API Name"
+		default="rkl__Node_Key__c"
+		description="API Name of Node Key Field"/>
+	<design:attribute
+		name="nameField"
+		label="Node Name Field API Name"
+		default="rkl__Node_Name__c"
+		description="API Name of Node Name Field"/>
+	<design:attribute
+		name="parentKeyField"
+		label="Parent Key Field API Name"
+		default="rkl__Parent_Node_Key__c"
+		description="API Name of Parent Node Key Field"/>
+	<design:attribute
+		name="levelsToExpand"
+		label="Levels to Expand"
+		default="3"
+		description="Number of levels to auto-expand upon opening the tree"/>
+	<!-- DEPRECATED -->
+	<design:attribute
+		name="parentFieldLookup"
+		label="DEPRECATED"
+		description="DEPRECATED"/>
+</design:component>

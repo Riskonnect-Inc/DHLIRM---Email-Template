@@ -1,0 +1,21 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 03/25/2013
+           ******************************************************************* -->
+<apex:page tabstyle="rkl__RK_Hierarchy_Node__c" showHeader="true" sidebar="false">
+    
+    <table width="100%" cellspacing="12" cellpadding="2" border="0">
+    <tr>
+        <td>
+            <h1>Locations Map</h1>
+        </td>
+    </tr>
+    <tr>
+        <td width="25%">
+            <apex:enhancedList id="mylist" type="rkl__Hierarchy_Node__c"  height="500" customizable="true" />
+        </td>
+        <td width="75%">
+            <apex:include pageName="MapsTest" />
+        </td>
+    </tr>
+    </table>
+</apex:page>

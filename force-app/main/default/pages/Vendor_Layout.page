@@ -1,0 +1,59 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 06/04/2013
+           ******************************************************************* -->
+<apex:page standardController="Vendor__c"    showHeader="true"  tabStyle="Vendor__c" title="{!Vendor__c.Name} " showChat="false"  >
+  <apex:stylesheet value="/sCSS/21.0/sprites/1297816277000/Theme3/default/gc/versioning.css" />   
+ 
+    
+    <apex:outputText style="font-style:italic;font-size:50%"  escape="true" value="<< "/> <apex:outputLink value="/apex/CertificatesTab" id="theLink">Back to Certificates tab</apex:outputLink>
+
+
+<apex:variable var="renderTabs" value="{!if($Setup.RMISPersonalSettings__c.Use_Tabbed_Interface__c == TRUE,TRUE,FALSE)}" /> 
+<apex:variable var="renderDetailSection" value="{!if($Setup.RMISPersonalSettings__c.Use_Tabbed_Interface__c == TRUE,FALSE,TRUE)}" /> 
+
+<chatter:feedWithFollowers rendered="{!$Setup.ChatterStatus__c.Vendor_Chatter__c}" entityId="{!Vendor__c.id}"/>
+<apex:detail relatedList="true" title="true" inlineEdit="true" rendered="{!renderDetailSection}"/>
+
+
+
+   <apex:tabPanel switchType="client" selectedTab="tabdetails"  width="1200px" id="TabPanel" tabClass="activeTab"  inactiveTabClass="inactiveTab" rendered="{!renderTabs}">   
+     
+      <apex:tab label="{!Vendor__c.Name} " name="Details" id="tabdetails" style="background-color: white; font-size:9pt;" >
+         <apex:detail relatedList="false" title="true"   inlineEdit="true"/>
+      </apex:tab>
+           
+       <apex:tab label="Certificate Requirements"  name="CertsReq" id="tabCertReq">            
+        <apex:relatedList list="Certificate_Requirements__r"  />
+      </apex:tab>
+       
+         <apex:tab label="Certificates"  name="Certs" id="tabCerts">            
+        <apex:relatedList list="Certificates__r"  />
+      </apex:tab>
+         
+         <apex:tab label="Notes and Attachments" name="NotesAndAttachments" id="tabNoteAtt">
+         <apex:relatedList subject="{!Vendor__c}" list="NotesAndAttachments" />
+      </apex:tab> 
+               
+     <!---These tabs are being commented out to hide them. They can be added by moving then out of the commented area.
+         
+       
+        
+      <apex:tab label="Tasks"  name="Tasks" id="tabTasks">            
+        <apex:relatedList title="Open Tasks" subject="{!Vendor__c}" list="OpenActivities" />
+         <apex:relatedList title="Closed Tasks" subject="{!Vendor__c}" list="ActivityHistories" />
+      </apex:tab>      
+    
+        
+      
+             
+             
+         
+      
+ 
+   <apex:tab label="History"  name="History" id="tabHistory">
+         <c:GenericHistoryComponent recordLimit="50" myObject="{!Vendor__c}"/>
+   </apex:tab>
+ --->
+ 
+   </apex:tabPanel>
+</apex:page>

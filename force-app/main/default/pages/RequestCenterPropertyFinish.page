@@ -1,0 +1,49 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 4/8/2014
+           ******************************************************************* -->
+<apex:page showHeader="false" sidebar="false" standardStylesheets="true" lightningStylesheets="true">
+ <apex:stylesheet value="{!$Resource.WrapperCSSNew}" />
+  
+   <body>
+     <div class="container">
+      <div class="riskonnect-logo">
+        <apex:image id="RKlogo" value="{!$Resource.RiskonnectLogoMedium}" width="200" height="70" style="display:block;"/>
+      </div>
+        
+         <div id ="content">
+         <apex:form >
+           <apex:commandLink value="Return Home" action="{!URLFOR('/apex/requestcenter')}" >
+           </apex:commandlink>
+         </apex:form>
+
+    <br/>
+    <br/>
+  <!--<la>Thank you for your request.  It has been filed with the Risk Management Department and will be reviewed as soon as possible. They will <br/>contact you with any questions.</la> -->
+  <br/>
+  <br/>
+            <apex:form > 
+            <apex:pageBlock > 
+            <la>Thank you for your request.  It has been filed with the Risk Management Department and will be reviewed as soon as possible. They will <br/>contact you with any questions.</la> 
+             <apex:pageBlockButtons location="Bottom">
+                 <apex:commandButton action="{!URLFOR('/apex/requestcenter')}" value="Finish"/>
+             </apex:pageBlockButtons>
+             </apex:pageBlock>
+             </apex:form>
+  
+    </div>
+    </div>
+    </body>
+         
+  
+
+    
+        
+                                  
+  
+ <!--<apex:outputLink value="https://c.na15.visual.force.com/apex/requestcenter" id="theLink">Return to Request Center</apex:outputLink>
+
+ <BR/> <BR/> <BR/>
+ Currently this link takes you to the Request Center tab. The link needs to be updated with your Sites Home page
+  <BR/> <BR/> <BR/>
+ This VF force page needs updating>> RequestCenterContractFinish **************** --->
+</apex:page>

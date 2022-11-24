@@ -1,0 +1,146 @@
+<apex:page standardController="Patient_Satisfaction__c" extensions="PatientFeedbackNotesDisplayController" showHeader="false" sidebar="false" standardStylesheets="true">
+
+<html> 
+    <head>
+        <!-- Visualforce styling hacks: -->
+        <style type="text/css">
+            #top_div {
+                margin:10px 10px 0 10px;
+            }
+        
+            body .bPageBlock .pbTitle {
+                width:80%;
+            }
+            
+            body .bPageBlock .pbBottomButtons .pbTitle {
+                width:30%;
+            }
+            
+            body .pbBody .requiredLegend {
+                display:none;
+            }
+            
+            body .bPageBlock .detailList .labelCol {
+                width:30%;
+                text-align:left;
+            }
+            
+            body .bPageBlock .detailList .labelCol.shortRow {
+                vertical-align:middle;
+            }
+            
+            body #top_div .bPageBlock.bEditBlock .detailList .topDivider {
+                border-top:solid #e9e9e9 1px;
+                padding-top:4px;
+                padding-bottom:4px;
+            }
+            
+            body #top_div .checkboxDataCell input[type="checkbox"] {
+                margin:0;
+            }
+            
+            body #top_div .radioDataCell label {
+                margin-right:5px;
+            }
+            
+            body #top_div .radioDataCell table {
+                border-spacing:0;
+            }
+            
+            body #top_div .radioDataCell input[type="radio"] {
+                margin: 0 3px 0 0;
+            }
+        </style>
+        
+        <script type="text/javascript">
+            var _dialogWidth = "{!dialogWindowWidth}";
+            var _dialogHeight = "{!dialogWindowHeight}";
+            if (dojo.render.html.ie){
+                window.resizeTo(_dialogWidth, _dialogHeight);
+            }
+            else{
+                window.outerWidth = _dialogWidth;
+                window.outerHeight = _dialogHeight;
+            }
+        </script>
+    </head>
+    
+    <div id="top_div" >
+    <apex:form id="criteria_form" target="{!searchSettings.Search_Results_Target__c}">   
+    <apex:pageBlock id="criteria_block" title="Patient Feedback #: {!Patient_Satisfaction__c.Name}" mode="edit">
+    <apex:pageMessages />
+    <apex:pageBlockSection id="criteria_section" title="Select filters for patient feedback notes:" columns="1" collapsible="false">
+         
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Note Categories: "/>
+                <apex:selectList size="4" multiselect="true" value="{!availableValue}">  
+                    <apex:selectOptions value="{!availableValues}" /> 
+                </apex:selectList>       
+            </apex:pageBlockSectionItem> 
+
+            <!-- <apex:pageBlockSectionItem labelStyleClass="topDivider" dataStyleClass="topDivider" >
+                <apex:outputLabel value="Note Author: "/>
+                <apex:selectList size="4" multiselect="true" value="{!taskStatus}">  
+                    <apex:selectOptions value="{!status}" /> 
+                </apex:selectList>       
+            </apex:pageBlockSectionItem> -->
+            
+       <!--    <apex:pageBlockSectionItem labelStyleClass="shortRow topDivider" dataStyleClass="topDivider" >
+                <apex:outputLabel value="Containing Text: "/>
+                <apex:inputText size="30" maxlength="100" value="{!containsSearch}" />   
+            </apex:pageBlockSectionItem>   -->
+             
+            <apex:pageBlockSectionItem labelStyleClass="shortRow topDivider" dataStyleClass="topDivider" >
+                <apex:outputLabel value="Created Date: "/>
+                <apex:selectList size="1" multiselect="false" value="{!dateCreated}">    
+                    <apex:selectOptions value="{!created}" />   
+                </apex:selectList>   
+            </apex:pageBlockSectionItem>
+              
+       <!--     <apex:pageBlockSectionItem labelStyleClass="shortRow topDivider" dataStyleClass="topDivider" >
+                <apex:outputLabel value="Due Date: "/>
+                <apex:selectList size="1" multiselect="false" value="{!dateDue}">    
+                    <apex:selectOptions value="{!due}" />  
+                </apex:selectList>       
+            </apex:pageBlockSectionItem>     -->
+            
+            <apex:pageBlockSectionItem labelStyleClass="shortRow topDivider" dataStyleClass="topDivider" >
+                <apex:outputLabel value="Number of Notes: "/>
+                <apex:selectList size="1" multiselect="false" value="{!notesCount}">     
+                    <apex:selectOptions value="{!count}" />  
+                </apex:selectList> 
+            </apex:pageBlockSectionItem>
+            
+        <!--    <apex:pageBlockSectionItem labelStyleClass="shortRow topDivider" dataStyleClass="topDivider checkboxDataCell" >
+                <apex:outputLabel value="Has Attachments: "/>
+                <apex:inputCheckbox value="{!attachments}" id="attachments"/>
+            </apex:pageBlockSectionItem>     -->
+            
+            <apex:pageBlockSectionItem id="sort_item" labelStyleClass="shortRow topDivider" dataStyleClass="topDivider radioDataCell" >
+                <apex:outputLabel value="Sort By Date Created: "/>
+                <apex:selectRadio id="sort_radio_input" layout="lineDirection"  value="{!createdDateSort}">  
+                    <apex:selectOptions value="{!createdDateSortValues}" />  
+                </apex:selectRadio>  
+            </apex:pageBlockSectionItem>
+        
+            <apex:pageBlockSectionItem id="display_format_item" labelStyleClass="shortRow topDivider" dataStyleClass="topDivider radioDataCell" >
+                <apex:outputLabel value="View Results As: "/>
+                <apex:selectRadio id="display_format_radio_input" layout="lineDirection"  value="{!displayFormat}">  
+                    <apex:selectOptions value="{!displayFormatValues}" />  
+                </apex:selectRadio>  
+            </apex:pageBlockSectionItem>
+        
+    </apex:pageBlockSection>
+        <apex:pageBlockButtons location="bottom">
+        <apex:commandButton value="Submit" action="{!run}" /> 
+        
+        <apex:commandButton value="Cancel" onclick="window.close();"/>                     
+    </apex:pageBlockButtons> 
+    
+    </apex:pageBlock>  
+ 
+    </apex:form>
+    </div>
+    
+</html>
+</apex:page>

@@ -1,0 +1,23 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 04/05/2016
+           ******************************************************************* -->
+<apex:page controller="scpManualPickupController">
+    <apex:form id="f">
+        <apex:pageBlock rendered="{!NOT(fired)}">
+            <apex:pageBlockSection >
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Apply Date" for="apply_date"/>
+                    <apex:inputField value="{!holder.First_Payment__c}" id="apply_date"/> 
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Fire Payments Pickup" action="{!fireBatch}" rerender="f" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        
+        <apex:pageBlock rendered="{!fired}">
+            <div>The payments conversion process has been dispatched. Please wait a few minutes for it to complete.</div>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

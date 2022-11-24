@@ -1,0 +1,56 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   06/04/2013
+           ******************************************************************* -->
+<apex:page standardController="Certificate_Requirement__c"    showHeader="true"  tabStyle="Certificate_Requirement__c" title="{!Certificate_Requirement__c.Name} " showChat="false"  >
+  <apex:stylesheet value="/sCSS/21.0/sprites/1297816277000/Theme3/default/gc/versioning.css" />   
+ 
+    
+    
+<apex:variable var="renderTabs" value="{!if($Setup.RMISPersonalSettings__c.Use_Tabbed_Interface__c == TRUE,TRUE,FALSE)}" /> 
+<apex:variable var="renderDetailSection" value="{!if($Setup.RMISPersonalSettings__c.Use_Tabbed_Interface__c == TRUE,FALSE,TRUE)}" /> 
+
+<chatter:feedWithFollowers rendered="{!$Setup.ChatterStatus__c.Cert_Req_Chatter__c}" entityId="{!Certificate_Requirement__c.id}"/>
+<apex:detail relatedList="true" title="true" inlineEdit="true" rendered="{!renderDetailSection}"/>
+
+
+
+   <apex:tabPanel switchType="client" selectedTab="tabdetails"  width="1200px" id="TabPanel" tabClass="activeTab"  inactiveTabClass="inactiveTab" rendered="{!renderTabs}">   
+     
+      <apex:tab label="{!Certificate_Requirement__c.Name} " name="Details" id="tabdetails" style="background-color: white; font-size:9pt;" >
+         <apex:detail relatedList="false" title="true"   inlineEdit="true"/>
+      </apex:tab>
+       
+           
+       <apex:tab label="Certificates"  name="Certs" id="tabCerts">            
+        <apex:relatedList list="Certificates1__r"  />
+      </apex:tab> 
+         
+         <apex:tab label="Notes and Attachments" name="NotesAndAttachments" id="tabNoteAtt">
+         <apex:relatedList subject="{!Certificate_Requirement__c}" list="NotesAndAttachments" />
+      </apex:tab>  
+               
+     <!---These tabs are being commented out to hide them. They can be added by moving then out of the commented area.
+         
+       
+        
+            
+   <apex:tab label="Tasks"  name="Tasks" id="tabTasks">            
+        <apex:relatedList title="Open Tasks" subject="{!Certificate_Requirement__c}" list="OpenActivities" />
+         <apex:relatedList title="Closed Tasks" subject="{!Certificate_Requirement__c}" list="ActivityHistories" />
+      </apex:tab>
+      
+             
+             
+       
+
+      
+ 
+   <apex:tab label="History"  name="History" id="tabHistory">
+         <c:GenericHistoryComponent recordLimit="50" myObject="{!Certificate_Requirement__c}"/>
+   </apex:tab>
+ 
+   </apex:tab>
+ --->
+ 
+   </apex:tabPanel>
+</apex:page>

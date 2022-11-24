@@ -1,0 +1,174 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 6/1/2015
+           ******************************************************************* -->
+<apex:page controller="PropertyPortalLandingController" showHeader="false" sidebar="false" standardStylesheets="false" cache="false">
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+        <apex:includeScript value="{!$Resource.rkl__jquery1_8_3}"/>
+        <style>
+            #NewBtn {
+                margin-top: 20px;
+            }
+            
+            #instructions {
+                margin: 10px;
+            }
+        </style>
+        <script type="text/javascript">
+            function userEmail() {
+                return "{!userEmail}";
+            }
+            ;
+            (function($) {$(function() {
+                "use strict";
+                
+                var total = 0;
+                var offset = 0;
+                var pageSize = 10;
+                
+                var intakes = $('#intakes').children('tbody');
+                var pagerTop = $('#pagerTop');
+                var pagerBtm = $('#pagerBtm');
+                
+                /*var toDateString = function(millis) {
+                    if(millis) {
+                        var date = new Date(millis);
+                        if(date) {
+                            var year = date.getUTCFullYear();
+                            var day = date.getUTCDate();
+                            if(day < 10) {
+                                day = '0' + day;
+                            }
+                            var month = date.getUTCMonth() + 1;
+                            if(month < 10) {
+                                month = '0' + month;
+                            }
+                            return year + '-' + month + '-' + day;
+                        }
+                    }
+                    return '';
+                };*/
+                
+                var updateToOffset = function(newOffset) {
+                    PropertyPortalLandingController.getRecords(
+                        newOffset, 
+                        pageSize, 
+                        userEmail(),
+                        function(resp) {
+                            if(resp) {
+                                var oldOffset = offset;
+                                offset = resp.offset
+                                total = resp.total;
+                                
+                                intakes.empty();
+                                pagerTop.empty();
+                                pagerBtm.empty();
+                                
+                                if(resp.records.length === 0) {
+                                    $('<tr><td colspan="6">No properties available for values collection.</td></tr>').appendTo(intakes);
+                                    return;
+                                }
+                                
+                                var addCell = function($row, content) {
+                                    if(!content) {
+                                        content = '';
+                                    }
+                                    var $cell = $('<td></td>').append(content).appendTo($row);
+                                }
+                                $.each(resp.records, function(i, rec) {
+                                    var $row = $('<tr></tr>').appendTo(intakes);
+                                    if(rec.PVCStatus != 'Completed'){
+                                    addCell($row, 
+                                        $('<a>Renew</a>').attr(
+                                            'href',
+                                            '{!$Site.BaseSecureUrl}/Property_Portal?propertyId=' + rec.id+'&&userEmail={!userEmail}'));
+                                    }else{
+                                    addCell($row, 
+                                        $("<font color='grey'>Renew</font>"));
+                                    }
+                                    addCell($row, rec.propertyName);
+                                    addCell($row, rec.addressLine1);
+                                    addCell($row, rec.addressLine2); 
+                                    addCell($row, rec.city);
+                                    addCell($row, rec.state);
+                                    addCell($row, rec.postalCode); 
+                                    addCell($row, rec.country);
+                                    addCell($row, rec.PVCStatus);
+                                });
+                                 
+                                var pages = Math.ceil(total / pageSize);
+                                var addPage = function(pg, active) {
+                                    var item = $('<li></li>');
+                                    if(active) {
+                                        item.addClass('active');
+                                    }
+                                    item.append(pg);
+                                    item.appendTo(pagerTop);
+                                    item.clone(true).appendTo(pagerBtm);
+                                };
+                                addPage($('<a href="#">&laquo;</a>')
+                                    .click(function() {
+                                        if(offset - pageSize >= 0) {
+                                            updateToOffset(offset - pageSize);
+                                        }
+                                    })
+                                );
+                                $.each(new Array(pages), function(p, o) {
+                                    var pg = $('<a>' + (p+1) + '</a>')
+                                        .attr('href', '#')
+                                        .click(function() {
+                                            updateToOffset(pageSize * p);
+                                        })
+                                    addPage(pg, (offset === (pageSize * p)));
+                                });
+                                addPage($('<a href="#">&raquo;</a>')
+                                    .click(function() {
+                                        if(offset + pageSize <= total) {
+                                            updateToOffset(offset + pageSize);
+                                        }
+                                    })
+                                );
+                            }
+                        }, 
+                        {buffer: false, escape: true, timeout: 5000}
+                    );
+                };
+                updateToOffset(offset);
+            })})(jQuery);
+        </script>
+    </head>
+    <body>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-xs-6 col-md-4'>
+                    <img height='75px' src="{!$Resource.RKLogo3}" />
+                </div>
+                <div class='col-xs-6 col-md-4 text-center'>
+                    <a id='NewBtn' class='btn btn-default btn-primary' href='{!$Site.BaseSecureUrl}/CreateNewProperty?userEmail={!userEmail}'  >Create a new property</a>
+                </div>
+            </div>
+            <div>
+            </div>
+            <div id="instructions">
+                <h5>Below is the list of your properties ready for value collection.</h5>
+            </div>
+            <ul id="pagerTop" class="pagination"></ul>
+            <table id="intakes" class='table table-striped'>
+                <thead>
+                    <th></th> <!-- Edit Link -->
+                    <th>Property Name</th>
+                    <th>Address Line 1</th>
+                    <th>Address Line 2</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Postal Code</th>
+                    <th>Country</th>
+                    <th>Property Value Status</th>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <ul id="pagerBtm" class="pagination"></ul>
+        </div>
+    </body>
+</apex:page>

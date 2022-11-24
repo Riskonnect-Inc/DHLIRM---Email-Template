@@ -1,0 +1,128 @@
+<!-- Component that supports Standard Set Controllers to provide paging functionality for Data Tables -->
+<apex:component controller="SSCPaginationController">
+    <apex:attribute name="setController" description="StandardSetController to use for pagination controls"
+                    type="ApexPages.StandardSetController" required="true" assignTo="{!setControl}"/>
+    <apex:attribute name="maxRecords" description="The number corresponding to a query limit to trigger the additional records, +, symbol"
+                    type="Integer" required="false" assignTo="{!maxRecordSize}" />
+    <apex:attribute name="rerender" type="string" description="A list of elements to rerender after a paging command is executed" />
+
+    <apex:outputPanel layout="block" styleClass="listViewport" id="pagePanel">
+        <div class="bottomNav">
+            <div class="paginator">
+                <apex:panelGrid id="gridPaging" columns="3" width="100%" columnclasses="left, center, right">
+                    <apex:panelGroup >
+                        <span class="selectorTarget">
+                            <strong>
+                                <apex:outputText value="{0}-{1} of {2}{3}" >
+                                    <apex:param value="{!lowRecShowing}" />
+                                    <apex:param value="{!upperRecShowing}" />
+                                    <apex:param value="{!recordCount}" />
+                                    <apex:param value="{!moreRecs}" />
+                                </apex:outputText>
+                            </strong>
+                        </span>
+                        <span>&nbsp;&nbsp;</span>
+                        <apex:actionStatus id="statusPaging">
+                            <apex:facet name="start">
+                                <img src="/img/loading.gif" height="14px" width="14px"/>
+                            </apex:facet>
+                            
+                            <apex:facet name="stop">
+                                <img src="/img/s.gif" height="14px" width="14px"/>
+                            </apex:facet>
+                        </apex:actionStatus>
+                    </apex:panelGroup>
+                    <apex:panelGroup >
+                        <span class="prevNextLinks">
+                            <span class="prevNext">
+                                <apex:commandLink id="linkMoveFirst"
+                                                  immediate="true"
+                                                  status="statusPaging"
+                                                  action="{!doFirst}"
+                                                  rerender="{!rerender}, pagePanel"
+                                                  rendered="{!hasPrevious}">
+                                    
+                                    <img src="/s.gif" title="First Page" alt="First Page" class="first" />
+                                </apex:commandLink>
+                                
+                                <apex:outputPanel layout="none" rendered="{!NOT(hasPrevious)}">                           
+                                    <apex:image url="/s.gif" title="First Page" alt="FirstPage" styleclass="firstoff" />
+                                </apex:outputPanel>
+                            </span>
+                            
+                            <span class="prevNext">
+                                <apex:commandLink id="linkMovePrev"
+                                                  immediate="true"
+                                                  title="Previous"
+                                                  status="statusPaging"
+                                                  action="{!doPrevious}"
+                                                  rerender="{!rerender}, pagePanel"
+                                                  rendered="{!hasPrevious}">
+                                    
+                                    <img src="/s.gif" title="Previous" alt="Previous" class="prev" />
+                                    <span>Previous</span>
+                                </apex:commandLink>
+                                
+                                <apex:outputPanel layout="none"
+                                                  rendered="{!NOT(hasPrevious)}">
+                                    
+                                    <apex:image url="/s.gif" title="Previous" alt="Previous" styleclass="prevoff" />
+                                    <span>Previous</span>
+                                </apex:outputPanel>
+                            </span>
+                            
+                            <span class="prevNext">
+                                <apex:commandLink id="linkMoveNext"
+                                                  immediate="true"
+                                                  title="Next"
+                                                  status="statusPaging"
+                                                  action="{!doNext}"
+                                                  rerender="{!rerender}, pagePanel"
+                                                  rendered="{!hasNext}">
+                                    
+                                    <span>Next</span>
+                                    <img src="/s.gif" title="Next" alt="Next" class="next" />
+                                </apex:commandLink>
+                                
+                                <apex:outputPanel layout="none" rendered="{!NOT(hasNext)}">
+                                    <apex:image url="/s.gif" title="Next" alt="{Next}" styleclass="nextoff" />
+                                    <span>Next</span>
+                                </apex:outputPanel>
+                            </span>
+                            
+                            <span class="prevNext">
+                                <apex:commandLink id="linkMoveLast"
+                                                  immediate="true"
+                                                  status="statusPaging"
+                                                  action="{!doLast}"
+                                                  rerender="{!rerender}, pagePanel"
+                                                  rendered="{!hasNext}">
+                                    
+                                    <img src="/s.gif" title="Last Page" alt="Last Page" class="last" />
+                                </apex:commandLink>
+                                
+                                <apex:outputPanel layout="none" rendered="{!NOT(hasNext)}">
+                                    
+                                    <apex:image url="/s.gif" title="Last Page" alt="Last Page" styleclass="lastoff" />
+                                </apex:outputPanel>
+                            </span>
+                        </span>
+                    </apex:panelGroup>
+                    
+                    <apex:panelGroup >
+                        <span class="selectorTarget">
+                            <strong>
+                                <apex:outputText value="Page {0} of {1}" rendered="{!totalPages!=0}">
+                                    <apex:param value="{!pageNumber}" />
+                                    <apex:param value="{!totalPages}" />
+                                </apex:outputText>
+                            </strong>
+                        </span>
+                    </apex:panelGroup>
+                    
+                </apex:panelGrid>
+            </div>
+        </div>
+    </apex:outputPanel>
+ 
+</apex:component>

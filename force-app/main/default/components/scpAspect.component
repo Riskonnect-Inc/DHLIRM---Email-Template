@@ -1,0 +1,223 @@
+<!-- Mike Ulveling -->
+<apex:component access="global" layout="none" allowDML="true">
+    <apex:attribute name="path" type="String" required="false" default="'#root'" description="the path to this component's parent cnode" access="global" />
+    <apex:attribute name="scpAspect" type="ScheduledPaymentsAspect" required="false" description="the data model for either a Primary or ThirdParty payee" access="global" />
+    <!-- <apex:attribute name="ident" type="String" required="true" description="use the sObject ID of this Primary or ThirdParty payee" access="global" /> -->
+    
+    <!-- e.g. "thirdParty a391t0000000MkiIAA", "primary a391t0000000MkiIAA" -->
+    <!-- NOTE: I'd use apex:variable's like this if they actually worked worth a goddamn -->
+    <!-- <apex:variable var="ident" value="scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}" />-->
+    
+    <div id="{!scpAspect.dataObject.Id}">
+        <div class="scp-blocking"></div>
+        
+        <script type="text/javascript">
+            $cnode({!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}');
+        </script>
+        
+        <apex:componentBody />
+        
+        <!-- the gridLayout shell and init script: -->
+        <apex:outputPanel layout="block" id="gridShell" styleClass="scpAspect body" />
+        <script type="text/javascript">
+            (function($) {
+                var cnode = $cnode({!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}'),
+                    compApi = cnode.getComponentApi(),
+                    grid = $(document.getElementById("{!$Component.gridShell}"))
+                        .gridLayout(rk.scp.aspectCols, rk.scp.gridConfig),
+                    gridApi = grid.gridLayoutApi();
+                
+                $cnode({!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}', {
+                    elements: $.extend({}, rk.scp.aspectApiElementMixins, {
+                        node: cnode,
+                        api: compApi,
+                        aspectId: "{!scpAspect.dataObject.Id}",
+                        typeName: "{!scpAspect.typeName}",
+                        fieldSegmentRange: [{!scpAspect.absFieldIndexStart}, {!scpAspect.absFieldIndexEnd}],
+                        top: "{!scpAspect.dataObject.Id}", 
+                        gridApi: gridApi,
+                        dataLoader: "{!$Component.dataLoader}"
+                    })
+                });
+                
+                // setup logic for the aspect body:
+                cnode.offOnSelf("dataLoad", 
+                    function(evt) {
+                        var gridApi = compApi.elements.gridApi;
+                        
+                        rk.scp.formatAspectBody(gridApi);
+                        if (cnode.is(".primary")) {
+                            rk.scp.manageSchedInterval(gridApi, 
+                                ["Payment_Interval__c", "First_Payment__c", "Final_Payment__c", "Number_of_Payments__c"]);
+                        } else if (cnode.is(".thirdParty")) {
+                            rk.scp.managePctAmount(gridApi,
+                                ["Amount__c", "Percentage__c"]);
+                        }
+                    });
+                
+            })(jQuery);
+        </script>
+        
+        <!-- the gridLayout dataLoader script, this will trigger "beforeDataLoad" and "dataLoad" events for the body grid: -->
+        <apex:outputPanel id="dataLoader" layout="block">
+            <script type="text/javascript">
+                (function($) {
+                    rk.scp.actionFailure = {!scpAspect.hasFailure};
+                    
+                    var cnode = $cnode({!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}'),
+                        bodyGridApi = cnode.getComponentApi().elements.gridApi;
+                    
+                    var data = {!scpAspect.bodyGridJSON};
+                    
+                    bodyGridApi.setHeight("auto");
+                    cnode.triggerBoth("beforeDataLoad")
+                    bodyGridApi.load(data);
+                    cnode.triggerBoth("dataLoad");
+                    bodyGridApi.fireResize();
+                })(jQuery);
+            </script>
+        </apex:outputPanel>
+        
+        <c:pRelatedListStdGrid relList="{!scpAspect.lineItems}" path="{!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}'" addLinkLabel="Add Line Item">
+            <script type="text/javascript">
+                (function($) {
+                    $cnode.last.offOnDelegate("beforeAJAX.sort", function(evt, props) {
+                            props.parameters.curryRerender = rk.scp.concatSummaryRerenders(props.parameters.curryRerender);
+                        })
+                })(jQuery);
+            </script>
+        </c:pRelatedListStdGrid>
+        
+        <!-- setup event handlers on the aspect node to notify its api.element object that its amounts may have changed; note this must be done after the line-items grid is initialized: -->
+        <script type="text/javascript">
+            (function() {
+                var cnode = $cnode({!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}'),
+                    bodyGridApi = cnode.getComponentApi().elements.gridApi;
+                
+                function fireChangeAmounts() {
+                    cnode.getComponentApi().elements.onChangeAmounts();
+                }
+                
+                bodyGridApi.grid.off("change.amounts").on("change.amounts", fireChangeAmounts);
+                // by using a .delegate namespace, we catch the "dataLoad" (and "cancelDataLoad") events for both the aspect body grid and line-items grid:
+                cnode.offOnDelegate("dataLoad.amounts cancelDataLoad.amounts", fireChangeAmounts);
+                
+                fireChangeAmounts();
+            })();
+        </script>
+        
+        <!-- the aspect's action buttons: -->
+        <apex:outputPanel id="btns" layout="block" styleClass="scpAspect-btns">
+            <button>Save</button>
+            <button>Add Third-Party</button>
+            <button>Finalize</button>
+            <button style="{!IF(scpAspect.typeName='primary', 'float:right', 'display:none')}">Cancel</button>
+            <button style="{!IF(scpAspect.typeName='thirdParty', 'float:right', 'display:none')}">Delete</button>
+        </apex:outputPanel>
+        
+        <!-- the aspect's action buttons scripts and init: -->
+        <script type="text/javascript">
+            (function($) {
+                
+                function getRootActions() {
+                    return $cnode("#root").getComponentApi().actions;
+                }
+                
+                var cnode = $cnode({!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}'),
+                    compApi = cnode.getComponentApi(),
+                    btns = $(document.getElementById("{!$Component.btns}")).children("button");
+                
+                btns.eq(0).button({
+                    icons: { 
+                        secondary: "ui-icon-document"
+                    } 
+                }).click(
+                    function() {
+                        getRootActions().save(compApi);
+                        return false;
+                    });
+                    
+                btns.eq(1).button({
+                    icons: { 
+                        primary: "ui-icon-plusthick"
+                    } 
+                }).click(
+                    function() {
+                        
+                        getRootActions().addThirdParty(compApi);
+                        return false;
+                    });
+                    
+                btns.eq(2).button({
+                    icons: { 
+                        primary: "ui-icon-check"
+                    } 
+                }).click(
+                    function() {
+                        getRootActions().finalize(compApi);
+                        return false;
+                    });
+                    
+                btns.eq(3).button({
+                    icons: { 
+                        primary: "ui-icon-close"
+                    } 
+                }).click(
+                    function() {
+                        getRootActions().cancelChanges(compApi);
+                        return false;
+                    });
+                    
+                btns.eq(4).button({
+                    icons: { 
+                        primary: "ui-icon-closethick"
+                    } 
+                }).click(
+                    function() {
+                        getRootActions().deleteThirdParty(compApi);
+                        return false;
+                    });
+                
+            })(jQuery);
+        </script>
+        
+        <div style="display:none">
+            <c:pRelatedListStdDialogs relList="{!scpAspect.lineItems}" path="{!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}'">
+                <script type="text/javascript">
+                    (function($) {
+                        var dialogNodes = $cnode.last.children(".addDialog,.editDialog");
+                        
+                        dialogNodes.offOnSelf("parse",
+                            function(){
+                                var compApi = $(this).getComponentApi();
+                                $(".dateInput input", compApi.getElements().top).each(
+                                    function() {
+                                        var showPicker = $(this).prop("onfocus");
+                                        $(this).prop("onfocus", null).click(showPicker);
+                                    });
+                            });
+                            
+                        var aspectNode = $cnode({!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}'),
+                            aspectApi = aspectNode.getComponentApi();
+                        dialogNodes.filter(".addDialog").offOnSelf("dialogReady", 
+                            function(evt, dialogMgr) {
+                                aspectApi.elements.onAddLineItemReady(dialogMgr);
+                            })
+                        
+                        // !! upon a Line Item's add/edit/delete save action, we must also rerender the summary tab:
+                        aspectNode.find(".addDialog,.editDialog,.deleteDialog").offOnDelegate("beforeAJAX.submit", 
+                            function(evt, props) {
+                                props.parameters.curryRerender = rk.scp.concatSummaryRerenders(props.parameters.curryRerender);
+                            });
+                    })(jQuery);
+                </script>
+            </c:pRelatedListStdDialogs>
+        </div>
+        
+        <script type="text/javascript">
+            $cnode({!path}, 'scpAspect {!scpAspect.typeName} {!scpAspect.dataObject.Id}')
+                .triggerBoth("parse");
+        </script>
+    </div>
+    
+</apex:component>

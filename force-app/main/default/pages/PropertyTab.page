@@ -1,0 +1,34 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/29/2013
+           ******************************************************************* -->
+<apex:page tabStyle="Property__c">
+<head>
+        <style>
+            #theIframe, #theIframe2 {
+                width: 100%;
+            }
+        </style>
+    </head>
+    <apex:stylesheet value="/sCSS/21.0/sprites/1297816277000/Theme3/default/gc/versioning.css" />   
+
+    <!-- <apex:includeScript value="{!$Resource.jQuery}" /> -->
+
+<!--
+    <apex:form ><apex:pageBlock >  
+       <apex:commandButton action="/apex/rka__CAPAlertsTabbed" value="Riskonnect Alerts" id="theButton3"/> 
+    </apex:pageBlock></apex:form>
+-->
+
+    <apex:tabPanel style="margin: 0px; height:550px; width:100%;" switchType="ajax" selectedTab="Properties_View" id="theTabPanel" 
+                       styleClass="theTabPanel" tabClass="theTabPanel" contentClass="tabContent" activeTabClass="activeTab" inactiveTabClass="inactiveTab">
+            
+            <apex:tab label="Properties View" name="Properties_View" id="tabTwo">                
+                    <apex:enhancedList height="550" rowsPerPage="50" type="property__c"  id="propertylist" customizable="True"/>
+            </apex:tab>
+            <apex:tab label="Property Search" name="Property_Search" id="tabOne"> 
+                    <apex:iframe src="/apex/QuickSearch?config=Property&linkTarget=_top&showHeader=0" scrolling="true" id="theIframe" height="550px" width="1000px"/>
+            </apex:tab>
+            
+
+    </apex:tabPanel>
+</apex:page>

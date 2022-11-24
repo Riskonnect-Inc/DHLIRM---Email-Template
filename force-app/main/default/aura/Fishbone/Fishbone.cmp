@@ -1,0 +1,45 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    <aura:attribute name="height" type="String" default="400px" />
+    <aura:attribute name="title" type="String" />
+    
+    <aura:attribute name="record" type="Object"/>
+    <aura:attribute name="recordError" type="String"/>
+    <aura:attribute name="iframeURL" type="String"/>
+
+    <aura:attribute name="fishboneConfig" type="String" default='{
+    	"sObjectName": "Root_Cause_Analysis__c", 
+    	"branchConfig": {
+    		"Communication": "Communication_Factors__c",
+			"Data": "Data_Factors__c",
+    		"Environment": "Environment__c",
+    		"Equipment": "Equipment__c",
+    		"Patient Characteristic": "Patient_Characteristics_Factor__c",
+    		"Policy/Procedure": "Policies_Procedure_Factors__c",
+    		"Staffing": "Staffing_Factor__c"
+		}
+	}'/>
+
+	<aura:attribute name="fishboneConfigParam" type="String" access="private"/>
+
+	<aura:handler name="init" value="{!this}" action="{!c.handleInit}"/>
+
+    <force:recordData aura:id="recordLoader"
+      recordId="{!v.recordId}"
+      layoutType="FULL"
+      targetRecord="{!v.record}"
+      targetError="{!v.recordError}"
+      recordUpdated="{!c.handleRecordUpdated}"
+    />
+    
+	<lightning:card >
+    	<aura:set attribute="title">
+            <h2 class="slds-card__header-link slds-text-heading_small">{!v.title}</h2>
+        </aura:set>
+
+        <iframe id="fishboneIframe"
+        	src="{!v.iframeURL}"
+        	width="100%" height="{!v.height}"
+        	scrolling="no" frameborder="0"
+    	/>
+    </lightning:card>
+</aura:component>

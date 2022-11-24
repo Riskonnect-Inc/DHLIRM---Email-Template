@@ -1,0 +1,60 @@
+
+/* Version 1.01 -- added z-idnex:3 to the rpp popup, to ensure that it is over any locked colset from a gridLayout control */
+
+body .paginator .right {
+	top:-2px;
+}
+
+body .listViewport .bottomNav {
+	background: #F2F2F2 url(/img/alohaSkin/listFooter.png) repeat-x scroll 0 0;
+}
+
+body .selectionPaginator .listViewport .bottomNav {
+    border:solid #D4DADC 1px;
+    border-top:none;
+}
+
+body .listViewport .bottomNav .paginator span img {
+    vertical-align:baseline;
+}
+
+.selector.rpp {
+    z-index: 3;
+}
+
+/* SLDS */
+
+body.slds-scope .paginator {
+    margin: .5rem 0;
+    color: #706e6b;
+    margin: .5rem 0;
+    color: #706e6b;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    position: relative;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    white-space: nowrap;
+}
+
+body.slds-scope .paginator .pageInput {
+    border: 1px solid #dddbda;
+    max-width: 100%;
+    border-radius: .25rem;
+    background-color: white;
+    color: #3e3e3c;
+    -webkit-transition: border .1s linear,background-color .1s linear;
+    transition: border .1s linear,background-color .1s linear;
+    display: inline-block;
+    padding: 0 1rem 0 .75rem;
+    min-height: calc(1.875rem+(1px * 2));
+    line-height: 1.875rem;
+    width: 2.5rem;
+    margin: 0 .5rem;
+    text-align: center;
+}

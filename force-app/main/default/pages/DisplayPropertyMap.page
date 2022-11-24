@@ -1,0 +1,13 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as    03/25/2013
+           ******************************************************************* -->
+<apex:page standardController="Property__c">
+
+<c:GoogleMapsInternational iconColour="#236FBD"
+    width="700"
+    height="240"
+    
+    address="{!Property__c.Address_Line1__c} {!Property__c.City__c} {!Property__c.State__c} {!Property__c.Zip_Code__c} {!Property__c.Country__c}"
+ />
+
+</apex:page>

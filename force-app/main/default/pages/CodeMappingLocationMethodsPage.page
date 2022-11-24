@@ -1,0 +1,40 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   02/24/2015
+           ******************************************************************* -->
+<apex:page standardController="Data_Source__c"  sidebar="false" showHeader="false" 
+           extensions="CodeMappingLocationMethods" standardStylesheets="false"  >
+    
+    <apex:stylesheet value="{!$Resource.WrapperCSSNew}" />
+    
+    <h1 style="font-family: verdana;text-align:center;font-weight:Regular; font-size: 120%;color: black">Import Location</h1>
+        <body onload="resizeTo(600,450);">
+   <apex:form >
+      <apex:sectionHeader />
+       
+            <BR/>
+        <Div style="margin-left: 50px;">
+      <!--apex:pageBlock -->           
+              <apex:inputFile value="{!contentFile}" filename="{!nameFile}"   /> <BR/><BR/>
+              <apex:commandButton action="{!ReadFile}" value="Upload File" 
+                                   id="theButton" style="width:90px;"  />                   
+      <!--/apex:pageBlock-->  
+     <BR/><BR/>
+       <Div style="font-family: verdana;font-weight:Regular; font-size: 75%;color: black"> Delete Only Location Code Mapping records before loading? 
+           <apex:inputCheckbox value="{!deleteAmli}" />
+       </div>
+       <BR/>
+       <Div style="font-family: verdana;font-weight:Regular; font-size: 75%;color: black">If you really want to delete All Code Mapping records, enter the sentence below
+           <apex:inputTextarea value="{!deleteText}" />
+       </div>      
+        <BR/>
+       <Div style="font-family: verdana;font-weight:Regular; font-size: 75%;color: red">
+        <apex:outputText >I want to delete location code map records only</apex:outputText>
+       </div>
+            </div>
+        <BR/>
+           
+       <apex:pagemessages /> 
+       
+   </apex:form>  
+    </body>
+</apex:page>

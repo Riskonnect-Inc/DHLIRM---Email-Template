@@ -1,0 +1,70 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 8/5/2013
+           ******************************************************************* -->
+<apex:page standardController="Property__c"  showHeader="false" sidebar="false" extensions="MapController">
+
+    <!--  
+    AD - 4-12-2012
+    Static Resources needed by this VF page:
+        PropertiesWorldMap - js for geocoding and markers creation
+        jqueryAlternateMin - js file 
+        cssMap             - css file
+        locations_csv      - csv file with all properties to map 
+        submitJpg          - jpg image of Submit button 
+          <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAL3DEBZVjuSLMUGri7caMORSEUXavY8RXwNje1Hwnx_r2aVIS_BTJPJJguiXMI4tFOzxdatH02sLd6A"></script> 
+    -->
+ 
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Properties World Map</title>
+       <link rel="stylesheet" type="text/css" href="{!$Resource.map_css}" />  
+       
+      <script type="text/javascript" src="{!$Resource.jQuery}"></script>
+      <script src="https://maps.google.com/maps/api/js?sensor=false"></script>
+      <script type="text/javascript" src="{!$Resource.jquery_cookie_js}"></script>
+      <script type="text/javascript" src="{!$Resource.jquery_storelocator_js}"></script>
+      
+    </head>
+    <body onload="">
+         <div id="page-header">
+         </div>
+        <div id="form-container">
+            <form id="user-location" method="post" action="#">
+            <table border="0" width="1500px">
+                <tr>
+                <td width="230px">
+                <div style="margin: 10px; font-size: 1.5em"><b>Properties World Map</b></div>
+                </td>             
+                <td width="510px"> 
+                <div id="form-input">
+                  <label for="address">Enter Address or Zip Code:</label>
+                  <input type="text" size="60" id="address" name="address" value="{!Property__c.Address_Line1__c + ' ' + Property__c.Address_Line2__c + ' '  + Property__c.City__c + ' ' + Property__c.State__c + ' ' + Property__c.Country__c}"/>
+                 </div>
+                </td>
+                <td>  
+                <div id="submit-btn"><input type="image" id="submit" name="submit" src="{!$Resource.submitJpg}" alt="Submit" /></div>
+                </td>
+                <td><img src="{!$Resource.rkLogo2}"  border="0" /></td>
+                </tr>
+                </table>
+            </form>
+          </div>
+        <script>
+            //'xmlData':{'file':'0151t000000VI2x'},
+           $(function() {
+              $('#map-container').storeLocator({'xmlLocation':'/servlet/servlet.FileDownload?file=0151t000000VI2x','distanceAlert':10000,'zoomLevel':5,'storeLimit':500});
+              $(document).ready(function (){window.setTimeout(function(){$('#submit').trigger('click');}, 0)});
+           });
+        </script>
+        <div id="map-container">
+            <div id="loc-list">
+                <ul id="list"></ul>
+            </div>
+            <div id="map"></div>
+          </div>  
+        
+       
+    </body>
+    </html>
+</apex:page>

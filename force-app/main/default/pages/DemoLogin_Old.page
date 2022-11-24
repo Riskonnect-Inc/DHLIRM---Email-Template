@@ -1,0 +1,119 @@
+<apex:page controller="DemoLogin_Old_Controller" action="{!checkValidity}" standardStylesheets="false" sidebar="false" showHeader="false" cache="false">
+
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+        <apex:includeScript value="{!$Resource.rkl__jquery1_8_3}"/>
+        <apex:includeScript value="{!$Resource.rkl__jQuery_maskedInput_min}"/>
+        <apex:stylesheet value="https://code.jquery.com/ui/1.10.3/themes/cupertino/jquery-ui.css"/>
+        <apex:includeScript value="https://code.jquery.com/ui/1.10.3/jquery-ui.js"/>
+        <apex:includeScript value="{!$Resource.rkl__RKDebug_js}" />
+        <apex:stylesheet value="{!$Resource.rkl__portal_fullscreen_css}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKUtil_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKIframe_JS}"/>
+
+        <style>
+
+            #languageSelector {
+                margin-top: 20px;
+            }
+
+        </style>
+        <apex:includeScript value="{!$Resource.rkl__RKTranslate_js}" />
+        <script type="text/javascript">
+            ;(function() {
+                "use strict";
+
+                namespace('rkl.translate').loadLanguagePacks([
+
+                ]);
+
+            })(jQuery);
+        </script>
+
+    </head>
+
+    <body>
+        <br/>
+            <table>
+
+
+            </table>
+        <br/>
+        <div class='container-fluid'>
+            <div class='row'>
+                <div class='col-xs-6 col-md-4'>
+                    <img height='75px' src="{!$Resource.RKLogo3}" /><!--<select id="languageSelector"></select>-->
+                </div>
+                <div id="error">
+                    <h5 id='login.error'>{!message}</h5>
+                </div>
+            </div>
+            <div>
+            </div>
+            <div id="instructions">
+                <h5 id="logininstructions1" data-rktrans="login.instructions1" data-rktranselemtype="ui.label">Enter your Employee Last Name and Year of Birth below and press submit to login to portal</h5>
+
+                <apex:form >
+                    <table style="width:500px;padding:12px;border-spacing:12px 12px;cellspacing:12px">
+                        <tr>
+                            <td id="loginlastName" data-rktrans="login.lastName" data-rktranselemtype="ui.label">Last Name:</td>
+                            <td>
+                                <apex:inputText value="{!userLastName}" />
+                            </td>
+                            <td></td>
+                            </tr>
+                        <tr>
+                            <td id="loginDOB" data-rktrans="login.dob" data-rktranselemtype="ui.label">Date of Birth</td>
+
+
+                            <td>
+                                <span id="loginbirthYear" data-rktrans="login.birthYear" data-rktranselemtype="ui.label">Year:</span>&nbsp;<apex:inputText value="{!userYearofBirth}" styleClass="year-mask"/>
+                                <span id="loginbirthMonth" data-rktrans="login.birthMonth" data-rktranselemtype="ui.label">Month:</span>&nbsp;<apex:inputText value="{!userMonthofBirth}" styleClass="twonum-mask"/>
+                                <span id="loginbirthDay" data-rktrans="login.birthDay" data-rktranselemtype="ui.label">Day:</span>&nbsp;<apex:inputText value="{!userDayofBirth}" styleClass="twonum-mask"/>
+                            </td>
+                                <td>
+                               <button type="submit" id="loginbtnSubmit" class="btn btn-default btn-primary" data-rktrans="login.btnSubmit" data-rktranselemtype="ui.label">Submit</button>
+                               <apex:actionFunction action="{!validateSubmit}" name="validateSubmit"/>
+
+                            </td>
+                        </tr>
+                    </table>
+                </apex:form>
+            </div>
+        </div>
+
+    </body>
+    <script type="text/javascript">
+        ;
+        (function($) {$(function() {
+            "use strict";
+
+            var T = namespace('rkl.translate');
+
+            var $languageSelector = $("#languageSelector").on('change', function() {
+                T.switchLanguage($languageSelector.val());
+            });
+
+            $.each(T.availableLanguages(), function(i, lang) {
+                $('<option value="' + lang.code + '">' + lang.name + '</option>')
+                .appendTo($languageSelector);
+            });
+
+            $languageSelector.val(T.currentLanguage);
+
+            $("#loginbtnSubmit")
+            .click(function( event ) {
+                event.preventDefault();
+                validateSubmit();
+            });
+
+            $(".year-mask").width(40).mask("9999");
+
+            $(".twonum-mask").width(22).mask("9?9");
+
+        })})(jQuery);
+
+
+
+        </script>
+</apex:page>

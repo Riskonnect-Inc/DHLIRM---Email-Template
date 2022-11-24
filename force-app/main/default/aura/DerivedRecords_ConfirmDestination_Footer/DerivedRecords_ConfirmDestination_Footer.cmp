@@ -1,0 +1,11 @@
+<aura:component controller="DerivedRecord_Controller">
+	<aura:attribute name="recordId" type="Id"/>
+	<aura:attribute name="configName" type="String"/>
+	<aura:attribute name="sObjectLabel" type="String"/>
+	<aura:attribute name="sObjectName" type="String"/>
+
+	<lightning:overlayLibrary aura:id="overlays"/>
+
+	<lightning:button class="slds-button_neutral" label="Cancel" onclick="{!c.handleCancel}"/>
+	<lightning:button class="slds-button_brand" label="Confirm" onclick="{!c.handleConfirm}"/>
+</aura:component>

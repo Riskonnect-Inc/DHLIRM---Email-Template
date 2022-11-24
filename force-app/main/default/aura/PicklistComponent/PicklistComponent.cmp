@@ -1,0 +1,25 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    <aura:method name="getValue" action="{!c.getValue}"/>
+    <aura:method name="setValue" action="{!c.setValue}">
+        <aura:attribute name="value" type="Object" access="global"/>
+    </aura:method>
+    <aura:attribute name="name" type="String" access="global"/>
+    <aura:attribute name="value" type="Object" access="global"/> 
+    <aura:attribute name="label" type="String" access="global"/>
+    <aura:attribute name="options" type="String[]" access="global" />
+    <aura:attribute name="includeNone" type="Boolean" access="global"/>    
+    <aura:attribute name="required" type="Boolean" access="global"/>
+    <aura:attribute name="missingValueMessage" type="String" access="global"/>
+    
+    <div style="display: inline-block;">
+        <lightning:select aura:id="selectedId" value="{!v.value}" name="{!v.name}" label="{!v.label}" required="{!v.required}"
+                          messageWhenValueMissing="{!v.missingValueMessage}" >                              
+            <aura:if isTrue="{!v.includeNone}">                    
+                <option value="">-- None --</option>                   
+            </aura:if>                
+            <aura:iteration items="{!v.options}" var="option">
+                <option value="{!option}" text="{!option}"></option>
+            </aura:iteration>
+        </lightning:select>
+    </div>
+</aura:component>

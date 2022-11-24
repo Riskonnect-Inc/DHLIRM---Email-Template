@@ -1,0 +1,471 @@
+<apex:page controller="rkl.JS_Search" extensions="DemoPortal_Controller" docType="html-5.0" action="{!pageLoad}" sidebar="false" showHeader="false" standardStylesheets="false" cache="false">
+    <head>
+
+        <rkl:RKPIncludes includeModules="*,depend"
+            portalGroup="{!portalSettings.portalGroup}"
+            language="{!portalSettings.language}"
+        />
+
+        <style type="text/css">
+            body {
+                background: rgb(240, 240, 240);
+            }
+            #finishLater {
+                margin-top: 20px;
+                margin-right: 10px;
+            }
+            .rk-cnavTop {
+                height: 75px;
+            }
+            .rk-cnavBar {
+                top: 75px;
+            }
+            .rk-cnavMBody {
+                top: 75px;
+            }
+            .rk-cnavSplitter {
+                top: 75px;
+            }
+
+            .modal-dialog {
+                z-index: 1000;
+            }
+            .loading {
+                z-index: 10;
+            }
+
+        </style>
+        <script>
+
+            (function($) {
+                "use strict";
+                $(document).on('programReady', function(event, program) {
+                  $('.initLoadScreen').fadeOut();
+
+                  if(program.$topBar) {
+                      $('<a id="finishLater" class="btn pull-right" href="{!JSINHTMLENCODE($Page.DemoPortalLanding)}?portalGroup={!JSINHTMLENCODE($CurrentPage.parameters.portalGroup)}">Return Home</a>')
+                          .appendTo(program.$topBar);
+
+                      $('<img height="75" />')
+                            .attr("src", namespace('portal.images').{!JSINHTMLENCODE(portalSettings.PortalLogo)})
+                            .addClass("image")
+                      .appendTo(program.$topBar);
+                  }
+
+                }); // End programReady
+
+                /*
+                 *  General Handling and Validation Functions
+                 */
+
+                var hideShow = function(srcSec, srcFld, showFun, showFields) {
+                    var hideShowFunc = function() {
+                        var show = showFun(srcSec.sobject().get(srcFld).value());
+                        $.each(showFields, function(i, f) {
+                            f.visible(show);
+                        });
+                    };
+                    srcSec.sobject().get(srcFld).on('localChange', hideShowFunc);
+                    hideShowFunc();
+                }
+
+                var timeFormat24 = function (timeField){
+                      timeField.format('99:99')
+                        .hasValidValue(function() {
+                          var val = timeField.$input.val();
+                          return timeField.isReqd ?rkl.portal.util.isMilitaryTime(val) :(val === '' || rkl.portal.util.isMilitaryTime(val));
+                        })
+                        ._attachOnChange(function() {
+                          timeField._clearError();
+                          if(timeField.hasValidValue()) {
+                              timeField.store();
+                          } else {
+                              if (timeField.isReqd) {
+                                  timeField.setErrorLabel('Time is Required');
+                              } else {
+                                  timeField.setErrorLabel('Invalid time format');
+                              }
+                          }
+                        });
+                  }
+
+                var is = function(x) { return function(v) { return v === x; }; };
+                var isYes = is('Yes');
+                var isNo = is('No');
+                var isOneOfMany = function(x) { return function(v) { //v = input value  x = desired input to match
+                    var returnVal = false;
+                    $.each(x,function(key,value){ if( value === v ){ returnVal=true; } });
+                        return returnVal;
+                    };
+                };
+
+                var sectionStatus = function(sec, showFunc) {
+                     return function() {
+                         if(showFunc()) {
+                             if(sec.sobject().get('id').value()) return true;
+                             return 'disabled';
+                         }
+                         return false;
+                     };
+                 };
+                // End General Handling and Validation section
+
+                /*
+                 *  Handling and Validation functions specific to this portal
+                 */
+                var fatality = function(sec) {
+                    hideShow(sec, 'fatality__c', isYes, [
+                      sec.fields('date_of_death__c'),
+                      ]);
+                }
+
+                var treatment = function(sec) {
+                    hideShow(sec, 'initial_treatment__c', is('Off-Site Medical Treatment'), [
+                      sec.fields('treating_facility_name__c'),
+                      sec.fields('treating_facility_address__c'),
+                      sec.fields('treating_facility_address_2__c'),
+                      sec.fields('treating_facility_city__c'),
+                      sec.fields('treating_facility_state__c'),
+                      sec.fields('treating_facility_postal_code__c'),
+                      ]);
+                }
+                // End Specific Handling and Validation functions
+
+
+                /*
+                 *  Configuration JSObject for the entire portal
+                 */
+                var config = {
+
+                    controller: DemoPortal_Controller,
+                    //templateRetrieveFuncName: "retrieveTemplate",  //default is retrieveTemplate
+                    //navTemplate: "tocnav",  //default is tocnav
+                    masterTemplate: "demoTemplate",
+                    htmlSelector: "#incidentPortalRoot",
+                    recordId: "{!recordId}",
+
+                    templates: {
+                        demoTemplate: {
+                            sections: {
+                                Intake_Description: {
+// Todo:                            fields: {
+//                                        field_two__c: {
+//                                            validators: rkl.portal.ui.util.militaryTime,
+//                                        },
+//                                    },
+                                    postInit: function(section) {
+                                        hideShow(section, 'occur_on_company_premises__c', isNo, [
+                                            section.fields('incident_address__c'),
+                                            section.fields('incident_address_2__c'),
+                                            section.fields('incident_city__c'),
+                                            section.fields('incident_state__c'),
+                                            section.fields('incident_postal_code__c'),
+                                        ]);
+                                        timeFormat24(section.fields('report_time__c'));
+
+                                        var dateOfIncident = section.fields('incident_date__c');
+                                        var dateOfReport = section.fields('report_date__c');
+                                        var dateOfIncidentPicker = dateOfIncident.$input.data('kendoDatePicker');
+                                        var dateOfReportPicker = dateOfReport.$input.data('kendoDatePicker');
+
+                                        dateOfIncidentPicker.max(new Date());
+                                        dateOfReportPicker.max(new Date());
+
+                                        //Override hasValidValue
+                                        dateOfReport.hasValidValue = function() {
+                                            dateOfReport._clearError();
+
+                                            var d1 = dateOfIncidentPicker.value();
+                                            var d2 = dateOfReportPicker.value();
+
+
+                                            if (d1 && d2 && d2 < d1) {
+                                                dateOfReport.setErrorLabel('Date reported must be on or after the date of the incident.');
+                                            }
+
+                                            return (d2 >= d1);
+
+                                        }
+
+                                        dateOfIncident.sfield.on('localChange',dateOfReport.hasValidValue);
+                                        dateOfReport.sfield.on('localChange',dateOfReport.hasValidValue);
+
+                                    }
+// Todo:                                    visible: function() {
+//
+//                                    }
+                                },
+                                Witnesses: {
+                                    postInit: function(section) {
+                                        hideShow(section, 'witnesses__c', is('Yes - 4+'), [
+                                            section.fields('additional_witnesses__c'),
+                                        ]);
+                                        hideShow(section, 'witnesses__c', isOneOfMany(['Yes - 3','Yes - 4+']), [
+                                            section.fields('witness_3_contact_information__c'),
+                                            section.fields('witness_3_name__c'),
+                                        ]);
+                                        hideShow(section, 'witnesses__c', isOneOfMany(['Yes - 2','Yes - 3','Yes - 4+']), [
+                                            section.fields('witness_2_contact_information__c'),
+                                            section.fields('witness_2_name__c'),
+                                        ]);
+                                        hideShow(section, 'witnesses__c', isOneOfMany(['Yes - 1','Yes - 2','Yes - 3','Yes - 4+']), [
+                                            section.fields('witness_1_contact_information__c'),
+                                            section.fields('witness_1_name__c'),
+                                        ]);
+
+                                        section.visible(sectionStatus(section, function() { return true;}));
+                                    }
+                                },
+                                Involved_Parties: {
+                                    postInit: function(section) {
+                                        hideShow(section, 'auto_incident__c', isYes, [
+                                            section.fields('auto_non_employee_injury__c'),
+                                            section.fields('auto_non_employee_property_damage__c'),
+                                            section.fields('auto_company_vehicle__c'),
+                                        ]);
+
+                                        var clearChildSectionsVis = function() {
+                                            if (isNo(section.sobject().get('auto_incident__c').value())) {
+                                                section.sobject().get('auto_non_employee_injury__c').value('No');
+                                                section.sobject().get('auto_non_employee_property_damage__c').value('No');
+                                                section.sobject().get('auto_company_vehicle__c').value('No');
+                                            }
+                                        };
+
+                                        section.sobject().get('auto_incident__c').on('localChange', clearChildSectionsVis);
+
+                                        section.visible(sectionStatus(section, function() { return(!(/^Yes/i.test(section.sobject().get('near_miss__c').value()))); }));
+                                    }
+                                },
+                                Near_Miss: {
+                                    postInit: function (section) {
+                                        section.visible(sectionStatus(section, function() { return((/^Yes/i.test(section.sobject().get('near_miss__c').value()))); }));
+                                    }
+                                },
+                                Submit: {
+                                    postInit: function (section) {
+                                        section.visible(sectionStatus(section, function() { return true; }));
+                                    }
+
+                                }
+                            },  // End Sections
+                            submit : {
+                                validations: [function(program) {
+                                        var $def = new $.Deferred();
+
+                                        rkl.portal.ui.util.portalDialog({type: 'confirm', $deferred: $def});
+
+                                        program.sections('Submit').sobject().get('im_status__c').value('Completed');
+
+                                        return $def.promise();
+                                    },
+                                ],
+                                prune_safety: [
+                                    {
+                                        sobjectType: 'intake__c',
+                                        records: [], // if there are any records that may be hidden that we want to save
+                                        fields: ['im_status__c'],  // if there are any fields that may be hidden that we want to save
+                                    },
+                                ],
+                                prune_verify: [function() {
+                                    var $def = new $.Deferred();
+
+                                    console.log('Pruned', arguments);
+                                    $def.resolve();
+                                    return $def.promise();
+                                }],
+                                final_save_done: [function(program) {
+                                    var $def = new $.Deferred();
+                                    //if still want old DemoPortalSummary page
+                                    //window.location = '{!$Page.DemoPortalSummary}?portalGroup={!$CurrentPage.parameters.portalGroup}&incId=' + program.sections('Submit').sobject().get('id').value();
+
+                                    var $thisMessage = $("span[data-rktrans='dialog.Success.Message']").clone()
+                                        .append(program.sections('Submit').sobject().get('name').value());
+                                    var $thisTitle = $("span[data-rktrans='dialog.Success.Title']").clone();
+                                    var $success = rkl.portal.ui.util.portalDialog({type: 'success', $message: $thisMessage, $title: $thisTitle});
+
+                                    $success
+                                        .done(function() {
+                                            $def.resolve();
+                                            window.location = '{!JSENCODE($Page.DemoPortalLanding)}?portalGroup={!JSENCODE($CurrentPage.parameters.portalGroup)}';
+                                        });
+
+                                    return $def.promise();
+                                }]
+                            }, // End Submit
+                            postInit : function(program) {
+                                var parentSection = program.sections('Involved_Parties');
+
+                                var relSecsVisibility = function(section, field) {
+                                    program.sections(section).visible(sectionStatus(parentSection, function() {
+                                        return rkl.portal.util.isYes(parentSection.sobject().get(field).value());
+                                    }));
+                                };
+
+                                //For hiding inidividual sections based on Involved Party Questions and initial section save
+                                relSecsVisibility('Employee_Injury', 'employee_injury__c');
+                                relSecsVisibility('Auto_Non_Employee_Injury', 'auto_non_employee_injury__c');
+                                relSecsVisibility('Auto_Non_Employee_Property_Damage', 'auto_non_employee_property_damage__c');
+                                relSecsVisibility('Auto_Company_Vehicle', 'auto_company_vehicle__c');
+                                relSecsVisibility('3rd_Party_Bodily_Injury', 'x3rd_party_bodily_injury__c');
+                                relSecsVisibility('3rd_Party_Property_Damage', 'x3rd_party_property_damage__c');
+                                relSecsVisibility('Company_Property_Damage', 'company_property_damage__c');
+
+                            }
+                        }, // End Demo Template
+                        Employee_Injury: {
+                            sections: {
+                                Employee_Injuries_Injuries: {
+                                    postInit: function(section) {
+                                        fatality(section);
+                                        treatment(section);
+
+                                        //Hide the formula field that supplies name for header
+                                        section.fields('involved_party_name__c').visible(false);
+
+                                        //Update header for associated lookup fields
+                                        var updateHeader = function() {
+                                            var name = null;
+
+                                            if (section.sobject().get('injured_employee__c').value()) {  //check if lookup has value
+                                                name = section.sobject().get('involved_party_name__c').value();
+                                            }
+
+                                            if(name) {
+                                                section.parent.showCount = false;
+                                                section.parent.label(name);
+                                            } else {
+                                                section.parent.showCount = true;
+                                                section.parent.label('Employee Injury');
+                                            }
+                                        }
+                                        section.sobject().get('involved_party_name__c').on('serverUpdated', updateHeader);
+                                        //section.sobject().get('injured_employee__c').on('localChange', updateHeader);
+
+                                        updateHeader();
+
+                                    }
+                                }
+                            }, // End Sections
+                            postInit: function (program) {
+
+                            }
+
+                        }, // End Employee_Injury Template
+                        Auto_Non_Employee_Injury: {
+                            sections: {
+                                X3rd_Party_Auto_Bodily_Injury_Injuries: {
+                                    postInit: function(section) {
+                                        fatality(section);
+                                        treatment(section);
+
+                                    }
+                                }
+                            }
+                        }, // End Auto_Non_Employee_Injury template
+                        Auto_Non_Employee_Property_Damage: {
+                            sections: {
+                                Auto_Non_Employee_Property_Damage: {
+                                    postInit: function(section) {
+                                        hideShow(section, 'vehicle_owner_the_driver__c', isNo, [
+                                          section.fields('vehicle_owner_first_name__c'),
+                                          section.fields('vehicle_owner_last_name__c'),
+                                          section.fields('vehicle_owner_address__c'),
+                                          section.fields('vehicle_owner_address_2__c'),
+                                          section.fields('vehicle_owner_city__c'),
+                                          section.fields('vehicle_owner_state__c'),
+                                          section.fields('vehicle_owner_postal_code__c'),
+                                          section.fields('vehicle_owner_phone__c'),
+                                          section.fields('vehicle_owner_email__c'),
+                                          ]);
+                                    }
+                                }
+                            }
+                        }, //End Auto_Non_Employee_Property_Damage template
+                        X3rd_Party_Bodily_Injury: {
+                            sections: {
+                                X3rd_Party_Bodily_Injury_Injuries: {
+                                    postInit: function(section) {
+                                        fatality(section);
+                                        treatment(section);
+
+                                        section.parent.showCount = false;
+                                        var updateHeader = function() {
+                                            var fname = section.sobject().get('involved_party_first_name__c').value();
+                                            var lname = section.sobject().get('involved_party_last_name__c').value();
+                                            if(fname || lname) {
+                                                section.parent.label(fname + ' ' + lname);
+                                            }
+                                        }
+                                        section.sobject().get('involved_party_first_name__c').on('localChange', updateHeader);
+                                        section.sobject().get('involved_party_last_name__c').on('localChange', updateHeader);
+                                        updateHeader();
+                                    }
+                                },
+                                Product_Information: {
+                                    postInit: function(section) {
+                                        section.visible(sectionStatus(section, function() { return(/^Yes/i.test(section.sobject().get('product_involved__c').value())); }));
+                                    }
+                                }
+                            }
+                        }, //End X3rd_Party_Bodily_Injury template
+                        X3rd_Party_Property_Damage: {
+                            sections: {
+                                Product_Information: {
+                                    postInit: function(section) {
+                                        section.visible(sectionStatus(section, function() { return(/^Yes/i.test(section.sobject().get('product_involved__c').value())); }));
+                                    }
+                                },
+                                Property_Information: {
+                                    postInit: function(section) {
+                                        section.visible(sectionStatus(section, function() { return(/^No/i.test(section.sobject().get('product_involved__c').value())); }));
+                                    }
+                                }
+                            }
+
+                        }
+                    } // End Templates
+                };
+                // End Portal Configuration Object
+
+                /*
+                 *  Portal Initialization
+                 */
+                rkl.portal.ui.init(config)
+                    .done(function(tconfig) {
+
+                        if('{!employee}' !== ''){
+                            tconfig.sobject.get('reported_by_first_name__c').value('{!JSENCODE(employee.FirstName)}');
+                            tconfig.sobject.get('reported_by_last_name__c').value('{!JSENCODE(employee.LastName)}');
+                            tconfig.sobject.get('reported_by_phone__c').value('{!JSENCODE(employee.Phone)}');
+                            tconfig.program.sections(0).fields('incident_location__c').rebind('{!JSENCODE(employee.Location__c)}');
+                        }
+
+                        tconfig.program.init();
+
+                        $(document).trigger("programReady", tconfig.program);
+                    })
+                    .fail(function() {
+                        console.log(arguments);
+                        alert("Something bad happened during initialization - See console");
+                    });
+
+
+            })(jQuery);
+        </script>
+    </head>
+    <body>
+        <div id="customMessages" style="display: none;">
+            <span data-rktrans="dialog.Success.Title" data-rktranselemtype="ui.label">Success!</span>
+            <span data-rktrans="dialog.Success.Message" data-rktranselemtype="ui.label">Thank you for reporting the incident.<br/><br/>Your incident # is: </span>
+        </div>
+        <div class="ui-widget-overlay ui-front initLoadScreen" style="display: true;">
+            <div class="crMsg" style="text-align: center;font-weight: bold;">
+                Loading... <br/>
+                 <img src="{!HTMLENCODE($Resource.rkl__ajax_loader_gif)}" height="50" width="50"/> <br/>
+                Please Wait...
+            </div>
+        </div>
+        <div id="incidentPortalRoot"></div>
+    </body>
+</apex:page>

@@ -1,0 +1,4 @@
+<aura:component >
+    <lightning:overlayLibrary aura:id="overlays"/>
+    <lightning:button label="Close" onclick="{!c.onClose}"/>
+</aura:component>

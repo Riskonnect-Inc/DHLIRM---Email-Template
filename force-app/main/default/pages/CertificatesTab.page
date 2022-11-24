@@ -1,0 +1,42 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   05/29/2013
+           ******************************************************************* -->
+<apex:page tabStyle="Certificate_of_Insurance__c">
+<head>
+        <style>
+            #theIframe, #theIframe2 {
+                width: 100%;
+            }
+        </style>
+    </head>
+    <apex:stylesheet value="/sCSS/21.0/sprites/1297816277000/Theme3/default/gc/versioning.css" />   
+<!--
+    <apex:form ><apex:pageBlock >  
+       <apex:commandButton action="/{!$Setup.Hard_Codes__c.Certificate_Dashboard__c}" value="Certificates Dashboard" id="theButton1"/>  
+    </apex:pageBlock></apex:form>
+-->
+
+    <apex:tabPanel style="margin: 0px; height:550px;" width="100%"  switchType="ajax" selectedTab="Certs_View" id="theTabPanel" 
+                       styleClass="theTabPanel" tabClass="theTabPanel" contentClass="tabContent" activeTabClass="activeTab" inactiveTabClass="inactiveTab">
+  
+           <apex:tab label="Certificate Views" name="Certs_View" id="tabOne">                
+                    <apex:enhancedList height="550" rowsPerPage="25" type="Certificate_of_Insurance__c"  id="certslist" customizable="True" />
+            </apex:tab>
+            
+            
+            
+            <apex:tab label="Certificate Requirements" name="Requirements_View" id="tabThree">                
+                    <apex:enhancedList height="550" rowsPerPage="25" type="Certificate_Requirement__c"  id="requirementslist" customizable="True" />
+            </apex:tab>
+           
+           <apex:tab label="Vendors" name="Vendor_View" id="tabZero">                
+                    <apex:enhancedList height="550" rowsPerPage="25" type="Vendor__c"  id="vendorslist" customizable="True" />
+            </apex:tab>
+            
+            <apex:tab label="AM Best Insurer Ratings" name="Ratings_View" id="tabTwo">                
+                    <apex:enhancedList height="550" rowsPerPage="25" type="Insurer_Rating__c"  id="ratingslist" customizable="True" />
+            </apex:tab>  
+            
+            
+    </apex:tabPanel>
+</apex:page>

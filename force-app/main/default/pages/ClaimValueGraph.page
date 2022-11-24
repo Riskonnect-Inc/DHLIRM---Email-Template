@@ -1,0 +1,6 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   04/08/2014
+           ******************************************************************* -->
+<apex:page standardController="Claim__c">
+    <c:ClaimValueComponent myObject="{!Claim__c}"/>
+</apex:page>

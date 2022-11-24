@@ -1,0 +1,10 @@
+/* Companion to the forms_css.resource standalone static-resource; for styles that need to refernce relative image URLs: */
+
+.FormTopOuter .FormTopInner div.FormInnerScroll .FormSection .header {
+    background:#003467 url(images/section_header.png) 50% 50% repeat-x;
+}
+
+body.bPageBlock .FormTopOuter table.list tr.headerRow th, 
+body.bPageBlock .DialogOuterBaz table.list tr.headerRow th {
+    background: #B2E6FB url(images/grid_header.png) 50% 50% repeat-x;
+}

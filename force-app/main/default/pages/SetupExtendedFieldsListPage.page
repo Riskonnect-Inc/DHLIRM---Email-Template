@@ -1,0 +1,21 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 06/01/2015
+           ******************************************************************* -->
+<apex:page standardController="Setup_Extended_Fields__c" extensions="SetupExtendedFieldsListPageCtlr"  action="{!checkList}"
+             recordSetVar="setupFields">    
+  <apex:form >
+      <apex:pageMessages escape="false" />
+       <apex:pageBlock title="Create Fields">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!updateSetupFields}"  disabled="{!hideConfirm}" value="Confirm"/>
+                <apex:commandButton action="{!returnSetupFields}" value="Return"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable value="{!selected}" var="sfields">
+                <apex:column value="{!sfields.Field_Label__c}"/>
+                <apex:column value="{!sfields.Field_API_Name__c}"/>
+                <apex:column value="{!sfields.Field_Type__c}"/> 
+                <apex:column value="{!sfields.Object_API_Name__c}"/>                
+            </apex:pageBlockTable> 
+        </apex:pageBlock>
+    </apex:form>    
+</apex:page>

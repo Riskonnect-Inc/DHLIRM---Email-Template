@@ -1,0 +1,58 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName,force:lightningQuickAction,force:appHostable" controller="ReviewManagement_Controller" access="global">
+    <!-- Attributes From Design-->
+    <aura:attribute name="object1API" default="Review__c" type="String"/>
+    <aura:attribute name="object2API" default="Patient_Feedback_Review__c" type="String"/>
+    <aura:attribute name="object3API" default="Physician_Review__c" type="String"/>
+
+    <aura:attribute name="newColumns" type="String"/>
+    <aura:attribute name="progressColumns" type="String"/>
+
+    <aura:attribute name="statusFld1" default="Status__c" type="String"/>
+    <aura:attribute name="statusFld2" default="Status__c" type="String"/>
+    <aura:attribute name="statusFld3" default="Status__c" type="String"/>
+
+
+    <!-- locally used attributes -->
+    <aura:attribute name="sortedBy" type="String" default="Name" />
+    <aura:attribute name="sortedDirection" type="String" default="asc" />
+
+    <aura:attribute name="newCount" type="Integer"/>
+    <aura:attribute name="progressCount" type="Integer"/>
+
+    <aura:attribute name="newfilterOptions" type="Object"/>
+    <aura:attribute name="progfilterOptions" type="Object"/>
+
+    <aura:attribute name="myNewColumns" type="Object"/>
+    <aura:attribute name="myProgressColumns" type="Object"/>
+    <aura:attribute name="myNewData" type="Object"/>
+    <aura:attribute name="myProgressData" type="Object"/>
+    <aura:attribute name="newRawData" type="Object"/>
+    <aura:attribute name="progRawData" type="Object"/>
+    
+    <aura:handler name="init" value="{! this }" action="{!c.doInit}"/> 
+    <article class="slds-card" >
+        <!--<div class="slds-card__header slds-grid">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <lightning:icon iconName="custom:custom18" size="medium"  class="slds-m-right_medium"/>
+                <div class="slds-media__body">
+                    <span class="slds-text-heading_small">Review Management</span>
+                </div>
+            </header>
+        </div> -->
+
+        <div class="slds-tabs--default">
+            <ul class="slds-tabs--default__nav" role="tablist">
+                <li  aura:id="newId" class="slds-tabs--default__item slds-text-title--caps slds-active" title="New" role="presentation" ><a class="slds-tabs--default__link" href="javascript:void(0);" onclick="{!c.newDataTab}" role="tab" tabindex="0" aria-selected="false" aria-controls="tab-default-1" id="New_linking">New ({!v.newCount})</a></li>
+                <li  aura:id="progressId"  class="slds-tabs--default__item slds-text-title--caps " title="In Progress" role="presentation"><a class="slds-tabs--default__link" href="javascript:void(0);" onclick="{!c.progressDataTab}" role="tab" tabindex="-1" aria-selected="true" aria-controls="tab-default-2" id="Progress_linking">In Progress ({!v.progressCount})</a></li>
+            </ul>
+            <div aura:id="newDataId" id="tab-default-1" class="slds-tabs--default__content slds-show" role="tabpanel" aria-labelledby="New_linking">
+                <c:ReviewManagementGrid mycolumns="{!v.myNewColumns}" mydata="{!v.myNewData}" rawData="{!v.newRawData}" recCount="{!v.newCount}" filters="{!v.newfilterOptions}" />
+            </div>
+            <div aura:id="progressDataId" id="tab-default-2" class="slds-tabs--default__content slds-hide" role="tabpanel" aria-labelledby="Progress_linking">
+                <c:ReviewManagementGrid mycolumns="{!v.myProgressColumns}" mydata="{!v.myProgressData}" rawData="{!v.progRawData}" recCount="{!v.progressCount}" filters="{!v.progfilterOptions}"/> 
+            </div>
+            
+        </div>
+    </article>
+
+</aura:component>

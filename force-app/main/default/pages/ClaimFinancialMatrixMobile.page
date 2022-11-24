@@ -1,0 +1,27 @@
+<!-- Mike Ulveling: Complete rewrite -->
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   04/08/2014
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" extensions="PITFinancials"   >
+    <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/smoothness/jquery-ui.css" />
+    <apex:stylesheet value="{!$Resource.blocking_pane_css}" />
+    <apex:stylesheet value="{!$Resource.pit_claim_financials_css}" />
+    <apex:includeScript value="{!$Resource.jQuery}" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js" />
+    <apex:includeScript value="{!$Resource.pit_claim_financials_js}" />
+    
+    <div class="blockingContainer">
+    
+        <c:BlockingPane />
+
+        <apex:pageBlock id="financialsBlock" title="Claim Financials"  tabStyle="Claim__c" >        
+            <apex:dynamicComponent componentValue="{!tableComponent}" />
+            <!-- script to fix rows styles due to our 'apex:column breakBefore="true"' hacking: -->
+            <script type="text/javascript">
+                rk_pit.adjustRowStyles();
+            </script>
+        </apex:pageBlock>
+        
+    </div>
+    
+</apex:page>

@@ -1,0 +1,127 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 4/8/2014
+           ******************************************************************* -->
+<apex:page StandardController="Request_Center__c" extensions="PropertyFileUpload" showHeader="false" sidebar="false" standardStylesheets="True" lightningStylesheets="true">
+  <apex:stylesheet value="{!$Resource.WrapperCSSNew}" />
+
+    
+<body>
+     <div class="container">
+      <div class="riskonnect-logo">
+        <apex:image id="RKlogo" value="{!$Resource.RiskonnectLogoMedium}" width="200" height="70" style="display:block;"/>
+      </div>
+        
+         <div id ="content">
+         <apex:form >
+           <apex:commandLink value="Return Home" action="{!URLFOR('/apex/requestcenter')}" >
+           </apex:commandlink>
+         </apex:form>
+
+<apex:form >  
+<br/>        
+       <label2>Please provide the following information:</label2>
+       <br/>
+       <br/>
+
+<apex:pageBlock >
+   <apex:pagemessages />
+
+   
+            
+       <apex:pageBlockSection columns="1" >
+                
+        <apex:pageBlockSectionItem > 
+               <apex:outputLabel value="Requestor Name:" />
+                 <apex:outputPanel styleClass="requiredInput" layout="block" id="pwPanel0" >
+                 <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+                 <apex:inputtext size="30" styleClass="requiredInput" value="{!requestorName}" id="requestorName1"/>
+               </apex:outputPanel>
+            </apex:pageBlockSectionItem>
+                
+        <apex:pageBlockSectionItem >
+              <apex:outputLabel value="Requestor Email:" />
+                 <apex:outputPanel styleClass="requiredInput" layout="block" id="pwPanel1" >
+                 <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+                 <apex:inputtext size="30" styleClass="requiredInput" value="{!requestorEmail}" id="requestorEmail"/>
+               </apex:outputPanel>   
+        </apex:pageBlockSectionItem>
+          
+         
+        <apex:pageBlockSectionItem >
+              <apex:outputLabel value="Requestor Phone:" />
+                 <apex:outputPanel styleClass="requiredInput" layout="block" id="pwPanel2" >
+                 <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+                 <apex:inputtext size="30" styleClass="requiredInput" value="{!requestorPhone}" id="requestorPhone"/>
+               </apex:outputPanel>   
+        </apex:pageBlockSectionItem>  
+               <BR/>
+               <BR/>
+        <apex:pageBlockSectionItem >   
+              <apex:outputLabel value="Update Type:" />
+                 <apex:outputPanel styleClass="requiredInput" layout="block" id="pwPanel3" >
+                 <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+                 <apex:selectList size="1" styleClass="requiredInput" value="{!requestorStatus}" id="requestorStatus"> 
+                    <apex:selectoption itemLabel="None Selected" itemValue="None Selected"></apex:selectoption>
+                    <apex:selectoption itemLabel="New Property" itemValue="New Property"></apex:selectoption>
+                    <apex:selectoption itemLabel="Closed Property" itemValue="Closed Property"></apex:selectoption>
+                  </apex:selectList>
+               </apex:outputPanel>      
+      </apex:pageBlockSectionItem>     
+                 <BR/>
+                 <BR/>
+                
+        <apex:pageBlockSectionItem >
+              <apex:outputLabel value="Property Name:" />
+                 <apex:outputPanel styleClass="requiredInput" layout="block" id="pwPanel4" >
+                 <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+                 <apex:inputText size="30" styleClass="requiredInput" value="{!requestorPropertyName}" id="requestorPropertyName"/>
+               </apex:outputPanel>   
+        </apex:pageBlockSectionItem>        
+                <BR/>  
+                
+        <apex:pageBlockSectionItem >
+              <apex:outputLabel value="Property Address:" />
+                 <apex:outputPanel styleClass="requiredInput" layout="block" id="pwPanel5" >
+                 <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+                 <apex:inputTextarea rows="4" cols="22" styleClass="requiredInput" value="{!requestorAddress}" id="requestorAddress"/>
+               </apex:outputPanel>   
+        </apex:pageBlockSectionItem>        
+                <BR/>        
+       
+       
+                <BR/>
+                <BR/>      
+             
+      <apex:pageBlockSectionItem >    
+              <apex:outputLabel value="Effective Date:" />
+                 <apex:outputPanel styleClass="requiredDate" layout="block" id="pwPanel6" >
+                 <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+                <apex:inputText styleClass="requiredDate" value="{!requestorDate}" id="requestorDate"/>
+              </apex:outputPanel>  
+      </apex:pageBlockSectionItem>   
+                <BR/>
+                <BR/>      
+      
+    <!--This is a standard SF date picker widget that does not work if the custom style sheet is applied-
+    onfocus="DatePicker.pickDate(false, this , false);"-->          
+                
+        <apex:pageBlockSectionItem >
+              <apex:outputLabel value="Attach Property Information:   " />
+                 <apex:outputPanel styleClass="Input" layout="block" id="pwPanel7" >
+                 <apex:outputPanel styleClass="InputBlock" layout="block"/>
+                      <apex:inputFile styleClass="Input" value="{!contentFile}" filename="{!nameFile}" id="attachment" />
+              </apex:outputPanel>   
+        </apex:pageBlockSectionItem>     
+        </apex:pageBlockSection>
+                <BR/>
+                <BR/>
+             <apex:pageBlockButtons location="Bottom">
+                 <apex:commandButton action="{!SaveRecord}" value="Save"/>
+             </apex:pageBlockButtons>
+            
+        </apex:pageBlock>
+    </apex:form>      
+    </div>
+    </div>
+    </body>
+</apex:page>

@@ -1,0 +1,368 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 07/31/2015
+           ******************************************************************* -->
+<apex:page standardController="Payment_Processing__c" extensions="PaymentProcessing,rkl.JS_Search" showHeader="false" sidebar="false" standardStylesheets="false">
+    <head>
+        <!--<apex:includeScript value="{!$Resource.rkl__jquery_1_8}" />-->
+        <apex:includeScript value="https://code.jquery.com/jquery-1.10.2.js"/>
+        <apex:includeScript value="{!$Resource.rkl__RKSearch}" />
+        <apex:stylesheet value="https://code.jquery.com/ui/1.10.3/themes/cupertino/jquery-ui.css"/>
+        <!--<apex:stylesheet value="{!$Resource.sfBootStrap2_css}"/>-->
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+        <apex:stylesheet value="{!$Resource.sfBootStrap_css}"/>
+        <apex:includeScript value="https://code.jquery.com/ui/1.11.4/jquery-ui.js" />
+    
+        <style>
+            .warningBox .ui-dialog-titlebar.ui-widget-header{
+                background : #ebcccc;
+                border: 1px solid #dca7a7;
+            }
+            
+            .warningBox .ui-button-icon-only.ui-dialog-titlebar-close{
+                background : #f9f0f0;
+                color : #e4b9b9;
+                border: 1px solid #e4b9b9;
+            }
+            
+        
+        </style>
+        
+        <script type="text/javascript">
+            var PaymentProcessingAPI = {
+                
+                doThings : function(){
+                    var $blocker = $('<div/>')
+                        .addClass('ui-widget-overlay ui-front initLoadScreen')
+                    $('body').append($blocker);
+                    var countOfRecords = 0;
+                    if(masterGS.useORexclude){
+                        countOfRecords = Object.keys(masterGS.checkedMap).length
+                    } else{
+                        countOfRecords = masterGS.total - Object.keys(masterGS.checkedMap).length
+                    }
+                    //var $goBtn = $('<button/>')
+                    //    .addClass('bootstrap-sf1 btn btn-default')
+                    var objectApi = masterGS.controllerData.objectApi;
+                    var queryFilters = masterGS.searchAObj.fetchQueryInfo();
+                    var validateRecords = function(){
+                        var $def = new $.Deferred()
+                        PaymentProcessing.validateRecords(
+                            objectApi,
+                            queryFilters,
+                            masterGS.checkedMap,
+                            masterGS.useORexclude,
+                            function(resp,evt) {
+                                if(resp && evt && evt.status) {
+                                    $def.resolve({response:resp});
+                                }
+                                else{
+                                    $def.reject({response:resp});
+                                }
+                            }, 
+                            {buffer: false, escape: true, timeout: 5000}
+                        );
+                        return $def.promise();
+                    };
+                    var doSubmitRecords = function(payeeORTrans, bankIds){
+                        var $def = new $.Deferred()
+                        PaymentProcessing.submitRecords(
+                            objectApi,
+                            queryFilters,
+                            masterGS.checkedMap,
+                            masterGS.useORexclude,
+                            payeeORTrans,
+                            bankIds,
+                            function(resp,evt) {
+                                if(resp && evt && evt.status) {
+                                    $def.resolve({response:resp});
+                                }
+                                else{
+                                    $def.reject({response:resp});
+                                }
+                            }, 
+                            {buffer: false, escape: true, timeout: 5000}
+                        );
+                        return $def.promise();
+                    };
+                    var dialogBoxes = {
+                        hardStopErrorMsg : function(msg){
+                            var $dialogDiv = $('<div/>');
+                            var $errorMsg = $('<div class="text-center"/>')
+                            .html(msg);
+                            var $okButtonDiv = $('<div class="text-right"/>');
+                            var $okButton = $('<button class="bootstrap-sf1 btn btn-default" />')
+                            .text('OK')
+                            .click(function(){
+                                $dialogDiv.dialog( "close" );
+                            });
+                            $okButtonDiv.append($okButton);
+                            $dialogDiv.append($errorMsg)
+                            .append($okButtonDiv);
+                            return $dialogDiv;
+                        },
+                        checkFilledErrorMsg : function(input){
+                            function loadTable($parent){
+                                var $headerRow = $('<tr/>')
+                                .html('<th>Transaction Description</th><th>Transaction Date</th><th>Amount</th><th>Check #</th>')
+                                $parent.append($headerRow);
+                                $.each(input.ai, function(index, val){
+                                    $.each(val.records, function(i,v){
+                                        var $myRow = $('<tr/>')
+                                        .html('<td>'+v.name+'</td><td>'+v.tDate+'</td><td>'+v.amount+'</td><td class="warning">'+v.curCkNum+'</td>')
+                                        .appendTo($parent);
+                                    });
+                                });
+                            }
+                            var that = this;
+                            var $dialogDiv = $('<div/>');
+                            var $overrideMsg1 = $('<div class="text-center"/>')
+                            .text('Oops! Some of the records you selected have check numbers populated, but are assigned a bank account where check numbers are system generated.');
+                            var $overrideMsg2 = $('<div class="text-center"/>')
+                            .text('Select "Cancel" to go back and edit the batch or "Continue" and the manually entered check numbers will be deleted and replaced by auto-generated check numbers.');
+                            var $overrideTbl = $('<table class="table table-hover" />');
+                            loadTable($overrideTbl);
+                            var $overrideConfirmText = $('<div/>');
+                            var $overrideConfirmContinue = $('<button class="btn btn-default" style="float:right;"/>')
+                            .text('Continue')
+                            .click(function(){
+                                var pVt = that.payeeVsTransMsg(input.cb)
+                                $dialogDiv.dialog( "close" );
+                                $('body').append($blocker);
+                                pVt.dialog({
+                                    width: 1024,
+                                    title: 'Batch Summary',
+                                    close: function( event, ui ) {$blocker.remove();},
+                                });
+                            });
+                            var $overrideConfirmCancel = $('<button class="btn btn-default"/>')
+                            .text('Cancel')
+                            .click(function(){
+                                $dialogDiv.dialog( "close" );
+                            });
+                            var $overrideConfirm = $('<div/>')
+                            .append($overrideConfirmText)
+                            .append($overrideConfirmContinue)
+                            .append($overrideConfirmCancel);
+                            
+                            $dialogDiv.append($overrideMsg1)
+                            .append($overrideMsg2)
+                            .append($overrideTbl)
+                            .append($overrideConfirm)
+                            return $dialogDiv;
+                        },
+                        payeeVsTransMsg : function(input){
+                            console.log('here',input);
+                            var batchCounter = 0;
+                            function loadTable($parent){
+                                console.log('loadingTable',input);
+                                var $headerRow = $('<tr/>')
+                                .html('<th>Bank Account</th><th># of Transactions</th><th># of Payees</th>');
+                                $parent.append($headerRow);
+                                var accountIds = [];
+                                $.each(input, function(index, val){
+                                    batchCounter += 1; 
+                                    var $myRow = $('<tr/>')
+                                    .html('<td>'+val.bankAccount+'</td><td>'+val.transTotal+'</td><td>'+val.payeeTotal+'</td>')
+                                    .appendTo($parent);
+                                    accountIds.push($.type(val.bankAccountId)==="undefined"?'null':val.bankAccountId);
+                                });
+                                return accountIds;
+                            }
+                            var $dialogDiv = $('<div/>');
+                            var $topLabel = $('<div class="text-center"/>').html('Below is a summary of your selected records<br/>A batch record will be created for each bank account.');
+                            var $bankTable = $('<table class="table table-hover"/>');
+                            var accountIds = loadTable($bankTable);
+                            var processingMethodDiv = $('<div class="text-center"/>');
+                            var processingMethodMsg = $('<div/>').text('Would you like to group these payments by transaction or payee?');
+                            var payeeSelect = $('<input type="radio" name="mode" value="payee"/>');
+                            var transSelect = $('<input type="radio" name="mode" value="trans"/>');
+                            var payeeMsg = $('<div/>').text('Payee');
+                            var transMsg = $('<div/>').text('Transaction');
+                            var payeeDiv = $('<div class="text-center" style="display:inline-block; padding:10px;"/>').append(payeeMsg).append(payeeSelect);
+                            var transDiv = $('<div class="text-center" style="display:inline-block; padding:10px;"/>').append(transMsg).append(transSelect);
+                            var confirmContinue = $('<button class="btn btn-default" style="float:right;"/>')
+                            .text('Complete')
+                            .click(function(){
+                                
+                                $dialogDiv.dialog( "close" );
+                                $('body').append($blocker);
+                                
+                                if(payeeSelect.is(':checked') || transSelect.is(':checked')){
+                                    var confirmDiv = $('<div/>');
+                                    var titleDiv = $('<div style="padding-bottom: 10px;"/>')
+                                        .text(batchCounter>1?(batchCounter+' Batches will be created.'):(batchCounter+' Batch will be created.'))
+                                        .appendTo(confirmDiv);
+                                    var buttonDiv = $('<div/>')
+                                        .appendTo(confirmDiv);
+                                    var confirmContinue = $('<button class="btn btn-default" style="float:right;"/>')
+                                        .text('OK')
+                                        .appendTo(buttonDiv)
+                                        .click(function(){
+                                            confirmContinue.attr('disabled','disabled');
+                                            var submittingRecords = doSubmitRecords(payeeSelect.is(':checked'),accountIds);
+                                            submittingRecords.done(function(resp){
+                                                submittedRecordsSuccess(resp);
+                                            })
+                                            submittingRecords.fail(function(resp){
+                                                submittedRecordsFailure(resp);
+                                            })
+                                        });
+                                    var confirmCancel = $('<button class="btn btn-default"/>')
+                                        .text('Cancel')
+                                        .appendTo(buttonDiv)
+                                        .click(function(){
+                                            confirmDiv.dialog("close");
+                                        });
+                                    confirmDiv.dialog({
+                                        title:'Confirmation',
+                                        close: function( event, ui ) {$blocker.remove();},
+                                    });
+                                } else{
+                                    var errorDialog = $('<div/>');
+                                    var errorMessage = $('<div style="padding-bottom: 10px;"/>').html('You must process by transaction or payee.');
+                                    var errorButton = $('<button class="btn btn-default"/>')
+                                    .text('Close')
+                                    .click(function(){
+                                        //$dialogDiv.dialog( "open" );
+                                        errorDialog.dialog("close");
+                                    });
+                                    errorDialog.append(errorMessage).append(errorButton).dialog({title:'Error',close: function( event, ui ) {$dialogDiv.dialog( "open" );$blocker.remove();},});
+                                }
+                            });
+                            var confirmCancel = $('<button class="btn btn-default"/>')
+                            .text('Cancel')
+                            .click(function(){
+                                $dialogDiv.dialog( "close" );
+                            });
+                            var confirmDiv = $('<div/>').append(confirmContinue).append(confirmCancel);
+                            processingMethodDiv
+                            .append(processingMethodMsg)
+                            .append(transDiv)
+                            .append(payeeDiv);
+                            
+                            $dialogDiv
+                            .append($topLabel)
+                            .append($bankTable)
+                            .append(processingMethodDiv)
+                            .append(confirmDiv);
+                            return $dialogDiv;
+                        }
+                    };
+                    function validatedRecordsSuccess(input){
+                        console.log(input);
+                        var dialogToDisplay = null;
+                        var dialogObject = {
+                            width: 400,
+                            title: '',
+                            close: function( event, ui ) {$blocker.remove();},
+                        };
+                        if(input.em === ''){
+                            if(input.ai.length === 0){
+                                dialogToDisplay = dialogBoxes.payeeVsTransMsg(input.cb);
+                                dialogObject.width = 800;
+                                dialogObject.title = 'Batch Summary';
+                            } else{
+                                dialogToDisplay = dialogBoxes.checkFilledErrorMsg(input);
+                                dialogObject.width = 1024;
+                                dialogObject.title = 'Warning';
+                                dialogObject.dialogClass= 'warningBox';
+                            }
+                        } else{
+                            dialogToDisplay = dialogBoxes.hardStopErrorMsg(input.em);
+                            dialogObject.width = 400;
+                            dialogObject.title = 'Error';
+                        }
+                        
+                        dialogToDisplay.dialog(dialogObject);
+                    };
+                    function validatedRecordsFailure(input){
+                        //rkl.debug.logging=true;
+                        //rkl.debug.log(input);
+                        $blocker.remove();
+                        alert(input.response);
+                    };
+                    function submittedRecordsSuccess(input){
+                        //rkl.debug.logging=true;
+                        //rkl.debug.log(input);
+                        $blocker.remove();
+                        if($.type(input.response)==='string'){
+                            window.top.location.href = '/'+input.response.substring(0,3);
+                        } else {
+                            window.top.location.href = '/';
+                        }
+                    };
+                    function submittedRecordsFailure(input){
+                        //rkl.debug.logging=true;
+                        //rkl.debug.log(input);
+                        $blocker.remove();
+                        alert(input.response);
+                    };
+                    
+                    if(countOfRecords===0){
+                        dialogBoxes.hardStopErrorMsg('You have selected no records. <br/>Please select 1 or more records and try again')
+                            .dialog({
+                                title:'Error',
+                                width:400,
+                                close: function( event, ui ) {
+                                    $blocker.remove();
+                                },
+                            });
+                    } else{
+                        var validatingRecords = validateRecords();
+                        validatingRecords.done(function(resp){
+                            validatedRecordsSuccess(resp.response);
+                        })
+                        validatingRecords.fail(function(resp){
+                            validatedRecordsFailure(resp);
+                        })
+                    }
+
+                },
+            }
+            $(document).ready(function() {
+                var inputObj = {
+                    serverData: $.parseJSON({!pageData2}),
+                    $parent: $('#mainSearch'),
+                    remoteActionClass: rkl.JS_Search
+                };
+                //rkl.debug.logging = true;
+                //rkl.debug.log($.parseJSON({!pageData2}));
+                masterGS = rkl.genericSearchs.createGenericSearch(inputObj);
+                masterGS.doSearch();
+                var $batchButton = $('<button/>')
+                    .addClass('bootstrap-sf1 btn btn-primary')
+                    .css('color','#ffffff')
+                    .text('Batch')
+                    .click(PaymentProcessingAPI.doThings);
+                var $backButton = $('<button/>')
+                    .html('<span class="glyphicon glyphicon-remove"></span>')
+                    .css('float','right')
+                    .addClass('bootstrap-sf1 btn btn-primary')
+                    .click(function(){
+                        if('{!$CurrentPage.Parameters.retURL}'!=''){
+                            window.top.location.href = '{!$CurrentPage.Parameters.retURL}';
+                        } else{
+                            window.top.location.href = '/';
+                        }
+                    })
+                    .appendTo($('.Claim_Transaction__c_instructions'))
+                $('.Claim_Transaction__c_selectButton')
+                    .parent()
+                        .append($batchButton);
+
+                $('.Claim_Transaction__c_selectButton')
+                    .remove();
+
+
+            });
+        </script>
+
+    </head>
+    
+    <body>
+        <div id='mainSearch'></div>
+
+    </body>
+        
+</apex:page>

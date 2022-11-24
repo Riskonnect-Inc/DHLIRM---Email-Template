@@ -1,0 +1,40 @@
+<apex:component controller="PropertyValueComponentController">
+    <!-- Attribute Definition -->
+    <apex:attribute name="myObject" description="Object we wish to view the history of" type="SObject" required="true" assignTo="{!myObject}" /> 
+
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+   
+      function drawChart() {
+         var c1 = 0;
+         
+         var d = new Array();
+         d.push (['Date', 'Total Insured Value', 'Total Building Value', 'Total Business Interruption']);
+         <apex:repeat value="{!CustomHistory}" var="object">
+            var s1 = '{!object.valuationDate}'.split(" ");
+            var s2 = s1[2]+ ' ' + s1[1] + ' ' + s1[5];
+            var i1 =({!object.totalInsuredValue});
+            var i5 =({!object.totalBuildingValue});
+            var i6 =({!object.totalBusinessInterruption});
+            d.push([s2, i1, i5, i6]);           
+        </apex:repeat>   
+                
+        var data = google.visualization.arrayToDataTable(d);
+
+        var options = {
+          title: 'Property Values',
+          curveType: 'function',
+          pointSize: 5,
+          series: [{color: 'red'},{color: 'blue'}, {color: 'green'}]
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+
+    <div id="chart_div" style="width: 900px; height: 300px;"></div>
+
+</apex:component>

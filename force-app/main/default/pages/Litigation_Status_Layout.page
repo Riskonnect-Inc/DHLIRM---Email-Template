@@ -1,0 +1,40 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 5/29/2013
+           ******************************************************************* -->
+<apex:page standardController="Legal_Status__c"    showHeader="true"  tabStyle="Legal_Status__c" title="{!Legal_Status__c.Name} " showChat="false"  >
+  <apex:stylesheet value="/sCSS/21.0/sprites/1297816277000/Theme3/default/gc/versioning.css" />   
+    
+    
+    
+<apex:variable var="renderTabs" value="{!if($Setup.RMISPersonalSettings__c.Use_Tabbed_Interface__c == TRUE,TRUE,FALSE)}" /> 
+<apex:variable var="renderDetailSection" value="{!if($Setup.RMISPersonalSettings__c.Use_Tabbed_Interface__c == TRUE,FALSE,TRUE)}" /> 
+
+<chatter:feedWithFollowers rendered="{!$Setup.ChatterStatus__c.Litigation_Status_Chatter__c}" entityId="{!Legal_Status__c.id}"/>
+<apex:detail relatedList="true" title="true" inlineEdit="true" rendered="{!renderDetailSection}"/>
+
+
+
+   <apex:tabPanel switchType="client" selectedTab="tabdetails"  width="1200px" id="TabPanel" tabClass="activeTab"  inactiveTabClass="inactiveTab" rendered="{!renderTabs}">   
+     
+      <apex:tab label="{!Legal_Status__c.Name} " name="Details" id="tabdetails" style="background-color: white; font-size:9pt;" >
+         <apex:detail relatedList="false" title="true"   inlineEdit="true"/>
+      </apex:tab>
+
+   
+   
+    
+
+            
+      <apex:tab label="Tasks"  name="Tasks" id="tabTasks">            
+        <apex:relatedList title="Open Tasks" subject="{!Legal_Status__c}" list="OpenActivities" />
+         <apex:relatedList title="Closed Tasks" subject="{!Legal_Status__c}" list="ActivityHistories" />
+      </apex:tab>   
+      
+ 
+   <apex:tab label="History"  name="History" id="tabHistory">
+         <c:GenericHistoryComponent recordLimit="50" myObject="{!Legal_Status__c}"/>
+   </apex:tab>
+ 
+ 
+   </apex:tabPanel>
+</apex:page>

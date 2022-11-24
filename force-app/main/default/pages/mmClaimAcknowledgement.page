@@ -1,0 +1,34 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 6/24/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" showheader="false">
+
+<p style="position:float;left:25px;">
+  <apex:outputtext value="{0,date,MMMMMMM' 'dd', 'yyyy}"><apex:param value="{!TODAY()}"></apex:param></apex:outputtext></p>
+<br/>
+ <div>&nbsp;{!Claim__c.Claimant_First_Name__c} {!Claim__c.Claimant_Last_Name__c}</div>
+<div>&nbsp;{!Claim__c.Claimant_Address_Line1__c}</div>
+<div>&nbsp;{!Claim__c.Claimant_City__c}, {!Claim__c.Claimant_State__c}{!Claim__c.Claimant_Postal_Code__c}</div>
+<div>&nbsp;</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Re:&nbsp;&nbsp;&nbsp; Claim Number:&nbsp; {!Claim__c.Name}</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; Date of Loss:&nbsp; 
+<apex:outputtext value="{0,date,MMMMMMM' 'dd', 'yyyy}"><apex:param value="{!Claim__c.Date_of_Loss__c}"></apex:param></apex:outputtext>
+</div>
+<div style="margin-left:58.5pt">&nbsp;</div>
+<div>Dear {!Claim__c.Claimant_First_Name__c} {!Claim__c.Claimant_Last_Name__c},</div>
+<div>&nbsp;</div>
+<div>This correspondence acknowledges receipt of your {!Claim__c.Coverage_Major_Description__c} claim submitted on &nbsp;
+<apex:outputtext value="{0,date,MMMMMMM' 'dd', 'yyyy}"><apex:param value="{!Claim__c.Date_Reported_to_TPA__c}"></apex:param></apex:outputtext>
+
+.&nbsp; I am the adjuster assigned to handle your claim and my contact information is below.&nbsp; If, at any time during the claims process, you have any questions, please feel free to contact me.</div>
+<div>&nbsp;</div>
+<div>Sincerely,&nbsp;</div>
+<p>
+            {!$User.FirstName}  {!$User.LastName}<br/>
+            {!$User.Title} <br/>
+            {!$User.Phone}
+            
+            </p>
+
+
+</apex:page>

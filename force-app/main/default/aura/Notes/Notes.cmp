@@ -1,0 +1,126 @@
+<!--Notes-->
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName,force:lightningQuickAction,force:appHostable"  controller="Notes_Controller" access="global" >
+<!-- Attributes -->
+<aura:attribute name="objName" type="String" access="global"/>
+<!-- MDU: "childName" is very poorly named. it's actually the lookup field from the Notes object to the host parent type (e.g. Claim__c): -->
+<aura:attribute name="childName" default="Claim__c" type="String" access="global"/>
+<aura:attribute name="sourceField" type="String" access="global"/>
+<aura:attribute name="noteCat" type="String"  access="global"/>
+<aura:attribute name="titleAPI" type="String" access="global"/>
+<aura:attribute name="bodyAPI" type="String" access="global"/>
+<aura:attribute name="createdBy" type="String" access="global"/>
+<aura:attribute name="notes" type="Object[]" />
+<aura:attribute name="allNotes" type="Object[]" />
+<aura:attribute name="hasData" type="Boolean" />
+<aura:attribute name="renderNoResults" type="Boolean" />
+<aura:attribute name="noRecordsWithFilter" type="Boolean" default="false"/>
+<aura:attribute name="rowIndex" type="Integer" default="3" />
+<aura:attribute name="hideBtn" type="Boolean" default="false"/>
+<aura:attribute name="options" type="List" />
+<aura:attribute name="sources" type="List" />
+<!-- MDU: picklists and record types metadata for the Notes object type: -->
+<aura:attribute name="meta" type="Object"/>
+
+<ltng:require styles="{!$Resource.notes_create_dialog_styles}"/>
+
+<aura:method name="newNote" action="{!c.fireNewNote}">
+    <aura:attribute name="recordTypeId" type="String" access="global"/>
+</aura:method>
+
+<!--Handlers-->
+<aura:handler event="force:showToast" action="{!c.handleAfterSave}"/> 
+<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+<lightning:overlayLibrary aura:id="overlays"/>
+
+<article class="slds-card slds-card_boundary">
+    <aura:if isTrue="{!v.hasData}">
+        <div class="slds-card__header slds-grid slds-wrap">
+            <div class="slds-col slds-size--1-of-1 slds-small-size--3-of-4">
+                <div class="slds-grid slds-wrap">
+                    <div class="slds-col slds-size--1-of-1 slds-small-size--1-of-3">
+                        <lightning:select aura:id="timeFilter" onchange="{!c.loadData}">
+                            <option value="ALL_TIME">All Time</option>
+                            <option value="LAST_N_DAYS:7">Last 7 days</option>
+                            <option value="LAST_N_DAYS:30">Last 30 Days</option>
+                            <option value="LAST_N_MONTHS:6">Last 6 months</option>
+                            <option value="LAST_YEAR">Last Year</option>
+                        </lightning:select>
+                    </div>
+                    <div class="slds-col slds-size--1-of-1 slds-small-size--1-of-3">
+                        <lightning:select aura:id="category" onchange="{!c.loadData}">
+                            <option value="ALL_CAT">All Categories</option>
+                            <aura:iteration items="{!v.options}" var="item">
+                                <option text="{!item.label}" value="{!item.value}" />
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                    <div class="{! v.sourceField == null ?  'slds-hide':'slds-col slds-size--1-of-1 slds-small-size--1-of-3' }" >
+                        <lightning:select aura:id="sourceFilter" onchange="{!c.loadData}">
+                            <option value="ALL">All Sources</option>
+                            <aura:iteration items="{!v.sources}" var="sourceItem">
+                                <option text="{!sourceItem.label}" value="{!sourceItem.value}" />
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-col slds-size--1-of-1 slds-small-size--1-of-4" style="text-align:right;">
+                <div class="slds-button-group" role="group">
+                    <button class="slds-button slds-button_neutral" onclick="{!c.notifyNewNote}">New</button>
+                </div>
+            </div>
+        </div>
+    </aura:if> 
+        <aura:if isTrue="{!and(!v.noRecordsWithFilter,v.hasData)}">
+            <div id="notes" >                
+                    <aura:iteration items="{!v.notes}" var="note" indexVar="i">
+                        <div class="note-wrapper">
+                            <div class="note">
+                                <div class="slds-grid slds-wrap slds-m-bottom_small">
+                                    <div class="slds-col"> <a name="{!note.id}" onclick="{!c.handleClick}"><aura:unescapedHtml value="{!note.title}" /></a></div>
+                                    <div class="slds-col" style="text-align: right;">
+                                        <ui:outputDateTime value="{!note.createdDate}" class="slds-m-right_x-small"/>
+                                        <lightning:buttonMenu onselect="{! c.handleMenuSelect }" menuAlignment="center">
+                                            <lightning:menuItem label="Edit" value="{!note.id+'--edit'}" />
+                                            <lightning:menuItem label="Delete" value="{!note.id+'--delete'}" />
+                                        </lightning:buttonMenu>
+                                    </div>
+                                </div>
+                                <div class="slds-m-bottom_small"><aura:unescapedHtml value="{!note.body}" /></div>
+                                <span class="slds-text-color_weak slds-m-right_small">Category: {!note.category}</span>
+                                <span class="{! v.sourceField == null ?  'slds-hide': 'slds-text-color_weak slds-m-right_small'}">Type: {!note.type}</span>
+                                <span class="slds-text-color_weak">Author: {!note.createdBy}</span>
+                            </div>
+                        </div>
+                    </aura:iteration>
+                <div class="{! v.hideBtn ?  'slds-hide':null }" >
+                    <button class="slds-button slds-button_neutral" style="display:inherit; margin:auto;margin-top: 5px;" onclick="{!c.loadMoreData}">Load More</button> 
+                    <footer class="slds-card__footer"><a  onclick="{!c.loadAllData}">View All</a></footer>        
+                </div>
+         </div>   
+        </aura:if>
+        <aura:if isTrue="{!and(v.noRecordsWithFilter,v.hasData)}">
+            <div id="no-data">
+                <img src="{!$Resource.noResults}" />
+                <div class="slds-text-color--error"> No Result Found...</div>
+            </div>
+        </aura:if>
+    </article>
+    
+    <aura:if isTrue="{!and(!v.hasData,v.renderNoResults)}"> 
+        <article class="slds-card slds-p-bottom_large slds-p-around_medium">
+            <div id="no-data-wrapper" class="slds-p-around_x-large">
+                <div id="no-data">
+                    <img src="{!$Resource.IllustrationEmpty}" class="slds-illustration-medium"/> <!-- {!$Resource.SldsIllustrations + '/no-data.png'} -->
+                    <div class="slds-text-heading_medium">No Notes Yet...</div>
+                    <div class="slds-text-body_regular" style="max-width: 75%; margin: auto;">Be sure to take notes to keep a log of important information.</div>
+                    <div class="slds-button-group" role="group" style="margin-top:10px;">
+                        <button class="slds-button slds-button_neutral" onclick="{!c.notifyNewNote}">New Note</button>
+                    </div>   
+                </div>
+            </div>
+        </article> 
+    </aura:if>    
+	
+</aura:component>

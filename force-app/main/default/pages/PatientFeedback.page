@@ -1,0 +1,257 @@
+<apex:page controller="rkl.JS_Search" extensions="PatientFeedback_Controller" docType="html-5.0" action="{!pageLoad}" sidebar="false" showHeader="false" standardStylesheets="false" cache="false">
+ <head>
+
+        <rkl:RKPIncludes includeModules="*,depend"
+            language="en"
+            additionalImages="ajax_loader_gif"
+            additionalJS="PortalDynamicLogic"
+        />
+
+        <style type="text/css">
+            body {
+                background: rgb(240, 240, 240);
+            }
+            #finishLater {
+                margin-top: 20px;
+                margin-right: 10px;
+            }
+            .rk-cnavTop {
+                height: 75px;
+                background-color:#8C8686;
+            }
+            .rk-cnavBar {
+                top: 75px;
+            }
+            .rk-cnavMBody {
+                top: 75px;
+            }
+            .rk-cnavSplitter {
+                top: 75px;
+            }
+
+            .modal-dialog {
+                z-index: 1000;
+            }
+            .loading {
+                z-index: 10;
+            }
+
+        </style>
+        <script>
+
+            (function($) {
+                "use strict";
+
+                $(document).on('programReady', function(event, program) {
+                  $('.initLoadScreen').fadeOut();
+
+                  if(program.$topBar) {
+                      $('<a id="finishLater" class="btn pull-right" style="color:white;" href="{!$Page.SelectEvent}">Return Home</a>')
+                          .appendTo(program.$topBar);
+
+                      $('#finishLater').click(function(e){
+                          e.preventDefault();
+                          var href = $(this).attr("href");
+
+                          var $thisMessage = $("span[data-rktrans='dialog.Warning.Message']").clone();
+
+                          var $confirm = rkl.portal.ui.util.portalDialog({type: 'confirm', $message: $thisMessage});
+
+                          $confirm
+                          .done(function() {
+                              window.location = href;
+
+                          });
+
+                      });
+
+                      $('<img height="75" />')
+                            .attr("src","{!$Resource.rkLogo3}")
+                            .addClass("image")
+                      .appendTo(program.$topBar);
+                  }
+
+                }); 
+                var submitBlock = {
+                    validations: [function(program) {
+                        var $def = new $.Deferred();
+
+                        rkl.portal.ui.util.portalDialog({type: 'confirm', $deferred: $def});
+
+                        program.sections('Submit').sobject().get('im_status__c').value('Submitted');
+
+                        return $def.promise();
+                    }],
+                    prune_safety: [
+                        {
+
+                            sobjectType: 'patient_satisfaction__c',
+                            records: [], // if there are any records that may be hidden that we want to save
+                            fields: ['recordtypeid', 'im_status__c'],  // if there are any fields that may be hidden that we want to save
+
+                        }
+                    ],
+                    prune_verify: [function() {
+                        var $def = new $.Deferred();
+
+                        console.log('Pruned', arguments);
+                        $def.resolve();
+                        return $def.promise();
+                    }],
+                    final_save_done: [function(program) {
+                        var $def = new $.Deferred();
+
+                        var $thisMessage = $("span[data-rktrans='dialog.Success.Message']")
+                                            .append(program.sections('Submit').sobject().get('name').value())
+                                            .append($("span[data-rktrans='dialog.Success.Signature']"));
+                        var $thisTitle = $("span[data-rktrans='dialog.Success.Title']").clone();
+                        var $success = rkl.portal.ui.util.portalDialog({type: 'success', $message: $thisMessage, $title: $thisTitle});
+
+                        $success
+                        .done(function() {
+                            $def.resolve();
+                             window.location = '{!JSENCODE($Page.SelectEvent)}';
+
+                        });
+
+                        return $def.promise();
+                    }]
+                };
+                
+                var config = {
+                    controller: PatientFeedback_Controller,
+                    templateRetrieveFuncName: "retrieveTemplate",  
+                    //navTemplate: "tocnav",  //default is tocnav
+                    masterTemplate: "{!$CurrentPage.parameters.recType}",
+                    htmlSelector: "#PortalRoot",
+                    recordId: "{!recordId}",
+                    templates: {
+                        General_Feedback: {
+                            sections: {
+                                General_Feedback: {
+                                    postInit: function(section) {
+
+                                    }
+                                 },
+                                Submit: {
+                                    postInit: function (section) {
+                                        section.visible(sectionStatus(section, function() { return true; }));
+                                    }
+
+                                }
+                            },  
+                            submit : submitBlock
+                        }, 
+                        Compliment: {
+                            sections: {
+                                Compliment: {
+                                    postInit: function(section) {
+                                        maxDate(section.fields('date_feedback_received__c'), new Date());
+                                    }
+                                },
+                                Compliment_2: {
+                                    postInit: function(section) {
+                                        section.visible(sectionStatus(section, function() { return true; }));
+
+                                    }
+                                },
+                                Reporter: {
+                                    postInit: function(section) {
+                                        section.visible(sectionStatus(section, function() { return true; }));
+
+                                    }
+                                },
+                                Submit: {
+                                    postInit: function (section) {
+                                        section.visible(sectionStatus(section, function() { return true; }));
+                                    }
+
+                                }
+                            },  
+                            submit : submitBlock
+                        }, 
+                        Complaint: {
+                            sections: {
+                                General_Information: {
+                                    postInit: function(section) {
+                                        hideShow(section, ['Nature_of_Complaint_Grievance__c'], ifMultiPickIncludes('Appointment/Access'), ['Appointment_Access_Issue__c']);
+                                        hideShow(section, ['Nature_of_Complaint_Grievance__c'], ifMultiPickIncludes('Behavior'), ['Behavior_Issue__c']);
+                                        hideShow(section, ['Nature_of_Complaint_Grievance__c'], ifMultiPickIncludes('Billing'), ['Billing_Issue__c']);
+                                        hideShow(section, ['Nature_of_Complaint_Grievance__c'], ifMultiPickIncludes('Communication'), ['Communication_Issue__c']);
+                                        hideShow(section, ['Nature_of_Complaint_Grievance__c'], ifMultiPickIncludes('Environment'), ['Environment_Issue__c']);
+                                        hideShow(section, ['Nature_of_Complaint_Grievance__c'], ifMultiPickIncludes('HIPAA Violation'), ['HIPAA_Violation_Privacy_Issue__c']);
+                                        hideShow(section, ['Nature_of_Complaint_Grievance__c'], ifMultiPickIncludes('Treatment/Quality of Care'), ['Treatment_Quality_of_Care__c']);
+
+                                        maxDate(section.fields('date_of_event__c'), new Date());
+
+                                    }
+                                },
+                                Individual_Providing_Feedback: {
+                                    postInit: function(section) {
+                                        hideShow(section, ['Patient_Involved__c'], isYes, ['Patient_Visit__c','Relationship__c','Patient_First_Name__c','Patient_Last_Name__c','Patient_MRN__c','Patient_DOB__c']);
+                                        maxDate(section.fields('patient_dob__c'), new Date());
+
+                                        hideShowTwoFields(section, ['patient_involved__c','relationship__c'],['patient_involved__c'], isOneOf(['Guardian','Spouse','Family Member','Other']), isNo,'OR', [
+                                            section.fields('involved_party_first__c'),
+                                            section.fields('involved_party_last_name__c'),
+                                            section.fields('involved_party_address__c'),
+                                            section.fields('involved_party_city__c'),
+                                            section.fields('involved_party_state__c'),
+                                            section.fields('involved_party_zip__c'),
+                                            section.fields('involved_party_phone__c'),
+                                            section.fields('involved_party_email__c')]);
+                                        section.visible(sectionStatus(section, function() { return true; }));
+
+                                   }
+                                },
+                                Submit: {
+                                    postInit: function (section) {
+                                        section.visible(sectionStatus(section, function() { return true; }));
+                                    }
+
+                                }
+                            },  
+                            submit : submitBlock
+                        }, 
+                     } 
+                };
+                
+                rkl.portal.ui.init(config)
+                    .done(function(tconfig) {
+
+                        tconfig.sobject.get('im_status__c').value('In Progress');
+
+                        tconfig.program.init();
+
+                        $(document).trigger("programReady", tconfig.program);
+                    })
+                    .fail(function() {
+                        console.log(arguments);
+                        alert("Something bad happened during initialization - See console");
+                });
+
+
+            })(jQuery);
+
+        </script>
+
+    </head>
+    <body>
+        <div id="customMessages" style="display: none;">
+            <span data-rktrans="dialog.Success.Title" data-rktranselemtype="ui.label">Success!</span>
+            <span data-rktrans="dialog.Success.Message" data-rktranselemtype="ui.label">Thank you for submitting the feedback report!
+                This allows us to identify and address issues that will help us improve the overall patient / visitor experience.<br/><br/>Patient Feedback Event #: </span>
+            <span data-rktrans="dialog.Success.Signature" data-rktranselemtype="ui.label"><br/><br/>Thanks,<br/><br/>Patient Advocacy</span>
+            <span data-rktrans="dialog.Warning.Message" data-rktranselemtype="ui.label">If you return to home, all information entered on this form will be lost. Would you like to continue?</span>
+        </div>
+        <div class="ui-widget-overlay ui-front initLoadScreen" style="display: true;">
+            <div class="crMsg" style="text-align: center;font-weight: bold;">
+                Loading... <br/>
+                 <img src="{!HTMLENCODE($Resource.rkl__ajax_loader_gif)}" height="50" width="50"/> <br/>
+                Please Wait...
+            </div>
+        </div>
+        <div id="PortalRoot"></div>
+    </body>
+
+</apex:page>

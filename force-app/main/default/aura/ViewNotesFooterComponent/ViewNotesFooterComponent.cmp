@@ -1,0 +1,11 @@
+<aura:component controller="ViewNotesQuickAction_Controller">
+	<aura:attribute name="status" type="Object" access="Public"/>
+    <aura:attribute name="header" type="Aura.Component" access="Public"/>
+    <aura:attribute name="content" type="Aura.Component" access="Public"/>
+    <aura:attribute name="noteCatValue" type="List" access="Public"/>
+    <aura:attribute name="recordId" type="String" access="Public"/>
+
+    <lightning:overlayLibrary aura:id="overlays"/>
+	<lightning:button label="Cancel" onclick="{!c.onCancel}"/>
+    <lightning:button label="View Notes" variant="brand" onclick="{!c.handleExport}"/>
+</aura:component>

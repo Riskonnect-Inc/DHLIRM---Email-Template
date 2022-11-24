@@ -1,0 +1,42 @@
+<aura:component access="global" >
+    <!-- TODO: report map -->
+    <aura:attribute name="payload" type="Object" description=""/>
+        <aura:handler name="change" value="{!v.payload}" action="{!c.payloadChanged}"/>
+    <aura:attribute name="titles" type="List" access="Private" description=""/>
+    <aura:attribute name="categories" type="List" access="Private" description=""/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+
+    <div>
+    <table class="{!'slds-table slds-table_bordered slds-table_cell-buffer ' + (v.titles.length > 1 ? 'multiTitle' : 'singleTitle')}" role="grid">
+        <thead>
+            <aura:iteration items="{!v.titles}" var="tr">
+                <tr class="{!'slds-line-height_reset title' + tr.t + (tr.t == 0 ? ' slds-text-title_caps' : '')}">
+                    <aura:iteration items="{!tr}" var="t">
+                        <th scope="col" class="slds-cell-wrap slds-text-align_right" colSpan="{!t.colSpan}">
+                            <div class="title">{!t.title}</div>
+                        </th>
+                    </aura:iteration>
+                </tr>
+            </aura:iteration>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.categories}" var="cat">
+                <tr class="{!'slds-hint-parent ' + cat.styleClass}">
+                    <aura:iteration items="{!cat.cells}" var="cell">
+                        <td data-label="{!cell.val}" class="{!'slds-text-align_right subType-' + cell.col.subType + ' colType-' + cell.col.colType}">
+                            <aura:if isTrue="{!cell.reportUrl}">
+                                <a title="{!cell.val}" data-value="{!cell.reportUrl}" onclick="{!c.navigateToReport}">{!cell.val}</a>
+                                <aura:set attribute="else">
+                                    <div title="{!cell.val}">{!cell.val}</div>
+                                </aura:set>
+                            </aura:if>
+                        </td>
+                    </aura:iteration>
+                </tr>
+            </aura:iteration>
+        </tbody>
+    </table>
+    </div>
+
+</aura:component>

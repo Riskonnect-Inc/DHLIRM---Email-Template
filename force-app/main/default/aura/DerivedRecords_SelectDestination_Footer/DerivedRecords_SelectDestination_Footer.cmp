@@ -1,0 +1,12 @@
+<aura:component controller="DerivedRecord_Controller">
+	<aura:attribute name="recordId" type="Id"/>
+    <aura:attribute name="applicableConfigs" type="Object[]"/>
+
+    <aura:attribute name="parentOverlayLib" type="Object"/>
+
+	<lightning:overlayLibrary aura:id="overlays"/>
+
+	<aura:iteration items="{!v.applicableConfigs}" var="config">
+        <lightning:button label="{!config.label}" class="slds-button_brand" onclick="{!c.handleConfigSelected}" value="{!config.asJSON}"/>
+    </aura:iteration>
+</aura:component>

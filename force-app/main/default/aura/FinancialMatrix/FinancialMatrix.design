@@ -1,0 +1,54 @@
+<design:component label="Financial Matrix">
+	<design:attribute
+		name="showTransactions"
+		label="Show Transaction Area?"
+		description="If false the transaction list area will be hidden."/>
+	<design:attribute
+		name="allowNewTransactions"
+		label="Show New-Transaction Buttons (e.g. Reserve, Payment)?"
+		description="If true the new-transactions button group will be displayed, contingent upon a compatible Occurrence/Claim state and CRUD permissions"/>
+	<design:attribute
+		name="transactionColumn1"
+		label="First Column"
+		description="Transaction area First Column."/>
+	<design:attribute
+		name="transactionColumn2"
+		label="Second Column"
+		description="Transaction area Second Column."/>
+	<design:attribute
+		name="transactionColumn3"
+		label="Third Column"
+		description="Transaction area Third Column."/>
+	<design:attribute
+		name="transactionColumn4"
+		label="Fourth Column"
+		description="Transaction area Fourth Column."/>
+	<design:attribute
+		name="transactionColumn5"
+		label="Fifth Column"
+		description="Transaction area Fifth Column."/>
+	<design:attribute
+		name="transactionColumn6"
+		label="Sixth Column"
+		description="Transaction area Sixth Column."/>
+	<design:attribute
+		name="transactionColumn7"
+		label="Seventh Column"
+		description="Transaction area Seventh Column."/>
+	<design:attribute
+		name="transactionColumn8"
+		label="Eighth Column"
+		description="Transaction area Eighth Column."/>
+	<design:attribute
+		name="transactionColumn9"
+		label="Ninth Column"
+		description="Transaction area Ninth Column."/>
+	<design:attribute
+		name="transactionColumn10"
+		label="Tenth Column"
+		description="Transaction area Tenth Column."/>
+	<design:attribute
+		name="isOccurrence"
+		label="Is Occurrence?"
+		description="Deprecated; component will now auto-detect Claim vs Occurrence"/>
+</design:component>

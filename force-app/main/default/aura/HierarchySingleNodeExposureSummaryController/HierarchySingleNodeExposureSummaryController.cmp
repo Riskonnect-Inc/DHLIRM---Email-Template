@@ -1,0 +1,85 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    <aura:attribute name="viewingRecord" type="Object" access="global" description="Used with Lightning Data Service record loading"/>
+    <aura:attribute name="viewingRecordFields" type="Object" access="global" description="Used with Lightning Data Service record reference" />
+    <aura:attribute name="viewingRecordError" type="string" access="global" description="Used with Lightning Data Service error handling"/>
+    
+    
+    <!-- LIGHTNING DATA SERVICE -->
+    <force:recordData aura:id="recordLoader" 
+                      recordId="{!v.recordId}"
+                      fields="rkl__Exposure_Summary_1__c,rkl__Exposure_Summary_2__c,rkl__Exposure_Summary_3__c,rkl__Exposure_Summary_4__c,rkl__Exposure_Summary_5__c"
+                      mode="VIEW"
+                      targetRecord="{!v.viewingRecord}"
+                      targetFields="{!v.viewingRecordFields}"
+                      targetError="{!v.viewingRecordError}" 
+                      recordUpdated="{!c.handleRecordUpdated}" />
+    
+    <lightning:card title="Exposure Summary"  class="slds-card_boundary" >
+        <!-- Display Lightning Data Service errors, if any -->
+        <aura:if isTrue="{!not(empty(v.recordError))}">
+            <div class="recordError">
+                <ui:message title="Error" severity="error" closable="true">
+                    {!v.recordError}
+                </ui:message>
+            </div>
+        </aura:if>
+        <aura:if isTrue="{!not(empty(v.viewingRecordFields))}" >
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer slds-no-row-hover slds-table_col-bordered">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                        <th scope="col">
+                            <div class="slds-truncate" title="Account Name">Category</div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-truncate" title="Close Date">Value</div>
+                        </th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                    <tr>
+                        <td data-label="Account Name">
+                            <div class="slds-truncate" title="Payroll">Payroll</div>
+                        </td>
+                        <td data-label="Close Date">
+                            <ui:outputNumber value="{!v.viewingRecordFields.rkl__Exposure_Summary_1__c}" /> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="Account Name">
+                            <div class="slds-truncate" title="Sales">Sales</div>
+                        </td>
+                        <td data-label="Close Date">
+                            <ui:outputNumber value="{!v.viewingRecordFields.rkl__Exposure_Summary_2__c}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="Account Name">
+                            <div class="slds-truncate" title="Headcount">Headcount</div>
+                        </td>
+                        <td data-label="Close Date">
+                            <ui:outputNumber value="{!v.viewingRecordFields.rkl__Exposure_Summary_3__c}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="Account Name">
+                            <div class="slds-truncate" title="Miles Driven">Miles Driven</div>
+                        </td>
+                        <td data-label="Close Date">
+                            <ui:outputNumber value="{!v.viewingRecordFields.rkl__Exposure_Summary_4__c}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td data-label="Account Name">
+                            <div class="slds-truncate" title="Labor Hours">Labor Hours</div>
+                        </td>
+                        <td data-label="Close Date">
+                            <ui:outputNumber value="{!v.viewingRecordFields.rkl__Exposure_Summary_5__c}" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </aura:if>
+    </lightning:card>
+    
+</aura:component>

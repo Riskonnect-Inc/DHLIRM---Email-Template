@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Private</cacheControl>
+    <contentType>text/xml</contentType>
+    <description>xml / text file of property addresses with latitude and longitude for display as pinpoints on google map through use of Near Properties button on Property object</description>
+</StaticResource>

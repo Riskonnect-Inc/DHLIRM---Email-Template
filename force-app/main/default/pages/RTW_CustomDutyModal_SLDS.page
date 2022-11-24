@@ -1,0 +1,190 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 04/15/2016
+           ******************************************************************* -->
+<apex:page standardController="RTW_Assessment__c" extensions="RTW_DutySelectionControllerDemo2" showHeader="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+        <head>
+            
+            
+            <apex:stylesheet value="{!URLFOR($Resource.SLDS100, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+            <style>
+                .modal-body1{
+                position:relative;
+                padding:25px;
+                }
+                /*
+                .required label {
+                font-weight: bold;
+                }
+                .required label:after {
+                color: #e32;
+                content: ' *';
+                display:inline;
+                } */
+                
+            </style>
+            <script>
+            
+            
+            function cancel() {
+                $('.modal').modal('hide');
+            }
+            
+            </script>
+        </head>
+        <apex:form >
+            <div class="slds">
+                
+            <div class="modal slds-modal slds-modal--large slds-fade-in-open" id="Custom_Duty" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__header">
+                        <!-- Modal Header 
+                        
+                        <button class="slds-button slds-button--icon-inverse slds-modal__close" onclick="javascript:cancel()">
+                            <svg aria-hidden="true" class="slds-button__icon slds-button__icon--large">
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="{!URLFOR($Resource.SLDS100, '/assets/icons/action-sprite/svg/symbols.svg#close')}"></use>
+                            </svg>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>  -->
+                        <h2 class="slds-text-heading--medium">Create a Custom Duty</h2>
+                    </div>
+                    
+                    <div class="slds-modal__content">
+                        
+                        <form class="slds-form-horizontal--stacked" role="form">
+                            
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-col--padded slds-size--1-of-1 slds-form-element is-required">
+                                    <label class="slds-form-element__label" >
+                                        <abbr class="slds-required" title="required">*</abbr> Duty Name 
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Name']}"  styleClass="slds-input" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-1 slds-form-element is-required">
+                                    <label class="slds-form-element__label" >
+                                        <abbr class="slds-required" title="required">*</abbr> Duty Description 
+                                    </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['RTW_Duty_Description__c']}"  styleClass="slds-input" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    <label class="slds-form-element__label" > <abbr class="slds-required" title="required">*</abbr> Bending / Stooping </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Bending_Stooping__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    <label class="slds-form-element__label"> <abbr class="slds-required" title="required">*</abbr> Grasping / Squeezing </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Grasping_Squeezing__c']}" styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    <label class="slds-form-element__label" ><abbr class="slds-required" title="required">*</abbr> Keyboarding</label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Keyboarding__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    
+                                    <label class="slds-form-element__label"><abbr class="slds-required" title="required">*</abbr> Walking</label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['walking__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                            
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    <label class="slds-form-element__label"> <abbr class="slds-required" title="required">*</abbr> Kneeling / Squatting </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Kneeling_Squatting__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    
+                                    <label class="slds-form-element__label" > <abbr class="slds-required" title="required">*</abbr> Stair/Ladder Climbing </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Stair_Ladder_Climbing__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                            
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    <label class="slds-form-element__label"> <abbr class="slds-required" title="required">*</abbr> Wrist Flexion / Extension </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Wrist_Flexion_Extension__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    
+                                    <label class="slds-form-element__label" > <abbr class="slds-required" title="required">*</abbr> Twisting </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Twisting__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    <label class="slds-form-element__label"> <abbr class="slds-required" title="required">*</abbr> Sitting </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Sitting__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    
+                                    <label class="slds-form-element__label" > <abbr class="slds-required" title="required">*</abbr> Reaching </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Reaching__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    <label class="slds-form-element__label"> <abbr class="slds-required" title="required">*</abbr> Pushing/Pulling </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Pushing_Pulling__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-col--padded slds-size--1-of-2 slds-form-element is-required">
+                                    
+                                    <label class="slds-form-element__label" > <abbr class="slds-required" title="required">*</abbr> Standing </label>
+                                    <div class="slds-form-element__control">
+                                        <apex:inputField value="{!custDuty['Standing__c']}"  styleClass="slds-select" required="true"/>
+                                    </div>
+                                </div>
+                                <br />
+                                <!--
+                                <div class="form-group">
+                                    <span class="text-muted"><em><span style="color:red;">*</span> Indicates required field</em></span>
+                                </div> -->
+                            </div>
+                        </form>
+                        
+                    </div>
+                    
+                    
+                    <div class="slds-modal__footer">
+                        <div class="slds-x-small-buttons--horizontal"> 
+                            <a class="slds-button slds-button--neutral" onClick="cancel()" >Cancel </a>
+                            
+                            <apex:commandButton styleClass="slds-button slds-button--brand" action="{!Save}" onClick="validate()" value="Save" />
+                            
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div> 
+                
+            </div>
+        </apex:form>
+    </html>
+</apex:page>

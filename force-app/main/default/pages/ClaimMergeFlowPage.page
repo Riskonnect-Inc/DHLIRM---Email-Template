@@ -1,0 +1,67 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   11/14/2014
+           ******************************************************************* -->
+<apex:page showHeader="false" sidebar="false" StandardController="Claim__c" Extensions="ClaimMergeFlowController" standardStylesheets="true">
+<apex:stylesheet value="{!$Resource.WrapperCSSNew}"/>
+<html>
+
+<head>
+    <script>
+        function setFocusOnLoad() {}
+    </script>
+</head>
+
+<body onload="resizeTo(1000,800);">
+    <div class="container">
+        
+        <div class="riskonnect-logo">
+            <apex:image id="RKlogo" value="{!$Resource.RiskonnectLogoMedium}" width="200" height="70" style="display:block;"/>
+        </div>
+        
+        <div id="content">
+        
+        <div align="right">
+            <apex:form >
+                <apex:commandButton onclick="window.close();" value="Close"/>
+            </apex:form>
+        </div>        
+        
+            <flow:interview name="ClaimMergeFlow2" interview="{!myflow}" finishLocation="{!FinishPage}">
+                <apex:param name="varCurrentUserFirstName" value="{!$User.FirstName}"/>
+                <apex:param name="varCurrentUserLastName" value="{!$User.LastName}"/>
+                <apex:param name="varCurrentUserId" value="{!$User.Username}"/>
+            </flow:interview>                         
+
+            <apex:pageBlock rendered="{!render}">
+                <apex:pageBlockTable value="{!Claims}"  var="object">
+                    <apex:column headerValue="Claim Name" value="{!object.claimname}"></apex:column>
+                    <apex:column headerValue="Date of Loss" value="{!object.dateOfLoss}"></apex:column>         
+                    <apex:column headerValue="Claimant Name" value="{!object.claimantName}"></apex:column>     
+                    <apex:column headerValue="Location" value="{!object.location}"></apex:column>  
+                    <apex:column headerValue="Coverage" value="{!object.coverage}"></apex:column>
+                    <apex:column headerValue="Created Date" value="{!object.createdDate}"></apex:column>              
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+
+            <apex:pageBlock rendered="{!render2}">
+                <apex:pageBlockTable value="{!Claims2}"  var="object">
+                    <apex:column headerValue="Claim Name" value="{!object.claimname2}"></apex:column>
+                    <apex:column headerValue="Date of Loss" value="{!object.dateOfLoss2}"></apex:column>         
+                    <apex:column headerValue="Claimant Name" value="{!object.claimantName2}"></apex:column>     
+                    <apex:column headerValue="Location" value="{!object.location2}"></apex:column>  
+                    <apex:column headerValue="Coverage" value="{!object.coverage2}"></apex:column>
+                    <apex:column headerValue="Coverage Minor" value="{!object.coverageMinor2}"></apex:column>
+                    <apex:column headerValue="TPA Carrier" value="{!object.tpaCarrier2}"></apex:column>
+                    <apex:column headerValue="Data Load Flag" value="{!object.dataLoadFlag2}"></apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
+
+
+</apex:page>

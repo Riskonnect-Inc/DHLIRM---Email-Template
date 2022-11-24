@@ -1,0 +1,115 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" controller="FilesController" access="global">
+    <aura:attribute name="categorizeFiless" type="Object[]" />
+    <aura:attribute name="filesWtCategory" type="Object[]" />
+    <aura:attribute name="categorizeFiles" type="Object[]" />
+    <aura:attribute name="picklistValues" type="Object" />
+    <aura:attribute name="uploadCount" type="Integer" />
+    <aura:attribute name="Description" type="string" default=""/>
+    <aura:attribute name="picklistresultvalue" type="Object" />
+    <aura:attribute name="picklistresultvalueindividual" type="object"/>
+    <aura:attribute name="myBool" type="Boolean" default="false"/>
+    <aura:attribute name="categoriescheck" type="Boolean" default="false"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="Spinner" type="boolean" default="false"/>
+    <aura:attribute name="claimId" type="string" />
+    <aura:attribute name="picklist" type="string" />
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    <c:PickListValues sObjectName="Contentversion" fieldName="{!v.picklist}" picklistValues="{!v.picklistValues}" />
+    
+    <!-- Handlers -->
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    <!--loading spinner start... style=Brand Medium (blue dots)-->
+    <aura:if isTrue="{!v.Spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <!-- Loading spinner end-->
+    <div class="slds-scrollable_x">
+        <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            <thead>
+                <aura:if isTrue="{!v.uploadCount > 1}">
+                    <tr class="slds-text-heading--label">
+                        <th scope="col">
+                            <div class="slds-grid slds-gutters">
+                                <div class="slds-col slds-size_1-of-2">
+                                    <div class="slds-form-element" style="right: 1rem;">
+                                        <lightning:select aura:id="Claimcategories" name="Claimcategories" class="dynamic" value="{!v.picklistresultvalue}" label="Categories" onchange="{! c.categories }">
+                                            <aura:iteration items="{!v.picklistValues}" var="item">
+                                                <option value="{!item}">{!item}</option>
+                                            </aura:iteration> 
+                                        </lightning:select> 
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-2" >
+                                    <div style="left: 14rem;">
+                                        <lightning:textarea name="Description" label="Description" maxlength="300" value="{!v.Description}" onchange="{! c.description }"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                    </tr>
+                    <tr>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class = "slds-col slds-size_1-of-2">
+                                    <ui:inputCheckbox class="slds-form-element__label" aura:Id="requiredCheckbox" value="{!v.categoriescheck}"/> Apply to all 
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2" >
+                                <ui:inputCheckbox class="slds-form-element__label" aura:Id="requiredCheckbox" value="{!v.myBool}"/> Apply to all
+                            </div>
+                        </div>
+                    </tr>
+                </aura:if>
+            </thead>
+            <tbody>
+                <aura:iteration items="{!v.categorizeFiless}" var="filesUp">
+                    <tr id="{!filesUp.FileType}">
+                        <th scope="col">
+                            <div>
+                                <div class="slds-float_left">
+                                    <div class="slds-col">
+                                        <div class="slds-text-body_regular">{!filesUp.Title}.{!filesUp.FileType}</div> 
+                                        <div class="slds-text-body_small slds-text-color_weak slds-m-bottom_small"> {!filesUp.size}kb</div>
+                                        <div class="slds-text-body_small slds-text-color_weak slds-m-bottom_small"> {!filesUp.CreatedDate}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                    </tr>
+                    <tr>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-2">
+                                <lightning:select name="FilesClaimcategories" value="{!filesUp.Categories__c}" label="Category" onchange="{!c.changeCategory}">
+                                    <aura:iteration items="{!v.picklistValues}" var="item">
+                                        <option value="{!item}">{!item}</option>
+                                    </aura:iteration> 
+                                </lightning:select>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-col">
+                                    <lightning:textarea name="Description" label="Description" maxlength="300" value="{!filesUp.Description}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+        <div class="slds-card">
+            <aura:if isTrue="{!v.uploadCount == 1}">
+                <div class="slds-text-color_weak slds-float_left" style="margin-top:7px;">1 of 1 File Uploaded</div>
+                <aura:set attribute="else">
+                    <div class="slds-text-color_weak slds-float_left" style="margin-top:7px;">{!v.uploadCount} of {!v.uploadCount} Files Uploaded</div>
+                </aura:set>
+            </aura:if>
+            <lightning:button variant="brand" class="slds-button slds-button_neutral slds-float_right" label="Done" onclick="{! c.done }" />
+        </div>
+    </div>
+</aura:component>

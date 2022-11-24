@@ -1,0 +1,28 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 06/01/2015
+           ******************************************************************* -->
+<apex:page standardcontroller="Setup_Extended_Fields__c"  sidebar="false" showHeader="false" 
+           extensions="SetupExtendedFieldsLoadMethods" standardStylesheets="false"  >
+    
+    <apex:stylesheet value="{!$Resource.WrapperCSSNew}" />
+    
+    <h1 style="font-family: verdana;text-align:center;font-weight:Regular; font-size: 120%;color: black">Import Setup Extended Fields</h1>
+   <body onload="resizeTo(600,450);">
+   <apex:form >
+      <apex:sectionHeader />
+       
+       <BR/>
+        <Div style="margin-left: 50px;">
+             
+              <apex:inputFile value="{!contentFile}" filename="{!nameFile}"   /> <BR/><BR/>
+              <apex:commandButton action="{!ReadFile}" value="Upload File" 
+                                   id="theButton" style="width:90px;"  />                   
+       </Div>
+     <BR/><BR/>
+
+                
+       <apex:pagemessages /> 
+       
+   </apex:form>  
+   </body>
+</apex:page>

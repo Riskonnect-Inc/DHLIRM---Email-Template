@@ -1,0 +1,58 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 04/08/2014
+           ******************************************************************* -->
+<apex:page standardController="Claim__c"  extensions="FinancialTransMatrixController" sidebar="false" showheader="false">
+
+    <style>
+        body td.pbTitle {white-space: nowrap;} /* MDU: prevent the title label text from wrapping */
+        body .bPageBlock td.pbTitle {width: 108%;} /* MDU: allocate a more generous horizontal space for the label, as we won't have anything else in the header */
+        table.rkonFinancialMatrix thead {display:none;} /* MDU: hide the unused header; this selector is more convoluted than it needs to be thanks to today's SFDC bug-of-the-day */
+            .headerRow .headerStyle{font-family: verdana;background-color:#1797c0;color:#FFFFFF;text-align:center}
+            .headerRow .totheaderStyle{font-family: verdana;background-color:#B0B0B0}
+            .headerRow .catheaderStyle{font-family: verdana;text-align:right}
+    </style>
+
+
+<apex:pageBlock title="Financial Actions"   tabStyle="Claim__c"  >
+
+
+<apex:pageBlockTable value="{!Claim__c}" var="claim"  columns="3" rows="3" rules="all" border="3" Frame="box"  align="center"  width="420"
+   columnsWidth="140px,140px,140px"  styleClass="rkonFinancialMatrix">
+   
+
+<!--     NOTES --------------------------------------
+   Need to pull these values from the extension controller via describe methodem
+      00N1t000008vdlN     is the Claim__c field on the layout form 
+      &ent=01I1t000000wIc0    this is the claim_transaction__c object Id
+    n-->
+
+
+<apex:column rowspan="6" breakBefore="true" style="text-align:center;font-weight:bold;background-color:#f2f2f4"  HeaderClass="totheaderStyle">
+<apex:outputLink value="/{!ClaimTransPrefix}/e?CF{!$Setup.Hard_Codes__c.Claim_Transaction_to_Claim_Lookup__c}={!Claim__c.Name}&CF{!$Setup.Hard_Codes__c.Claim_Transaction_to_Claim_Lookup__c}_lkid={!Claim__c.id}
+&RecordType={!PaymentRecordTypeId}&ent={!$Setup.Hard_Codes__c.Claim_Transaction_Object_Id_Long__c}&Name={Will%20Auto-fill}&retURL={!Claim__c.id}"
+  id="NewPaymentId" target="_parent">New Payment
+</apex:outputLink>
+
+</apex:column>
+
+
+<apex:column rowspan="6" style="text-align:center;font-weight:bold;background-color:#f2f2f4"  HeaderClass="totheaderStyle">
+<apex:outputLink value="/{!ClaimTransPrefix}/e?CF{!$Setup.Hard_Codes__c.Claim_Transaction_to_Claim_Lookup__c}={!Claim__c.Name}&CF{!$Setup.Hard_Codes__c.Claim_Transaction_to_Claim_Lookup__c}_lkid={!Claim__c.id}
+&RecordType={!ReserveRecordTypeId}&ent={!$Setup.Hard_Codes__c.Claim_Transaction_Object_Id_Long__c}&Name={Will%20Auto-fill}&retURL={!Claim__c.id}"
+  id="NewReserveID" target="_parent">New Reserve
+</apex:outputLink>
+
+</apex:column>
+
+<apex:column rowspan="6" style="text-align:center;font-weight:bold;background-color:#f2f2f4"  HeaderClass="totheaderStyle">
+<apex:outputLink value="/{!ClaimTransPrefix}/e?CF{!$Setup.Hard_Codes__c.Claim_Transaction_to_Claim_Lookup__c}={!Claim__c.Name}&CF{!$Setup.Hard_Codes__c.Claim_Transaction_to_Claim_Lookup__c}_lkid={!Claim__c.id}
+&RecordType={!RecoveryRecordTypeId}&ent={!$Setup.Hard_Codes__c.Claim_Transaction_Object_Id_Long__c}&Name={Will%20Auto-fill}&retURL={!Claim__c.id}"
+  id="NewRecoveryID" target="_parent">New Recovery
+</apex:outputLink>
+
+</apex:column>
+
+
+</apex:pageblockTable>
+</apex:pageBlock>
+</apex:page>

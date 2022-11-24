@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApexComponent xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>34.0</apiVersion>
+    <label>ClaimValueComponent</label>
+    <packageVersions>
+        <majorNumber>1</majorNumber>
+        <minorNumber>18</minorNumber>
+        <namespace>al</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>1</majorNumber>
+        <minorNumber>135</minorNumber>
+        <namespace>rkl</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>1</majorNumber>
+        <minorNumber>105</minorNumber>
+        <namespace>rkme</namespace>
+    </packageVersions>
+</ApexComponent>

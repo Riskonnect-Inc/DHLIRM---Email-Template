@@ -1,0 +1,27 @@
+<aura:component >
+    <aura:attribute name="recordValue" type="Object" />
+    <aura:attribute name="fieldPath" type="String" />
+    <aura:attribute name="fieldType" type="String" />
+    <aura:attribute name="indexVal" type="Integer" />
+    <aura:attribute name="lookupId" type="String" />
+    
+    <aura:if isTrue="{!and(v.indexVal != 0,v.fieldType != 'REFERENCE')}">
+        <div class="slds-truncate">
+            <ui:outputText aura:Id="outputTextId" />
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.indexVal == 0}">
+        <div class="slds-truncate" >
+            <a onclick="{!c.handleClick}">
+                <ui:outputText aura:Id="outputTextId" />
+            </a>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!and(v.indexVal != 0,v.fieldType == 'REFERENCE')}">
+        <div class="slds-truncate" >
+            <a onclick="{!c.handleLookupClick}">
+                <ui:outputText aura:Id="outputTextId" />
+            </a>
+        </div>
+    </aura:if>
+</aura:component>

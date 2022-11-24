@@ -1,0 +1,220 @@
+<apex:page controller="rkl.JS_Search" extensions="AssignmentsGrid" action="{!pageLoad}" docType="html-5.0" showHeader="false" sidebar="false" standardStylesheets="false" cache="false">
+    <head>
+
+        <rkl:RKPIncludes includeModules="search,accord" />
+
+        <style type="text/css">
+
+            .logout {
+                margin-top: 20px;
+                margin-right: 10px;
+            }
+            .rk-cnavTop {
+                height: 75px;
+            }
+
+            #tabs {
+                margin-top: 20px;
+            }
+            .k-grid {
+                height:500px !important;
+            }
+           .k-grid-content{
+                height:450px !important;       
+            }
+            .k-link{
+                font-weight: bold;
+            }
+            .panelHeader{
+                background-color: #428bca; 
+            }
+
+        </style>
+
+
+        <script type="text/javascript">
+
+            $(document).ready(function() {
+                "use strict";
+                
+                // Patient Event Review Current List config
+                var peCurrentAssignmentList = new rkl.genericSearchs.GenericSearch({
+                    $parent: $('#peCurrentAssignments'),
+                    crlData: {!patientEventCurrentData},
+                    key: 'peC1'
+                });
+                
+                peCurrentAssignmentList.$evts.on('editing',function(evt, rec){
+                    window.top.location.href = ('{!JSINHTMLENCODE($Page.ReviewCustomLayout)}?id='+rec.id);
+
+                });
+            
+                peCurrentAssignmentList.loadTable();
+
+                // Patient Feedback Review Current List config
+                var pfCurrentAssignmentList = new rkl.genericSearchs.GenericSearch({
+                    $parent: $('#pfCurrentAssignments'),
+                    crlData: {!patientFeedbackCurrentData},
+                    key: 'pfC1'
+                });
+                
+                pfCurrentAssignmentList.$evts.on('editing',function(evt, rec){
+                    window.top.location.href = ('{!JSINHTMLENCODE($Page.PatientFeebackReviewCustomLayout)}?id='+rec.id);
+
+                });
+            
+                pfCurrentAssignmentList.loadTable();
+
+                // Physician Review List Current config
+                var prCurrentAssignmentList = new rkl.genericSearchs.GenericSearch({
+                    $parent: $('#prCurrentAssignments'),
+                    crlData: {!physicianReviewCurrentData},
+                    key: 'prC1'
+                });
+                
+                prCurrentAssignmentList.$evts.on('editing',function(evt, rec){
+                    window.top.location.href = ('{!JSINHTMLENCODE($Page.PhysicianReviewCustomLayout)}?id='+rec.id);
+
+                });
+            
+                prCurrentAssignmentList.loadTable();
+
+                //$('.panelHeader .panelTitle').html("To Do List&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Clicking the Column Headers will sort the data)");
+
+                // Patient Event Review Historic List config
+                var peHistoricAssignmentList = new rkl.genericSearchs.GenericSearch({
+                    $parent: $('#peHistoricAssignments'),
+                    crlData: {!patientEventHistoricData},
+                    key: 'peH1'
+                });
+                //peHistoricAssignmentList.readOnly(true);   Bug in RKL that this won't work yet.          
+                peHistoricAssignmentList.$evts.on('editing',function(evt, rec){  //viewing instead of editing when bug is fixed
+                    window.top.location.href = ('{!JSINHTMLENCODE($Page.ReviewCustomLayout)}?id='+rec.id);
+
+                });
+                
+            
+                peHistoricAssignmentList.loadTable();
+
+                // Patient Feedback Review Historic List config
+                var pfHistoricAssignmentList = new rkl.genericSearchs.GenericSearch({
+                    $parent: $('#pfHistoricAssignments'),
+                    crlData: {!patientFeedbackHistoricData}
+                });
+                
+                pfHistoricAssignmentList.$evts.on('editing',function(evt, rec){
+                    window.top.location.href = ('{!JSINHTMLENCODE($Page.PatientFeebackReviewCustomLayout)}?id='+rec.id);
+
+                });
+            
+                pfHistoricAssignmentList.loadTable();
+
+                // Physician Review Historic List config
+                var prHistoricAssignmentList = new rkl.genericSearchs.GenericSearch({
+                    $parent: $('#prHistoricAssignments'),
+                    crlData: {!physicianReviewHistoricData}
+                });
+                
+                prHistoricAssignmentList.$evts.on('editing',function(evt, rec){
+                    window.top.location.href = ('{!JSINHTMLENCODE($Page.PhysicianReviewCustomLayout)}?id='+rec.id);
+
+                });
+            
+                prHistoricAssignmentList.loadTable();
+
+                //$('.panelHeader .panelTitle').html("Historic Reviews&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Click on the 'up-arrow/filter' icon directly below this text for search filters.)");
+
+            }); //Document Ready
+
+        </script>
+    </head>
+    <body>
+        <div class='container-fluid'>
+            <div class='rk-cvanTop'>
+
+                <span id="logo"></span>
+                <span id="logout" ></span>
+
+            </div>
+            <div id="utabs">
+                <div class="demo-section k-content">
+                    <div data-role="tabstrip">
+                        <ul>
+                            <li class="k-state-active">
+                                Current
+                            </li>  
+                            <li>
+                                Historic
+                            </li>                         
+                        </ul>
+                        <div>
+                            <div id="tabs">
+                                <div class="demo-section k-content">
+                                    <div data-role="tabstrip">
+                                        <ul>
+                                            <li class="k-state-active">
+                                                Patient Event Reviews
+                                            </li>
+                                            <li>
+                                                Patient Feedback Reviews
+                                            </li> 
+                                            <li>
+                                                Physician Reviews
+                                            </li>                            
+                                        </ul>
+                                        <div>
+                                            <div id="peCurrentAssignments" style="margin-top: 2em;"></div>
+                                        </div>
+                                        <div>
+                                            <div id="pfCurrentAssignments" style="margin-top: 2em;"></div>
+                                        </div>
+                                        <div>
+                                            <div id="prCurrentAssignments" style="margin-top: 2em;"></div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div id="tabs1">
+                                <div class="demo-section k-content">
+                                    <div data-role="tabstrip">
+                                        <ul>
+                                            <li class="k-state-active">
+                                                Patient Event Reviews
+                                            </li>
+                                            <li>
+                                                Patient Feedback Reviews
+                                            </li> 
+                                            <li>
+                                                Physician Reviews
+                                            </li>                            
+                                        </ul>
+                                        <div>
+                                            <div id="peHistoricAssignments" style="margin-top: 2em;"></div>
+                                        </div>
+                                        <div>
+                                            <div id="pfHistoricAssignments" style="margin-top: 2em;"></div>
+                                        </div>
+                                        <div>
+                                            <div id="prHistoricAssignments" style="margin-top: 2em;"></div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <script>
+                kendo.bind($("#utabs"));
+                kendo.bind($("#tabs"));
+                kendo.bind($("#tabs1"));
+            </script>
+
+        </div>
+    </body>
+</apex:page>

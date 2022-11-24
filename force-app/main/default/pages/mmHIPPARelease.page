@@ -1,0 +1,74 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 6/24/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" showheader="false">
+
+<div align="center" style="text-align:center;"><b><span style="font-size:16.0pt;">HIPAA COMPLIANT RELEASE FOR MEDICAL RECORDS</span></b></div>
+<div align="center" style="text-align:center"><b>&nbsp;</b></div>
+<div align="center" style="text-align:center"><b><u>AUTHORIZATION FOR RELEASE OF MEDICAL RECORDS</u></b></div>
+<div align="center" style="text-align:center"><span style="font-size:11.0pt;">(&ldquo;Authorization&rdquo;)</span></div>
+<div align="center" style="text-align:center">&nbsp;</div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">TO:  {!$User.FirstName}  {!$User.LastName}</span></div>
+<div style="text-align:justify">&nbsp;</div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I hereby authorize you to use, release and/or disclose protected health information about me as described below.&nbsp; The information and documents are being requested in connection with my claim and/or a lawsuit.</span></div>
+<div style="text-align:justify">&nbsp;</div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; You are hereby authorized to furnish RK Global, Inc. with copies of protected health information, including but not limited to:&nbsp; any and all health care records, medical records and charts, x-ray films, MRI films, CT scans, or other diagnostic test examinations or results or evaluations, medical notes, handwritten notes, patient intake questionnaires, discharge documents, patient information, medical bills, and other information to include the medical history, treatment, diagnosis or prognosis regarding the undersigned patient:</span></div>
+<div style="text-align:justify">&nbsp;</div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Patient&rsquo;s name:<u>   {!Claim__c.Claimant_First_Name__c} {!Claim__c.Claimant_Last_Name__c}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  </u></span></div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Patient&rsquo;s address<u>:  {!Claim__c.Claimant_Address_Line1__c} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {!Claim__c.Claimant_City__c}, {!Claim__c.Claimant_State__c} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {!Claim__c.Claimant_Postal_Code__c}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u></span></div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Social Security Number<u>:  {!Claim__c.Claimant_SSN__c}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u></span></div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date of birth:<u>&nbsp;&nbsp; {!Claim__c.Date_Claimant_Born__c}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </u></span></div>
+<div style="text-align:justify">&nbsp;</div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Expiration of release:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Two years from date signed.</span></div>
+<div style="text-align:justify">&nbsp;</div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">Date Signed: ______________________&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; _____________________________________</span></div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Signature of patient or legal guardian</span></div>
+<div style="text-align:justify">&nbsp;</div>
+<div style="text-align:justify">&nbsp;</div>
+<div align="center" style="text-align:center"><u><span style="font-size:11.0pt;">A PHOTOCOPY OF THIS RELEASE SERVES IN LIEU OF AN ORIGINAL</span></u></div>
+<div style="text-align:justify"><u>&nbsp;</u></div>
+<div style="text-align:justify"><span style="font-size:11.0pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This Authorization fully complies with the Health Insurance Portability and Accountability Act of 1996 (hereinafter &ldquo;HIPAA&rdquo;).&nbsp; The patient&rsquo;s right to treatment, payment, enrollment or eligibility for medical benefits is not based on signing this release.&nbsp; The patient was provided a copy of this Authorization, has read this Authorization, and has the right to revoke this Authorization by written notification to RK Global, Inc., who is solely responsible for all costs associated with copying records under this release.&nbsp; The patient named above understands that any action taken in reliance on this Authorization cannot be reversed, and his/her revocation will not affect those actions.&nbsp;  RK Global, Inc. may disclose information/documents as required or permitted by the applicable rules of the Court or to others as deemed necessary by the law firm.&nbsp; Any questions regarding this release shall be answered by RK Global, Inc., telephone number 800-829-1004.</span><span style="font-size:8.0pt;"><br clear="all" style="page-break-before:always" />
+</span></div>
+<div>&nbsp;</div>
+<div>&nbsp;</div><div>&nbsp;</div>
+<div>Please provide complete information for all doctor&rsquo;s who have provided treatment</div>
+<div>for your injury.&nbsp; You can use the back if you need more room.&nbsp;</div>
+<div>&nbsp;</div>
+<div><b>Doctor List </b></div>
+<div>&nbsp;</div>
+<div>Doctor or Facility Name: _____________________________________</div>
+<div>Address: __________________________________________________</div>
+<div>City ________________ State______________Zip_________________</div>
+<div>Phone:___________________Fax:______________________________</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div>Doctor or Facility Name: _____________________________________</div>
+<div>Address: __________________________________________________</div>
+<div>City ________________ State______________Zip_________________</div>
+<div>Phone:___________________Fax:______________________________</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div>Doctor or Facility Name: _____________________________________</div>
+<div>Address: __________________________________________________</div>
+<div>City ________________ State______________Zip_________________</div>
+<div>Phone:___________________Fax:______________________________</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div>Doctor or Facility Name: _____________________________________</div>
+<div>Address: __________________________________________________</div>
+<div>City ________________ State______________Zip_________________</div>
+<div>Phone:___________________Fax:______________________________</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div>Doctor or Facility Name: _____________________________________</div>
+<div>Address: __________________________________________________</div>
+<div>City ________________ State______________Zip_________________</div>
+<div>Phone:___________________Fax:______________________________</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div>Please return to:</div>
+<div>  {!$User.FirstName}  {!$User.LastName}</div>
+<div>PO Box 1430</div>
+<div>Kenosha, WI 53143</div>
+<p>{!$User.Phone}&nbsp;</p>
+</apex:page>

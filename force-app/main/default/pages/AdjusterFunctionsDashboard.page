@@ -1,0 +1,25 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   03/25/2013
+           ******************************************************************* -->
+<apex:page > 
+<apex:form >
+<Apex:pageBlock Title="Claim Functions"  tabstyle="exposure__c"   >
+
+
+<apex:pageBlockSection title="Claim Actions" columns="1">
+<apex:outputLink value="/a0I/e?retURL=%2Fa0I%2Fo&RecordType=0121t000000qM9N&ent=01I1t000000aQ2V" target="_blank" id="theLinkxy">New Event</apex:outputLink>
+<apex:outputLink value="/a04/e?retURL=%2Fa04%2Fo&RecordType=0121t000000qM9O&ent=01I1t000000aQ2W" target="_blank" id="theLinkxz">New WC Claim</apex:outputLink>               
+<apex:outputLink value="/a04/e?retURL=%2Fa04%2Fo&RecordType=0121t000000qM9P&ent=01I1t000000aQ2W" target="_blank" id="theLinkxx">New GL Claim</apex:outputLink>
+ </apex:pageBlockSection> 
+
+<apex:pageBlockSection title="Claim Views" columns="1"  >  
+  <apex:outputLink value="/a04?fcf=00B1t000001DMcZ" target="_blank" id="theLinkb">New WC cases this year</apex:outputLink>
+  <apex:outputLink value="/a04?fcf=00B1t000001DMca" target="_blank" id="theLinkc">My Adjuster Claims</apex:outputLink>
+  <apex:outputLink value="/a04?fcf=00B1t000001DMcb" target="_blank" id="theLinkd">Open claims in Litigation</apex:outputLink>
+  <apex:outputLink value="/a04?fcf=00B1t000001DMcb" target="_blank" id="theLink">Claims over $100K and Open</apex:outputLink>            
+ </apex:pageBlockSection>
+ 
+
+ </Apex:pageBlock>
+ </apex:form>
+ </apex:page>

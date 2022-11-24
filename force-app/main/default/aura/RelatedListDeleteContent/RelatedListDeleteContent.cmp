@@ -1,0 +1,30 @@
+<aura:component >
+    <!-- should be an object populated with Id, name, and typeLabel -->
+    <aura:attribute name="target" type="Object" access="Public"/>
+    <aura:attribute name="errorSummary" type="String" access="Private"/>
+    <aura:attribute name="errorDetail" type="String" access="Private"/>
+
+    <aura:method name="spin" action="{!c.spin}">
+        <aura:attribute name="spin" type="Boolean"/>
+    </aura:method>
+    <aura:method name="setError" action="{!c.setError}">
+        <aura:attribute name="detail" type="String"/>
+    </aura:method>
+    
+    <div class="slds-is-relative slds-text-align_center">
+        <lightning:spinner aura:id="spinner" variant="brand" class="slds-hide"/>
+
+        <aura:if isTrue="{!!(v.errorSummary || v.errorDetail)}">
+            <!-- <lightning:icon size="medium" iconName="action:delete" alternativeText="Please confirm" /> -->
+            <div style="display:inline-block; margin-left:1rem">Are you sure you want to delete this {!v.target.typeLabel}?</div>
+            <aura:set attribute="else">
+                <lightning:icon size="medium" iconName="utility:error" variant="error" alternativeText="Error" />
+                <div style="display:inline-block; vertical-align:middle; margin-left:1rem">
+                    <strong>Error: </strong>{!v.errorSummary}
+                    <div style="color:#cc0000">{!v.errorDetail}</div>
+                </div>
+            </aura:set>
+        </aura:if>
+
+    </div>
+</aura:component>

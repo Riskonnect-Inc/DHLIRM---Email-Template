@@ -1,0 +1,35 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/29/2013
+           ******************************************************************* -->
+<apex:page Controller="OSHAVisualFlowController" tabStyle="Claim__c">
+
+<style type="text/css">
+.btn { 
+     color:#050; 
+     font: bold 84% 'trebuchet ms',helvetica,sans-serif; 
+     background-color:#fed; 
+     border:1px solid; 
+     border-color: #696 #363 #363 #696; 
+   } 
+</style>
+
+
+ <apex:pageBlock tabStyle="Claim__c">
+        <apex:outputText style="font-weight:bold;color:navy;font-size:150%" value="OSHA's Form 300 Log of Work-Related Injuries and Illnesses"/ >  <br/>
+        <apex:outputLink target="_blank"   style="font-weight:bold;color:teal;font-size:100%"  value="http://www.osha.gov/recordkeeping/index.html" id="theLink">OSHA Reporting Reference Website</apex:outputLink>
+ 
+ </apex:pageBlock>
+ 
+    <flow:interview name="OSHAProcess" finishLocation="{!EndPage}" interview="{!OSHA_Interview}" buttonStyle="btn"  >
+        <apex:param name="varEmployeeName" assignTo="{!varEmployeeName}" value="{!$CurrentPage.parameters.varEmployeeName}"/>
+        <apex:param name="varEmployeeJobTitle" assignTo="{!varEmployeeJobTitle}" value="{!$CurrentPage.parameters.varEmployeeJobTitle}"/>
+        <apex:param name="varDateOfInjury" assignTo="{!varDateOfInjury}" value="{!$CurrentPage.parameters.varDateOfInjury}"/>
+        <apex:param name="varWhereEventOccurred" assignTo="{!varWhereEventOccurred}" value="{!$CurrentPage.parameters.varWhereEventOccurred}"/>
+        <apex:param name="varDescribeIllnessInjury" assignTo="{!varDescribeIllnessInjury}" value="{!$CurrentPage.parameters.varDescribeIllnessInjury}"/>
+        <apex:param name="varLostDays" assignTo="{!varLostDays}" value="{!$CurrentPage.parameters.varLostDays}"/>
+        <apex:param name="varRestrictedDays" assignTo="{!varRestrictedDays}" value="{!$CurrentPage.parameters.varRestrictedDays}"/>
+        <apex:param name="Id" assignTo="{!Id}" value="{!$CurrentPage.parameters.Id}"/>
+     </flow:interview>
+  
+    
+</apex:page>

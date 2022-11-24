@@ -1,0 +1,1411 @@
+<apex:page standardController="Policy_Map__c" extensions="rkl.JS_Search,BlockChart_ControllerJW" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false">
+    <head>
+
+        <rkl:RKPIncludes includeModules="search,add"
+            additionalJS="BlockChart_js"
+            theme="Bootstrap"/>
+
+        <apex:includeScript value="{!URLFOR($Resource.rkl__JSForce_min_JS)}" />
+
+        <apex:slds />
+
+        <style type="text/css">
+            #kendo-drawing {
+                height: inherit;
+            }
+            .toolbar {
+                float: right;
+            }
+            .k-picker-wrap .k-selected-color{
+                width: calc(100% - 1em) !important;
+            }
+            .k-dropdown-wrap .k-icon.k-i-arrow-60-down {
+                top: 25%;
+            }
+            .k-icon.k-i-calendar{
+                top: 25%;
+            }
+
+            .blockchart-display {
+                height: 400px !important;
+                margin: 2em;
+                margin-bottom: 0px;
+            }
+
+            .hover-display {
+                margin: 2em;
+                margin-top: 0px;
+                border: 1px solid #a0a0a0;
+                border-top: none;
+                border-bottom-left-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+            .hover-row {
+                margin: 10px;
+                margin-top: 0px;
+                text-align: center;
+            }
+
+            .color-display {
+                margin: 0px;
+                height: 20px;
+                border-bottom-left-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+            .columns-1 > .hover-cell {
+                width: 100%;
+            }
+
+            .columns-2 > .hover-cell {
+                width: 50%;
+            }
+
+            .columns-3 > .hover-cell {
+                width: 33.333%;
+            }
+
+            .columns-4 > .hover-cell {
+                width: 25%;
+            }
+
+            .columns-5 > .hover-cell {
+                width: 20%;
+            }
+
+            .columns-6 > .hover-cell {
+                width: 16.666%;
+            }
+
+            .columns-7 > .hover-cell {
+                width: 14.285%;
+            }
+
+            .columns-8 > .hover-cell {
+                width: 12.5%;
+            }
+
+            .hover-cell {
+                display: inline-block;
+                text-align: center;
+                margin: 0px;
+                padding: 5px;
+            }
+
+            .hover-label {
+                font-weight: bold;
+            }
+
+            text {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                -o-user-select: none;
+                user-select: none;
+            }
+        </style>
+
+        <!-- Grid Toolbar Template -->
+        <script type="text/x-kendo-template" id="toolbartemplate">
+            <div class="toolbar">
+                <a href="\\#" class="k-grid-recalc k-button-icontext k-button" title="Refit"><span class="k-icon k-i-calculator"></span>Refit/Recalc</a>
+                <a href="\\#" class="k-grid-import k-button-icontext k-button" title="Import"><span class="k-icon k-i-download"></span>Import Policies</a>
+                <a href="\\#" class="k-grid-import-map k-button-icontext k-button" title="Import from Policy Map"><span class="k-icon k-i-layout"></span>Import from Policy Map</a>
+            </div>
+        </script>
+
+
+        <script type="text/javascript">
+
+        if (!String.prototype.endsWith)
+          String.prototype.endsWith = function(searchStr, Position) {
+              // This works much better than >= because
+              // it compensates for NaN:
+              if (!(Position < this.length))
+                Position = this.length;
+              else
+                Position |= 0; // round position
+              return this.substr(Position - searchStr.length, searchStr.length) === searchStr;
+          };
+
+        var blockChartAPI = namespace('rkl.blockchart');
+        var _ = namespace('rkl.blockchart.utils');
+
+        //set up the jsforce connection
+        var jsForceAPI = new jsforce.Connection({accessToken: '{!$API.Session_Id}'});
+
+        var pageReady = new Promise(function(resolve, reject){
+            document.addEventListener("DOMContentLoaded", resolve);
+        });
+
+        var currentPolicyMapId = "{!JSENCODE(currentPolicyMapId)}";
+        var policyMapName = "{!JSENCODE(policyMap.Name)}";
+
+        pageReady.then(function(startArgs) {
+            document.title = "Policy Map" + (policyMapName ? " - " + policyMapName: "");
+            var CONSTS = {
+                LAYER: {
+                    P: "Primary",
+                    E: "Excess",
+                    U: "Umbrella"
+                },
+                DATA_LEVEL: {
+                    "Policy": "Policy__c",
+                    "Policy Section": "Policy_Section__c",
+                    "Policy Participant": "Policy_Participant__c"
+                }
+            };
+
+            var TYPE_TO_SEARCH = {
+                date: "Date",
+                reference: "Reference"
+            };
+
+            function convertDisplayTypeToSearchType(displayType) {
+                return TYPE_TO_SEARCH[displayType] || "STRING";
+            };
+
+            var fieldMappings = {
+                recordid: "id",
+                name: ["name", "carrier__c.name", "carrier__r.name", "section_name__c"],
+                //carrier: ["carrier__c", "carrier__c.name", "carrier__r.name", "policy_number__r.carrer__c.name", "policy_number__r.carrer__r.name"],
+                //carrier_id: ["carrier__r", "policy_number__r.carrer__c", "policy_number__r.carrer__r"],
+                //policy: ["policy_number__c", "policy_number__c.name", "policy_number__r.name"],
+                //policy_id: ["policy_number__r"],
+                attachmentPoint: ["occurrence_attachment_point__c", "section_attachment_point__c", "policy_number__r.occurrence_attachment_point__c"],
+                aggregateLimit: ["policy_aggregate_limit__c", "aggregate_limit__c", "policy_number__r.policy_aggregate_limit__c"],
+                prorata: ["pro_rata_share__c", "pro_rata_share_c__c", "carrier_percent__c"],
+                category: ["coverage_line__c", "section_coverage__c", "policy_number__r.coverage_line__c"],
+                layerType: ["layer_type__c", "policy_number__r.layer_type__c"],
+                excessPolicyLookup: ["excess_policy__r.id", "excess_layer_policy_section__r.id"],
+                underlyingPolicyLookup: ["underlying_policy__r.id"],
+                mapTooltip: ["map_tooltip__c"],
+                color: ["color__c"],
+                dateEffective: ["date_policy_effective__c", "date_section_effective__c", "policy_number__r.date_policy_effective__c"],
+                dateExpiration: ["date_policy_expiration__c", "date_section_expiration__c", "policy_number__r.date_policy_expiration__c"]
+            };
+
+            var defaultTypeConfig = {
+                currency: {
+                    format: "{0:c}"
+                },
+                date: {
+                    format: "{0:d}"
+                }
+            };
+
+            function generateLinkTemplate(labelField, idField) {
+                if (!idField) {
+                    idField = labelField.replace(/__c$/, "__r_id");
+                }
+                //kendo doesn't like #'s and quotes in string literals, so we have to unicode escape the template. However, we need some #'s to show up for the template engine to render variables,
+                //so we don't escape those
+                return _.unicodeEscapeString('<a href=\'#\' onclick="window.open(\'/') + '#=' + idField + '#' + _.unicodeEscapeString('\', \'_blank\');">') + '#=' + labelField + '#' + _.unicodeEscapeString('</a>')
+            }
+
+            var defaultFieldConfig = {
+                name: {
+                    template: generateLinkTemplate("name", "recordid")
+                },
+                /*carrier: {
+                    template: generateLinkTemplate("carrier", "carrier_id")
+                },
+                policy: {
+                    template: generateLinkTemplate("policy", "policy_id")
+                },*/
+                color: {
+                    editor: function(container, options) {
+                        $("<input name=\"" + options.field + "\"/>")
+                            .appendTo(container)
+                            .kendoColorPicker({
+                                value: options.value,
+                                buttons: false,
+                                change: function(e) {
+                                    options.model.set(options.field, e.value);
+                                }
+                            });
+                    },
+                    template: "<div style='display: block; width: 100%; height: 100%; background-color: #=data.color#; opacity: .75;'> #=data.color# </div>",
+                    //editable: function() { return !!currentPolicyMapId; }
+                    editable: function() { return true; }
+                },
+                attachmentPoint: {
+                    //format: "{0:c}"
+                },
+                aggregateLimit: {
+                    //format: "{0:c}"
+                }
+            };
+
+            function createColumnConfig(fieldDatas) {
+                return fieldDatas.map(function(fieldData) {
+                    var mappedFieldName = getMappedField(fieldData.name);
+
+                    //Generate initial column config
+                    var columnConfig = {
+                       field: mappedFieldName,
+                       title: fieldData.label,
+                       editable: function() { return false; }
+                    };
+
+                    if (fieldData.type === "reference") {
+                        columnConfig.template = generateLinkTemplate(mappedFieldName);
+                    }
+
+                    //Retrieve config for field type
+                    var typeConfig = defaultTypeConfig[fieldData.type] || {};
+
+                    //Retrieve field-specific config
+                    var fieldConfig = defaultFieldConfig[mappedFieldName] || {};
+
+                    //Apply type defaults
+                    kendo.deepExtend(columnConfig, typeConfig, fieldConfig);
+
+                    return columnConfig;
+                });
+            }
+
+            var defaultColumnConfig = window.defaultColumnConfig = createColumnConfig([{
+                name: "name",
+                label: "Name"
+            }, {
+                name: "category",
+                label: "Coverage"
+            }, {
+                name: "prorata",
+                label: "Prorata"
+            }, {
+                name: "attachmentPoint",
+                label: "Attachment Point",
+                type: null
+            }, {
+                name: "aggregateLimit",
+                label: "Aggregate Limit",
+                type: null
+            }, {
+                name: "color",
+                label: "Color"
+            }, {
+                name: "layerType",
+                label: "Layer Type"
+            }]);
+
+            var defaultQueryFields = {
+                policy: {
+                    name: "STRING",
+                    occurrence_attachment_point__c: "STRING",
+                    policy_aggregate_limit__c: "STRING",
+                    pro_rata_share__c: "STRING",
+                    coverage_line__c: "STRING",
+                    layer_type__c: "STRING",
+                    "excess_policy__r.id": "STRING",
+                    "underlying_policy__r.id": "STRING",
+                    map_tooltip__c: "STRING",
+                    color__c: "STRING",
+                    date_policy_effective__c: "Date",
+                    date_policy_expiration__c: "Date"
+                },
+                policySection: {
+                    name: "STRING",
+                    section_attachment_point__c: "STRING",
+                    aggregate_limit__c: "STRING",
+                    pro_rata_share_c__c: "STRING",
+                    section_coverage__c: "STRING",
+                    layer_type__c: "STRING",
+                    "excess_layer_policy_section__r.id": "STRING",
+                    //"underlying_policy__r.id": "STRING",
+                    map_tooltip__c: "STRING",
+                    color__c: "STRING",
+                    date_section_effective__c: "Date",
+                    date_section_expiration__c: "Date"
+                },
+                policyParticipant: {
+                    name: "STRING",
+                    "policy_number__r.occurrence_attachment_point__c": "STRING",
+                    "policy_number__r.policy_aggregate_limit__c": "STRING",
+                    "policy_number__r.pro_rata_share__c": "STRING",
+                    "policy_number__r.coverage_line__c": "STRING",
+                    "policy_number__r.layer_type__c": "STRING",
+                    map_tooltip__c: "STRING",
+                    color__c: "STRING",
+                    "policy_number__r.date_policy_effective__c": "Date",
+                    "policy_number__r.date_policy_expiration__c": "Date"
+                }
+            };
+
+            function getMappedField(originalFieldName) {
+                var mappedField = originalFieldName;
+                Object.keys(fieldMappings).forEach(function(mappedFieldName) {
+                    var validFields = fieldMappings[mappedFieldName];
+                    validFields = Array.isArray(validFields) ? validFields : [validFields];
+                    validFields.forEach(function(validField) {
+                        if (mappedField === originalFieldName && validField === originalFieldName.toLowerCase()) {
+                            mappedField = mappedFieldName;
+                        }
+                    });
+                });
+                return mappedField;
+            }
+
+            var stagingDataSource = window.stagingDataSource = new kendo.data.DataSource({
+                change: function(e) {
+                    if (e.action === "itemchange" && e.items.length === 1 && e.field === "color") {
+                        setTimeout(function() {
+                            dataGrid.closeCell();
+                        }, 100);
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "recordid",
+                        fields: {
+                            recordid: {
+                                nullable: false,
+                                editable: false
+                            },
+                            name: {
+                                nullable: false,
+                                editable: false
+                            },
+                            category: {
+                                editable: false
+                            },
+                            prorata: {
+                                nullable: false,
+                                type: "number"
+                            },
+                            lowerProrata: {
+                                nullable: false,
+                                defaultValue: 0,
+                                editable: false,
+                                type: "number"
+                            },
+                            upperProrata: {
+                                nullable: false,
+                                defaultValue: 100,
+                                editable: false,
+                                type: "number"
+                            },
+                            attachmentPoint: {
+                                nullable: false,
+                                defaultValue: 0,
+                                type: "number",
+                                editable: false
+                            },
+                            upperLimit: {
+                                nullable: false,
+                                type: "number",
+                                editable: false
+                            },
+                            color: {
+                                nullable: false,
+                                editable: true
+                            },
+                            umbrella: {
+                                nullable: false,
+                                defaultValue: false,
+                                editable: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            var postProcessors = {
+                attachmentPoint: function(val) {
+                    return parseInt(val) || 0;
+                },
+                aggregateLimit: function(val) {
+                    return parseInt(val) || 0;
+                },
+                prorata: function(val) {
+                    return parseFloat(val) || 100.0;
+                },
+                upperLimit: function(val, data) {
+                    return data.attachmentPoint + data.aggregateLimit;
+                }
+            }
+
+            var normalizeData = function(data, skipPostProcess) {
+                if (Array.isArray(data) || data instanceof kendo.data.ObservableArray) {
+                    return data.map(function(d) {
+                        return normalizeData(d, skipPostProcess);
+                    });
+                } else {
+                    var mappedData = data;
+
+                    for (var destField in fieldMappings) {
+                        var srcFields = fieldMappings[destField];
+                        srcFields = Array.isArray(srcFields) ? srcFields : [srcFields];
+                        var fieldValue = undefined;
+
+                        for (var i = 0; i < srcFields.length; i++) {
+                            var srcField = srcFields[i];
+                            if (typeof data[srcField] !== "undefined") {
+                                fieldValue = data[srcField];
+                                break;
+                            }
+                        }
+
+                        mappedData[destField] = fieldValue;
+                    }
+
+                    if (!skipPostProcess) {
+                        for (var destField in postProcessors) {
+                            mappedData[destField] = postProcessors[destField](mappedData[destField], mappedData);
+                        }
+                    }
+
+                    return mappedData;
+                }
+            };
+
+            var importData = function(policies, append){
+                policies = normalizeData(policies);
+
+                if (append) {
+                    stagingDataSource.data(processPolicies(stagingDataSource.data().toJSON().concat(policies)));
+                } else {
+                    stagingDataSource.data(processPolicies(policies));
+                }
+                blockChart.refresh();
+            };
+
+            var processPolicies = function(data) {
+                var nonProrataPolicies = [];
+                var prorataPoliciesByCategory = {};
+                var excessProrataPolicies = [];
+
+                var rowsById = {};
+
+                var categoriesSpanned = {};
+
+                //====== Initial Processing Pass ======
+                data.forEach(function(dataRow){
+                    if (dataRow.category) {
+                        categoriesSpanned[dataRow.category] = true;
+                    }
+                });
+
+                categoriesSpanned = Object.keys(categoriesSpanned);
+
+                data.forEach(function(dataRow){
+                    rowsById[dataRow.recordid] = dataRow;
+
+                    dataRow.prorata = dataRow.prorata || (dataRow.upperProrata - dataRow.lowerProrata);
+
+                    var isUmbrellaOrExcess = dataRow.layerType === CONSTS.LAYER.U || dataRow.layerType === CONSTS.LAYER.E;
+
+                    //Umbrella, Excess, and Prorata Excess policies span across the entire chart
+                    if (dataRow.underlyingPolicyLookup || isUmbrellaOrExcess) {
+                        dataRow.category = categoriesSpanned.join(",");
+                    }
+
+                    if (dataRow.prorata === 100) {
+                        dataRow.lowerProrata = 0;
+                        dataRow.upperProrata = 100;
+                        nonProrataPolicies.push(dataRow);
+                    } else {
+                        if (dataRow.underlyingPolicyLookup) {
+                            excessProrataPolicies.push(dataRow);
+                        } else {
+                            (prorataPoliciesByCategory[dataRow.category] || (prorataPoliciesByCategory[dataRow.category] = [])).push(dataRow);
+                        }
+                    }
+
+                    for (var fieldName in dataRow) {
+                        if (fieldName.endsWith("__r.id")) {
+                            dataRow[fieldName.replace("__r.id", "__r_id")] = dataRow[fieldName];
+                            delete dataRow[fieldName];
+                        }
+                    }
+                });
+
+
+                //====== Run Fitting Algorithm on Each Sub-Graph to Fit Policies (Non-Umbrella/Excess Only) ======
+                Object.values(prorataPoliciesByCategory).forEach(function(policiesByCategory){
+                    boxFit(policiesByCategory);
+                });
+
+                //====== Run Fitting Algorithm on All Excess Prorata Policies ======
+                boxFit(excessProrataPolicies);
+
+                return Array.prototype.concat.apply([], Object.values(prorataPoliciesByCategory))
+                    .concat(nonProrataPolicies)
+                    .concat(excessProrataPolicies);
+            };
+
+            var boxFit = function(data){
+                //All of these checks are a bit over-zealous in checking both upper and lower bounds, but
+                //it should force a stricter sense of validity on the source data.
+                data.sort(function(a, b){
+                    var aHeight = a.aggregateLimit,
+                        bHeight = b.aggregateLimit;
+
+                    var aArea = a.prorata * aHeight,
+                        bArea = b.prorata * bHeight;
+                    
+                    //Primary sort, by height
+                    if (aHeight > bHeight) {
+                        return -1;
+                    } else if (aHeight < bHeight) {
+                        return 1;
+                    } else {
+                        //Secondary sort, by area
+                        if (aArea > bArea) {
+                            return -1;
+                        } else if (aArea < bArea) {
+                            return 1;
+                        } else {
+                            //Ternary sort, bottom to top
+                            if (a.lowerCoverage < b.lowerCoverage) {
+                                return -1;
+                            } else if (a.lowerCoverage > b.lowerCoverage) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        }
+                    }
+                });
+
+                var moveSpeed = 1 / 8;
+
+                var fittedPolicies = [];
+                var greatestUpperProrata = 0;
+
+                for (var i = 0; i < data.length; i++) {
+                    var d = data[i];
+
+                    var verticalCenterPosition = (d.upperLimit - d.attachmentPoint) / 2
+
+                    d.lowerProrata = greatestUpperProrata;
+                    d.upperProrata = d.lowerProrata + d.prorata;
+
+                    var lowerProrata_Test = d.lowerProrata,
+                        upperProrata_Test = d.lowerProrata + d.prorata;
+
+                    var bestFitLower = d.lowerProrata;
+
+                    while (lowerProrata_Test > 0) {
+                        //Calculate the policy's next attempted position
+                        lowerProrata_Test -= moveSpeed;
+                        upperProrata_Test = lowerProrata_Test + d.prorata;
+
+                        //Determine if the policy would be colliding with any other another policy
+                        var collisionDetected = false;
+                        for (var otherI = 0; otherI < fittedPolicies.length; otherI++) {
+                            var otherD = fittedPolicies[otherI];
+                            if (lowerProrata_Test < otherD.upperProrata &&
+                                upperProrata_Test > otherD.lowerProrata &&
+                                d.attachmentPoint < otherD.upperLimit &&
+                                d.upperLimit > otherD.attachmentPoint) {
+
+                                collisionDetected = true;
+                                break;
+                            }
+                        };
+
+                        if (!collisionDetected) {
+                            //No collision detected
+                            bestFitLower = lowerProrata_Test < 0 ? 0 : lowerProrata_Test;
+                        }
+                    }
+
+                    d.lowerProrata = bestFitLower;
+                    d.upperProrata = bestFitLower + d.prorata;
+                    greatestUpperProrata = Math.max(d.upperProrata, greatestUpperProrata);
+                    fittedPolicies.push(d);
+                }
+            };
+
+            $("#getNameForSave").kendoWindow({
+                modal: true,
+                visible: false
+            });
+
+            var saveNamePopup = $("#getNameForSave").data("kendoWindow");
+
+            function getNameForSave(prefillName) {
+                return new Promise(function(resolve, reject) {
+                    $("#saveName").val(prefillName);
+                    saveNamePopup.one("close", function(e) {
+                        if (!e.userTriggered) {
+                            //get the value from the textbox
+                            var name = $("#saveName").val();
+                            if(name){
+                                $("#saveName").val("");
+                                resolve(name);
+                            }
+                            else{
+                                reject(name);
+                            }
+                        } else {
+                            reject();
+                        }
+                    });
+                    $("#saveNameButton").click(function(e) {
+                        saveNamePopup.close();
+                    });
+                    saveNamePopup.center().open();
+                });
+            }
+
+            var policiesToChange = {};
+        
+            var dataGrid = $("#data-grid").kendoGrid({
+                dataSource: stagingDataSource,
+                editable: true,
+                navigatable: true,
+                toolbar: [
+                    {name: "save", text: "Save Colors"},
+                    "excel"
+                ],
+                excel: {
+                    fileName: policyMapName + " - " + (new Date()).toLocaleDateString() + ".xlsx"
+                },
+                batch: true,
+                height: 450,
+                saveChanges: function (e) {
+                    if (Object.keys(policiesToChange).length) {
+                        BlockChart_ControllerJW.saveColors(JSON.stringify(policiesToChange), function(result,event) {
+                            if (event && event.status) {
+                                policiesToChange = {};
+                                blockChart.refresh();
+                            } else {
+                                console.error(event,result);
+                            }
+                        });
+                    }
+                },
+                save: function(e) {
+                    policiesToChange[e.model.id] = e.values.color;
+                },
+                cellClose: function(e) {
+                    blockChart.refresh();
+                }
+            }).data("kendoGrid");
+
+            function roundFormatter(val) {
+                if (val >= 1500000000000) {
+                    return Math.round(val / 1000000000000) + "T";
+                } else if (val >= 1500000000) {
+                    return Math.round(val / 1000000000) + "B";
+                } else if (val >= 1500000) {
+                    return Math.round(val / 1000000) + "M";
+                } else if (val >= 1500) {
+                    return Math.round(val / 1000) + "K";
+                } else {
+                    return parseFloat(Math.round(val));
+                }
+                return val;
+            }
+
+            var tooltipColumns = 3;
+
+            var _clickMod = 1;
+            var blockChart = window.blockChart = $("#kendo-drawing").kendoBlockChart({
+                dataSource: stagingDataSource,
+                fields: {
+                    yLower: "attachmentPoint",
+                    yUpper: "upperLimit",
+                    xLower: "lowerProrata",
+                    xUpper: "upperProrata",
+                    text: function(rowData) {
+                        var rowTextParts = [];
+                        if (rowData.layerType && rowData.layerType !== CONSTS.LAYER.P) {
+                            rowTextParts.push(rowData.layerType);
+                        }
+                        rowTextParts.push(rowData.get("carrier__c") || rowData.get("name"));
+                        if (rowData.layerType === CONSTS.LAYER.P) {
+                            if (rowData.aggregateLimit || rowData.attachmentPoint) {
+                                rowTextParts.push(roundFormatter(rowData.aggregateLimit) + " X " + roundFormatter(rowData.attachmentPoint));
+                            }
+                        }
+                        return rowTextParts.join(" - ");
+                    },
+                    textAlignH: "center",
+                    textAlignV: "center"
+                },
+                title: {
+                    text: policyMapName,
+                    font: {
+                        family: "\"Salesforce Sans\", Arial, sans-serif"
+                    }
+                },
+                axes: {
+                    x: {
+                        intervals: 0,
+                        scale: "linear",
+                        label: "Coverage"
+                    },
+                    y: {
+                        intervals: 6,
+                        scale: "linear",
+                        label: "Limit",
+                        content: function(val) {
+                            return roundFormatter(val);
+                        }
+                    }
+                },
+                axisDefaults: {
+                    labels: {
+                        font: {
+                            family: "\"Salesforce Sans\", Arial, sans-serif"
+                        }
+                    }
+                },
+                font: {
+                    size: 12,
+                    family: "\"Salesforce Sans\", Arial, sans-serif"
+                },
+                minFontSize: 7,
+                innerPadding: 70,
+                size: "fit",
+                hoverIntervalSpacing: 50,
+                tooltip: {
+                    enabled: false,
+                    content: function(rowData) {
+                        return rowData.get("name") + "<br/>" + (rowData.get("mapTooltip") || "").replace(/\\n/g, '<br/>');
+                    }
+                },
+                mouseEnterHandler: function(e, rowData) {
+                    $("#hover-display").empty();
+
+                    var dataParts = (rowData.get("mapTooltip") || "").split("\\n");
+
+                    var parentRow = $("<div/>");
+
+                    var columnCounter = 0;
+                    dataParts.forEach(function(dataPart) {
+                        var dataCell = $("<span/>").addClass("hover-cell");
+                        if (dataPart.indexOf(":") > -1) {
+                            var dataPartParts = dataPart.split(":");
+                            dataPart = dataPartParts[1];
+
+                            dataCell.append(
+                                $("<span/>").addClass("hover-label").text(dataPartParts[0] + ": ")
+                            );
+                        }
+                        dataCell.append($("<span/>").addClass("hover-value").text(dataPart));
+
+                        parentRow.append(dataCell);
+
+                        columnCounter++;
+
+                        if (columnCounter % tooltipColumns === 0) {
+                            $("#hover-display").append(parentRow.addClass("hover-row columns-" + tooltipColumns));
+                            parentRow = $("<div/>");
+                        }
+                    });
+
+                    if (columnCounter % tooltipColumns) {
+                        $("#hover-display").append(parentRow.addClass("hover-row columns-" + tooltipColumns));
+                    }
+
+                    $("#hover-display").append(
+                        $("<div/>").addClass("hover-row color-display").css("background-color", rowData.get("color"))
+                    );
+                },
+                mouseLeaveHandler: function(e, rowData) {
+                    $("#hover-display").empty().append(
+                        $("<div/>").addClass("hover-row").append(
+                            $("<span/>").addClass("hover-cell").text("Nothing currently selected.")
+                        )
+                    );
+                },
+                clickHandler: function(e, rowData) {
+                    window.open("/" + rowData.id, "_blank");
+                },
+                tickEditedHandler: function(tickData) {
+                    BlockChart_ControllerJW.updateYAxisIntervals(currentPolicyMapId, JSON.stringify(tickData), function(result, event) {
+                        if (event && event.status) {
+
+                        } else {
+                            console.error(event, result);
+                        }
+                    });
+                }
+            }).data("kendoBlockChart");
+
+            blockChart.options.mouseLeaveHandler();
+
+
+            //=== CONFIGURE RK SEARCH INSTANCES FOR EACH SUPPORTED OBJECT ===
+            var allImportSearches = [];
+
+            //Configure RK Search for Policy__c
+            var policySearchConfig = {!policySearchConfig};
+            var policyGridFieldsConfig = JSON.parse("{!JSENCODE(policyGridFieldsConfig)}");
+            var policyList = window.policyList = new rkl.genericSearchs.GenericSearch({
+                $parent: $('#jsSearch_Policy'),
+                crlData: policySearchConfig
+            });
+            policyList.$evts.on("preSearching", function(e, searchConfig) {
+                kendo.deepExtend(searchConfig.data.requestFields, defaultQueryFields.policy);
+
+                //Ensure any additional fields configured by the user are included in the queried data
+                if (policyGridFieldsConfig) {
+                    policyGridFieldsConfig.forEach(function(fieldConfig) {
+                        if (fieldConfig.type.toLowerCase() === "reference") {
+                            searchConfig.data.requestFields[fieldConfig.name.replace(/__c$/, "__r.id")] = "STRING";
+                        }
+                        searchConfig.data.requestFields[fieldConfig.name] = convertDisplayTypeToSearchType(fieldConfig.type);
+                    });
+                }
+            });
+            allImportSearches.push(policyList);
+
+            //Configure RK Search for Policy_Section__c
+            var policySectionSearchConfig = {!policySectionSearchConfig};
+            var policySectionGridFieldsConfig = JSON.parse("{!JSENCODE(policySectionGridFieldsConfig)}");
+            var policySectionList = window.policySectionList = new rkl.genericSearchs.GenericSearch({
+                $parent: $("#jsSearch_PolicySection"),
+                crlData: policySectionSearchConfig
+            });
+            policySectionList.$evts.on("preSearching", function(e, searchConfig) {
+                kendo.deepExtend(searchConfig.data.requestFields, defaultQueryFields.policySection);
+
+                //Ensure any additional fields configured by the user are included in the queried data
+                if (policySectionGridFieldsConfig) {
+                    policySectionGridFieldsConfig.forEach(function(fieldConfig) {
+                        if (fieldConfig.type.toLowerCase() === "reference") {
+                            searchConfig.data.requestFields[fieldConfig.name.replace(/__c$/, "__r.id")] = "STRING";
+                        }
+                        searchConfig.data.requestFields[fieldConfig.name] = convertDisplayTypeToSearchType(fieldConfig.type);
+                    });
+                }
+            });
+            allImportSearches.push(policySectionList);
+
+            //Configure RK Search for Policy_Participant__c
+            var policyParticipantSearchConfig = {!policyParticipantSearchConfig};
+            var policyParticipantGridFieldsConfig = JSON.parse("{!JSENCODE(policyParticipantGridFieldsConfig)}");
+            var policyParticipantList = window.policyParticipantList = new rkl.genericSearchs.GenericSearch({
+                $parent: $("#jsSearch_PolicyParticipant"),
+                crlData: policyParticipantSearchConfig
+            });
+            policyParticipantList.$evts.on("preSearching", function(e, searchConfig) {
+                kendo.deepExtend(searchConfig.data.requestFields, defaultQueryFields.policyParticipant);
+
+                //Ensure any additional fields configured by the user are included in the queried data
+                if (policyParticipantGridFieldsConfig) {
+                    policyParticipantGridFieldsConfig.forEach(function(fieldConfig) {
+                        if (fieldConfig.type.toLowerCase() === "reference") {
+                            searchConfig.data.requestFields[fieldConfig.name.replace(/__c$/, "__r.id")] = "STRING";
+                        }
+                        searchConfig.data.requestFields[fieldConfig.name] = convertDisplayTypeToSearchType(fieldConfig.type);
+                    });
+                }
+            });
+            allImportSearches.push(policyParticipantList);
+
+            //BUGFIX - Fix multi select field bug in RK SEARCH multiselect filter
+            $(".searchInput1.searchField[data-role='multiselect']").each(function(i, multiSelectElem) {
+                $(multiSelectElem).data("kendoMultiSelect").setOptions({
+                    maxSelectedItems: 5000
+                });
+            });
+            //=== END === CONFIGURE RK SEARCH INSTANCES FOR EACH SUPPORTED OBJECT ===
+
+            $(".k-grid-content.k-auto-scrollable").css({
+                "height": "",
+                "min-height": "300px"
+            });
+
+            var importButton = $("#importButton").kendoButton().data("kendoButton");
+            importButton.bind("click", function(e){
+                var selectedDataLevel = dataLevelSelector.value();
+                var targetSearch;
+                if (selectedDataLevel === "Policy") {
+                    targetSearch = policyList;
+                } else if (selectedDataLevel === "Policy Section") {
+                    targetSearch = policySectionList;
+                } else {
+                    targetSearch = policyParticipantList;
+                }
+                importData(targetSearch.resultArea.resultTable.grid.dataSource.data());
+            });
+
+            var chartButton = $("#chart-button").kendoButton({
+                click: function() {
+                    blockChart.refresh();
+                }
+            });
+
+            var dataLevelSelector = $("#dataLevelSelector").kendoDropDownList({
+                dataSource: ["Policy", "Policy Section", "Policy Participant"],
+                change: function(e) {
+                    var value = this.value();
+                    allImportSearches.forEach(function(search) {
+                        search.$body.hide();
+                    });
+
+                    var targetSearch, targetColumnConfig;
+                    if (value === "Policy") {
+                        targetSearch = policyList;
+                        targetColumnConfig = policyGridFieldsConfig;
+                    } else if (value === "Policy Section") {
+                        targetSearch = policySectionList;
+                        targetColumnConfig = policySectionGridFieldsConfig;
+                    } else {
+                        targetSearch = policyParticipantList;
+                        targetColumnConfig = policyParticipantGridFieldsConfig;
+                    }
+
+                    targetSearch.$body.show();
+
+                    if (targetColumnConfig && Object.keys(targetColumnConfig).length) {
+                        var gridColumnConfig = window.gridColumnConfig = createColumnConfig(targetColumnConfig);
+                        dataGrid.setOptions({
+                            columns: gridColumnConfig
+                        });
+                    } else {
+                        dataGrid.setOptions({
+                            columns: defaultColumnConfig
+                        });
+                    }
+                }
+            }).data("kendoDropDownList");
+
+            dataLevelSelector.value("{!JSENCODE(dataLevel)}" || "Policy");
+            dataLevelSelector._triggerChange();
+
+            //tack on a button to the drawing
+            var saveAsImageButton = $('#saveAsImage');
+            saveAsImageButton.click(function(){
+                getNameForSave(policyMapName + " - " + (new Date()).toLocaleDateString())
+                .then(function(name){
+                    name = name.endsWith(".png") ? name : name + ".png";
+                    return blockChart.getImageDataURI(2).then(function(dataURI) {
+                        var splitted = dataURI.split(',');
+                        var dataURI = splitted[1];
+                        return jsForceAPI.sobject('Attachment').create(
+                            {
+                                ParentId: currentPolicyMapId,
+                                Name: name,
+                                Body: dataURI,
+                                ContentType: 'image/png'
+                            }
+                        ).then(function() {
+                            window.open("/apex/PolicyMap_Wrapper?id={!policyMap.Id}", "_top");
+                        })
+                    });
+                }).catch(console.error.bind(console));
+            });
+
+            //set up the click for edit mode
+            var editMode = false;
+            $("#editPolicyMap").click(editModeOn);
+
+            //allow for cancel
+            $("#cancel").click(function(){
+                if(editMode){
+                    editModeOff();
+                    loadFilters();
+                }
+                else{
+                    window.history.back();
+                }
+            });
+
+            function normalizeScaleConfig(scaleConfig) {
+                if (scaleConfig) {
+                    if (scaleConfig.linear || scaleConfig.log) {
+                        //Must be old config, needs to be updated
+                        var scaleType = scaleConfig.log ? "logarithmic" : "linear";
+                        var newConfig = {
+                            scale: scaleType
+                        };
+
+                        newConfig.compressionStrength = Math.E;
+
+                        if (scaleType === "log") {
+                            newConfig.compressionStrength = scaleConfig.log.compressionStrength || Math.E;
+                        }
+
+                        BlockChart_ControllerJW.updateScale(currentPolicyMapId, JSON.stringify(newConfig), function(result, event) {
+                            if (event && event.status) {
+
+                            } else {
+                                console.error(event, result);
+                            }
+                        });
+
+                        return newConfig;
+                    } else {
+                        //Must be new config format, doesn't need to be changed
+                        return scaleConfig;
+                    }
+                } else {
+                    return {
+                        scale: "linear"
+                    };
+                }
+            }
+
+            var scaleConfigJSON = "{!JSENCODE(scaleConfigJSON)}" || "{}";
+            var currentScaleConfig = normalizeScaleConfig(JSON.parse(scaleConfigJSON));
+
+            var changeScaleButton = $("#changeScale").kendoDropDownList({
+                dataSource: ["linear","logarithmic","cubic"],
+                change: function(e) {
+                    var value = this.value();
+                    blockChart.setScale(value, currentScaleConfig.compressionStrength);
+                    blockChart.refresh();
+                    currentScaleConfig.scale = value;
+                    BlockChart_ControllerJW.updateScale(currentPolicyMapId, JSON.stringify(currentScaleConfig), function(result, event) {
+                        if (event && event.status) {
+                            
+                        } else {
+                            console.error(event, result);
+                        }
+                    });
+                }
+            }).data("kendoDropDownList");
+
+            var currentUpperBound = null;
+            var changeUpperBoundButton = $("#changeUpperBounds").kendoNumericTextBox({
+                min: 0,
+                step: 1,
+                restrictDecimals: true,
+                decimals: 0,
+                format: "n0",
+                change: function(e) {
+                    currentUpperBound = this.value();
+                    blockChart.setBound_yUpper(currentUpperBound);
+
+                    BlockChart_ControllerJW.updateUpperBounds(currentPolicyMapId, currentUpperBound, function(result, event) {
+                        if (event && event.status) {
+
+                        } else {
+                            console.error(event, result);
+                        }
+                    });
+                }
+            }).data("kendoNumericTextBox");
+
+            var initialUpperBound = {!JSENCODE(upperBoundValue)};
+            if (initialUpperBound) {
+                blockChart.setBound_yUpper(initialUpperBound);
+            }
+
+            blockChart.bind(blockChart.events.E_CHANGEBOUND, function(e, bounds) {
+                changeUpperBoundButton.value(bounds.upperLimit);
+            });
+
+            changeScaleButton.value(currentScaleConfig.scale);
+            blockChart.setScale(currentScaleConfig.scale, currentScaleConfig.compressionStrength);
+
+            //Load any saved interval values into the visualization
+            var yIntervalsJSON = "{!JSENCODE(yAxisIntervalJSON)}" || "[]";
+            var yIntervals = JSON.parse(yIntervalsJSON);
+            blockChart.setIntervals(yIntervals);
+
+            
+            var savePolicyMapButton = $("#saveRecord");
+            savePolicyMapButton.click(function() {
+                savePolicyMap();
+            });
+
+            function formatDate(date){
+                return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+            }
+
+            var widgetDataMap = {
+                "multiselect": "kendoMultiSelect",
+                "datepicker": "kendoDatePicker"
+            };
+
+            //Default date selectors to appropriate filter types
+            var startDateOP_Policy = policyList.searchArea.fields('date_policy_effective__c').$fieldCell.find("input.opSelector").data("kendoDropDownList");
+            if (startDateOP_Policy) {
+                startDateOP_Policy.value(">=");
+                startDateOP_Policy.trigger("change");
+            }
+            
+            var endDateOP_Policy = policyList.searchArea.fields('date_policy_expiration__c').$fieldCell.find("input.opSelector").data("kendoDropDownList");
+            if (endDateOP_Policy) {
+                endDateOP_Policy.value("<=");
+                endDateOP_Policy.trigger("change");
+            }
+            
+            var startDateOP_PolicySection = policySectionList.searchArea.fields('date_section_effective__c').$fieldCell.find("input.opSelector").data("kendoDropDownList");
+            if (startDateOP_PolicySection) {
+                startDateOP_PolicySection.value(">=");
+                startDateOP_PolicySection.trigger("change");
+            }
+            
+            var endDateOP_PolicySection = policySectionList.searchArea.fields('date_section_expiration__c').$fieldCell.find("input.opSelector").data("kendoDropDownList");
+            if (endDateOP_PolicySection) {
+                endDateOP_PolicySection.value("<=");
+                endDateOP_PolicySection.trigger("change");
+            }
+
+            function loadFilters() {
+                var selectedDataLevel = "{!JSENCODE(policyMap.Data_Level__c)}";
+
+                dataLevelSelector.value(selectedDataLevel);
+                dataLevelSelector.trigger("change");
+
+                var targetSearch;
+                if (selectedDataLevel === "Policy") {
+                    targetSearch = policyList;
+                } else if (selectedDataLevel === "Policy Section") {
+                    targetSearch = policySectionList;
+                } else {
+                    targetSearch = policyParticipantList;
+                }
+
+                var filterCriteriaJSON = "{!JSENCODE(policyMap.Filter_Criteria__c)}";
+                
+                var filterValues;
+
+                if (filterCriteriaJSON) {
+                    filterValues = JSON.parse(filterCriteriaJSON);
+                    if (!Object.keys(filterValues).length) {
+                        filterValues = undefined;
+                    }
+                }
+
+                if (!filterValues) {
+                    var startDate = new Date({!JSENCODE(startDateMS)}),
+                        endDate = new Date({!JSENCODE(endDateMS)}),
+                        coverages = JSON.parse("{!JSENCODE(coveragesJSON)}");
+
+                    filterValues = {};
+
+                    if (selectedDataLevel === "Policy") {
+                        filterValues["date_policy_effective__c"] = startDate;
+                        filterValues["date_policy_expiration__c"] = endDate;
+                        filterValues["coverage_line__c"] = coverages;
+                    } else if (selectedDataLevel === "Policy Section") {
+                        filterValues["date_section_effective__c"] = startDate;
+                        filterValues["date_section_expiration__c"] = endDate;
+                        filterValues["section_coverage__c"] = coverages;
+                    } else {
+
+                    }
+
+                    BlockChart_ControllerJW.savePolicyMap(currentPolicyMapId, JSON.stringify(filterValues),"{!JSENCODE(policyMap.Name)}", function(result, event) {
+                        if (event && event.status) {
+
+                        } else {
+                            console.error(event, result);
+                        }
+                    });
+                }
+
+                Object.keys(filterValues).forEach(function(field) {
+                    if (!field.endsWith("__op")) {
+                        var filterValue = filterValues[field];
+                        var filterOp = filterValues[field + "__op"];
+                        var searchField = targetSearch.searchArea.fields(field);
+                        if (searchField) {
+                            var inputRole = searchField.$firstInput.data().role;
+                            var opSelector = searchField.$fieldCell.find("input.opSelector").data("kendoDropDownList");
+
+                            if (filterOp) {
+                                opSelector.value(filterOp);
+                                opSelector.trigger("change");
+                            }
+
+                            var kendoWidgets;
+                            if (inputRole) {
+                                var widgetDataMappings = widgetDataMap[inputRole];
+                                widgetDataMappings = Array.isArray(widgetDataMappings) ? widgetDataMappings : [widgetDataMappings];
+                                kendoWidgets = widgetDataMappings.map(function(dataMapping) {
+                                    return searchField.$firstInput.data(dataMapping);
+                                });
+                            }
+                            
+                            if (kendoWidgets && kendoWidgets.length) {
+                                kendoWidgets.forEach(function(kendoWidget) {
+                                    if (kendoWidget && kendoWidget.dataSource) {
+                                        kendoWidget.dataSource.filter({});
+                                        var dataSourceValues = kendoWidget.dataSource.data();
+                                        var dataSourceValuesIndexed = {};
+
+                                        dataSourceValues.forEach(function(dataSourceValue) {
+                                            dataSourceValuesIndexed[dataSourceValue.value.toLowerCase()] = dataSourceValue.value;
+                                        });
+
+                                        if (Array.isArray(filterValue) || filterValue instanceof kendo.data.ObservableArray) {
+                                            filterValue = filterValue.map(function(value) {
+                                                return dataSourceValuesIndexed[value.toLowerCase()] || value;
+                                            });
+                                        } else {
+                                            filterValue = dataSourceValuesIndexed[filterValue.toLowerCase()] || filterValue;
+                                        }
+                                    }
+
+                                    if (inputRole.indexOf("date") > -1 && filterValue) {
+                                        kendoWidget.value(new Date(filterValue));
+                                    } else {
+                                        kendoWidget.value(filterValue);
+                                    }
+                                    kendoWidget.trigger("change");
+                                });
+                            } else {
+                                searchField.$firstInput.val(filterValue).change();
+                            }
+                        } else {
+
+                        }
+                    }
+                });
+
+                targetSearch.loadTable().then(function() {
+                    importData(targetSearch.resultArea.resultTable.grid.dataSource.data());
+                });
+            }
+            
+            //last thing, if there's an Id, go ahead and load the policies
+            if(currentPolicyMapId){
+                //we only want to hide the searches if we are in non edit mode
+                $("#importPanel").hide();
+                $("#importPanelSection").hide();
+                $("#saveRecord").hide();
+                $("#cancel").hide();
+                $("#jsSearch_Attachments").show();
+                $("#editPolicyMap").show();
+                saveAsImageButton.show();
+
+                loadFilters();
+            }
+
+            function editModeOn(){
+                $("#importPanel").show();
+                $("#importPanelSection").show();
+                saveAsImageButton.hide();
+                $("#saveRecord").show();
+                editMode = true;
+                $("#editPolicyMap").hide();
+                $("#dataLevelSelectorContainer").hide();
+                $("#cancel").show();
+            }
+
+            function editModeOff(){
+                 editmode = false;
+                $("#saveRecord").hide();
+                $("#saveAsImage").show();
+                $("#importPanel").hide();
+                $("#importPanelSection").hide();
+                $("#editPolicyMap").show();
+                $("#cancel").hide();
+            }
+
+            function savePolicyMap(){
+                //we need a name
+                getNameForSave(policyMapName)
+                .then(function(name){
+                    var selectedDataLevel = dataLevelSelector.value();
+                    var targetSearch;
+                    if (selectedDataLevel === "Policy") {
+                        targetSearch = policyList;
+                    } else if (selectedDataLevel === "Policy Section") {
+                        targetSearch = policySectionList;
+                    } else {
+                        targetSearch = policyParticipantList;
+                    }
+
+                    var filterValues = {};
+                    targetSearch.searchArea.fields().forEach(function(field){
+                        var searchField = targetSearch.searchArea.fields(field);
+                        var inputRole = searchField.$firstInput.data().role;
+                        var opSelector = searchField.$fieldCell.find("input.opSelector").data("kendoDropDownList");
+
+                        filterValues[field + "__op"] = opSelector.value();
+
+                        var kendoWidgets;
+                        if (inputRole) {
+                            var widgetDataMappings = widgetDataMap[inputRole];
+                            widgetDataMappings = Array.isArray(widgetDataMappings) ? widgetDataMappings : [widgetDataMappings];
+                            kendoWidgets = widgetDataMappings.map(function(dataMapping) {
+                                return searchField.$firstInput.data(dataMapping);
+                            });
+                        }
+                        var value = searchField.$firstInput.val();
+                        if (kendoWidgets && kendoWidgets.length) {
+                            kendoWidgets.forEach(function(kendoWidget) {
+                                value = kendoWidget.value();
+                            });
+                        }
+                        filterValues[field] = value;
+                    });
+                    if(editMode){
+                        BlockChart_ControllerJW.savePolicyMap(currentPolicyMapId, JSON.stringify(filterValues), name, function(result, event) {
+                            if (event && event.status) {
+                               editModeOff();
+                               location.reload(true);
+                            } else {
+                                console.error(event, result);
+                            }
+                        });
+                    }
+                    else{
+                        BlockChart_ControllerJW.saveNewPolicyMap(name, selectedDataLevel, JSON.stringify(currentScaleConfig), currentUpperBound, JSON.stringify(filterValues), function(result, event) {
+                            if (event && event.status) {
+                                window.open("/" + result.id, "_top");
+                            } else {
+                                console.error(event, result);
+                            }
+                        });
+                    }
+                })
+                .catch(console.error.bind(console));
+                return;
+            }
+        }, console.error.bind(console));
+
+        </script>
+    </head>
+    <body>
+        <div id="importPanel" style="margin: 1em 1em 1em 1em; border: 1px solid #e2e2e3; border-radius: 10px; background-color: #f7f7f9;">
+            <div style="margin: 1em 1em 1em 1em" id="dataLevelSelectorContainer">
+                <div style="text-align: right;">Data Level: <div style="text-align: left" id="dataLevelSelector"></div></div>
+            </div>
+            <div id="jsSearch_Policy" style="margin: 0em 1em 0em 1em"></div>
+            <div id="jsSearch_PolicySection" style="margin: 0em 1em 0em 1em"></div>
+            <div id="jsSearch_PolicyParticipant" style="margin: 0em 1em 0em 1em"></div>
+            <div>
+                <div style="margin: 1em 1em 1em 1em; text-align: right;">
+                    <button id="importButton" class="k-button k-primary" style="margin-right: 5px;">Confirm Selection</button>
+                </div>
+            </div>
+        </div>
+            
+        <div id="drawing_container" style="margin: 1em 1em 1em 1em">
+            <div id="kendo-drawing" class="blockchart-display"></div>
+            <div id="hover-display" class="hover-display"></div>
+            
+            <div style="margin: 1em 1em 1em 1em; text-align: center;">
+                <span style="margin-right: 5px">Y-Axis Upper Bound: <input type="number" style="text-align: left;" id="changeUpperBounds"></input></span>
+                <span style="margin-right: 5px">Y-Axis Scale: <div style="text-align: left;" id="changeScale"></div></span>
+                <button id="saveRecord" class="k-button k-primary" style="margin-right: 5px;">Save Policy Map</button>
+                <button id="saveAsImage" class="k-button" style="display:none; margin-right: 5px;">Save as Attachment</button>
+                <button id="editPolicyMap" class="k-button" style="display:none; margin-right: 5px;">Edit Policy Map</button>
+                <button id="cancel" class="k-button">Cancel</button>
+            </div>
+        </div>
+
+        <div id="data-grid" style="margin: 2em"></div>
+
+        <div style="margin: 1em 1em 1em 1em;">
+            <div id="jsSearch_Attachments" style="margin: 0em 1em 0em 1em; display: none;"></div>
+        </div>
+
+        <div id="getNameForSave">
+            <p>Please Give a Name to Save</p>
+            <label for="saveName">Name:</label>
+            <input type="text" class="k-textbox" style="min-width: 200px;" id="saveName" />
+            <button class="k-button" label="Save" id="saveNameButton">Save</button>
+        </div>
+        <div id="dataGridNameTemplate" style="display:none;">
+            <a href='#' onclick="window.open('/#=recordid#', '_blank');">#=name#</a>
+        </div>
+    </body>
+</apex:page>

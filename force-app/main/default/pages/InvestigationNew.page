@@ -1,0 +1,31 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/29/2013
+           ******************************************************************* -->
+<apex:page standardController="Investigation__c"    id="New"  showHeader="false"  standardStylesheets="True">
+<apex:stylesheet value="{!$Resource.WrapperCSSNew}" />
+
+<body>
+     <div class="container">
+      <div class="riskonnect-logo">
+        <apex:image id="RKlogo" value="{!$Resource.RiskonnectLogoMedium}" width="200" height="70" style="display:block;"/>
+      </div>
+        
+         <div id ="content">
+         <apex:form >
+           <apex:commandLink value="Return Home" action="{!URLFOR('/apex/Main')}" >
+           </apex:commandlink>
+         </apex:form>
+<h1 style="font-family: verdana;text-align:center;font-weight:Regular; font-size: 120%;location:Center">Investigation Information</h1>
+
+
+ 
+ <br/><br/>
+ 
+    <flow:interview name="Regulation" buttonLocation="bottom" buttonStyle="btn" finishLocation="{!URLFOR('/a1C')}" >
+     </flow:interview>
+     <br/><br/>
+          </div>
+      </div>
+  </body>
+    
+</apex:page>

@@ -1,0 +1,119 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 04/05/2016
+           ******************************************************************* -->
+<apex:page standardController="Scheduled_Payments__c" extensions="ScheduledProgressTrackerController" action="{!initiate}" sidebar="false" showHeader="true" >
+<head>
+<style type="text/css">
+body {
+background-color:#d4eaf3;
+}
+ .StatusHeader {background-attachment: scroll;
+            background-clip: border-box;
+            background-color: #1797C0;
+            background-origin: padding-box;
+            background-position: -209px -2px;
+            background-repeat: no-repeat;
+            background-size: auto;
+            border-bottom-color: white;
+            border-collapse: separate;
+            border-left-color: white;
+            border-right-color: white;
+            border-top-color: white;
+            color: white;
+            display: block;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+            margin-bottom: 0px;
+            margin-left: 0px;
+            margin-right: 0px;
+            margin-top: 0px;
+            padding-bottom: 4px;
+            padding-left: 4px;
+            padding-right: 10px;
+            padding-top: 4px;
+            box-sizing: border-box;
+            border-top-right-radius:4px;
+            border-bottom-right-radius:4px;
+            border-top-left-radius:4px;
+            border-bottom-left-radius:4px;
+            }
+.StatusContent {
+            background-color: #ffffff;
+            border-bottom-color: white;
+            border-collapse: separate;
+            border-left-color: white;
+            border-right-color: white;
+            border-top-color: white;
+            color: black;
+            text-align:right;
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 16px;
+            font-size: 12px;
+            font-weight: normal;
+            margin-bottom: 0px;
+            margin-left: 0px;
+            margin-right: 0px;
+            margin-top: 0px;
+            padding-bottom: 4px;
+            padding-left: 4px;
+            padding-right: 8px;
+            padding-top: 4px;
+            box-sizing: border-box;
+            border-top-right-radius:4px;
+            border-bottom-right-radius:4px;
+            border-top-left-radius:4px;
+            border-bottom-left-radius:4px;     
+            }
+
+</style>
+</head>
+<body>
+<apex:form >
+    
+           <table width="100%" style="border:2px solid #d4eaf3;background-color: #d4eaf3;padding-bottom:11px;padding-top:11px;"  cellpadding="0" cellspacing="6" >
+           <tbody>
+                <tr>
+                <td class="StatusHeader">Per Payment - to Primary Payee:</td>
+                <td class="StatusContent">${!paymentPayee}&nbsp;</td>
+                <td class="StatusHeader">Gross Amount to Primary Payee:</td>
+                <td class="StatusContent">${!grossAmountToPayee}&nbsp;</td>
+                <td class="StatusHeader">Total Amount Completed:</td>
+                <td class="StatusContent">${!totalAmountCompleted}</td>
+                </tr>
+               <tr>
+                <td class="StatusHeader" >Per Payment - to Third Parties:</td>
+                <td class="StatusContent">${!amtThirdParty}&nbsp;</td>
+                <td class="StatusHeader">Net Amount to Primary Payee:</td>
+                <td class="StatusContent">${!netAmtPrimary}&nbsp; </td>
+                <td class="StatusHeader">Total Amount Pending: </td>
+                <td class="StatusContent">${!pendingPaymentsQueue}</td>
+                </tr>
+                <tr>
+                <td class="StatusHeader" >Per Payment - Total Amount:</td>
+                <td class="StatusContent">${!paymentTotal}&nbsp;</td>
+                <td class="StatusHeader">Total Amount to Third Party:</td>
+                <td class="StatusContent">${!totalAmountThirdParty}&nbsp;</td>
+                <td class="StatusHeader">Other Schedules- Total Pending:</td>
+                <td class="StatusContent">${!amountPending}</td>
+                </tr>
+                <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td class="StatusHeader">Total Scheduled Amount:</td>
+                <td class="StatusContent">${!totalScheduledAmount}&nbsp;</td>
+                <td class="StatusHeader">Current Indemnity Outstanding: </td>
+                <td class="StatusContent">${!currentIndemnity}</td>
+                </tr>
+                <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td class="StatusHeader">Reserve Review Flag: </td>
+                <td class="StatusContent"><apex:outputText value="{!payment.Reserve_Review_Flag__c}" escape="false"/></td>
+                </tr>
+             </tbody>
+             </table>
+</apex:form>
+</body>    
+</apex:page>

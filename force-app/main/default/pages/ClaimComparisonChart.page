@@ -1,0 +1,587 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   11/14/2014
+           ******************************************************************* -->
+<apex:page controller="ClaimComparisonChartController" showHeader="true" sidebar="false">
+    <meta charset="utf-8"></meta>
+    <head>
+        <title>Claim Comparison Chart</title>
+        <apex:includeScript value="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></apex:includeScript>
+        <apex:includeScript value="//code.jquery.com/ui/1.11.1/jquery-ui.js"></apex:includeScript>
+        <apex:stylesheet value="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"></apex:stylesheet>
+        <apex:includeScript value="{!$Resource.TimePickerAddon_JS}"></apex:includeScript>
+        <apex:stylesheet value="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"></apex:stylesheet>
+        <apex:stylesheet value="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"></apex:stylesheet>
+        <apex:includeScript value="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></apex:includeScript>
+        <apex:includeScript value="{!URLFOR($Resource.FloatTHead_JS, 'FloatThead/dist/jquery.floatThead.min.js')}"></apex:includeScript>
+        <script src="{!$Resource.D3_3_0_8_JS}" type="text/javascript"></script>
+        <script src="{!$Resource.ClaimComparisonChart_JS1}" type="text/javascript"></script>
+        <style type="text/css">
+        html {
+            font-size: 10pt;
+        }
+
+        body {
+            font-size: 10pt;
+        }
+
+        .bootstrap-btn-mod {
+            display: inline-block;
+            padding: 0px 6px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid #adadad;
+            border-radius: 4px;
+        }
+
+        .table-scroll-container {
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        table.floatThead-table {
+            border-top: none;
+            border-bottom: none;
+            background-color: #FFF;
+        }
+
+        .table-mod {
+            margin-bottom: 0;
+        }
+
+        .tableCheckbox {
+            width: 20px;
+            height: 20px;
+        }
+
+        .tableCheckboxCell {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .chartContainer {
+            width: 100%;
+            height: 470px;
+        }
+
+        .axis path, .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+        .fieldConfigSection {
+            padding: 8px;
+        }
+
+        .statsHeader {
+            font-weight: bold;
+        }
+
+        .statsCell {
+
+        }
+
+        .chart-tooltip {
+            background-color: white;
+            border: 1px solid #1797c0;
+            border-radius: 10px;
+            position: absolute;
+            -webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+            -moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+            box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
+        }
+
+        .tooltip-field-row {
+            margin: 5px;
+        }
+
+        .tooltip-field-label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .tooltip-field-value {
+
+        }
+
+        .chart-point {
+            cursor: pointer;
+        }
+
+        .form-control-mod {
+            height: 25px;
+        }
+
+        .loading-container {
+            float: right;
+            margin-right: 10px;
+            max-height: 39px;
+        }
+
+        .loadingAnim {
+            text-align: center;
+            width: 50px;
+            height: 31px;
+        }
+        .loadingAnim span {
+            display: inline-block;
+            vertical-align: middle;
+            width: 6px;
+            height: 6px;
+            margin: 16px auto;
+            background: #EA9151;
+            -moz-border-radius: 32px;
+            -moz-animation: loadingAnim 0.6s infinite alternate;
+            -webkit-border-radius: 32px;
+            -webkit-animation: loadingAnim 0.6s infinite alternate;
+            -ms-border-radius: 32px;
+            -ms-animation: loadingAnim 0.6s infinite alternate;
+            -o-border-radius: 32px;
+            -o-animation: loadingAnim 0.6s infinite alternate;
+            border-radius: 32px;
+            animation: loadingAnim 0.6s infinite alternate;
+        }
+        #loadingAnim_1 {
+            -moz-animation-delay: 0.36s;
+            -webkit-animation-delay: 0.36s;
+            -ms-animation-delay: 0.36s;
+            -o-animation-delay: 0.36s;
+            animation-delay: 0.36s;
+        }
+        #loadingAnim_2 {
+            -moz-animation-delay: 0.18s;
+            -webkit-animation-delay: 0.18s;
+            -ms-animation-delay: 0.18s;
+            -o-animation-delay: 0.18s;
+            animation-delay: 0.18s;
+        }
+        #loadingAnim_3 {
+            -moz-animation-delay: 0s;
+            -webkit-animation-delay: 0s;
+            -ms-animation-delay: 0s;
+            -o-animation-delay: 0s;
+            animation-delay: 0s;
+        }
+        @-moz-keyframes loadingAnim {
+            0% {
+                width: 6px;
+                height: 6px;
+                background-color: #4C9D2F;
+                -moz-transform: translateY(0);
+           }
+           100% {
+               width: 15px;
+               height: 15px;
+               background-color: #EA9151;
+               -moz-transform: translateY(-13px);
+          }
+        }
+        @-webkit-keyframes loadingAnim {
+            0% {
+                width: 6px;
+                height: 6px;
+                background-color: #4C9D2F;
+                -webkit-transform: translateY(0);
+           }
+           100% {
+               width: 15px;
+               height: 15px;
+               background-color: #EA9151;
+               -webkit-transform: translateY(-13px);
+          }
+        }
+        @-ms-keyframes loadingAnim {
+            0% {
+                width: 6px;
+                height: 6px;
+                background-color: #4C9D2F;
+                -ms-transform: translateY(0);
+           }
+           100% {
+               width: 15px;
+               height: 15px;
+               background-color: #EA9151;
+               -ms-transform: translateY(-13px);
+          }
+        }
+        @-o-keyframes loadingAnim {
+            0% {
+                width: 6px;
+                height: 6px;
+                background-color: #4C9D2F;
+                -o-transform: translateY(0);
+           }
+           100% {
+               width: 15px;
+               height: 15px;
+               background-color: #EA9151;
+               -o-transform: translateY(-13px);
+          }
+        }
+        @keyframes loadingAnim {
+            0% {
+                width: 6px;
+                height: 6px;
+                background-color: #4C9D2F;
+                transform: translateY(0);
+           }
+           100% {
+               width: 15px;
+               height: 15px;
+               background-color: #EA9151;
+               transform: translateY(-13px);
+          }
+        }
+
+        .loading-text {
+            float: right;
+            margin-top: 7px;
+            margin-left: 10px;
+        }
+
+        .chart-tab-container {
+            float: right;
+        }
+
+        .chart-tab {
+            border: 1px solid red;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+
+        .panel-primary>.panel-header-mod {
+            background-image: -webkit-linear-gradient(top,#1AACDB 0,#1797c0 100%);
+            background-image: -o-linear-gradient(top,#1AACDB 0,#1797c0 100%);
+            background-image: -webkit-gradient(linear,left top,left bottom,from(#1AACDB),to(#1797c0));
+            background-image: linear-gradient(to bottom,#1AACDB 0,#1797c0 100%);
+            font-weight: bold;
+        }
+
+        .nav-tabs>li.active>a.chart-tab {
+            background-image: -webkit-linear-gradient(top,#1AACDB 0,#1797c0 100%);
+            background-image: -o-linear-gradient(top,#1AACDB 0,#1797c0 100%);
+            background-image: -webkit-gradient(linear,left top,left bottom,from(#1AACDB),to(#1797c0));
+            background-image: linear-gradient(to bottom,#1AACDB 0,#1797c0 100%);
+        }
+        </style>
+
+        <script type="text/javascript">
+
+        chartAPI.LoggingEnabled = false;
+
+        $(document).ready(function() {
+            var chartOptions = {
+                pageTitle: "Claim Comparison Chart",
+                chartContainerIdentifier: "#chartContainer",
+                statisticsContainerIdentifier: "#statisticsContainer",
+                recordResultContainerIdentifier: "#resultsContainer",
+                fieldConfigContainerIdentifier: "#fieldConfigContainer",
+                customPanelHeaderClass: "panel-header-mod",
+                objectName: "Claim__c",
+                queryChunkSize: "500",
+                enabledFieldsFieldSetName: "{!$Setup.Claim_Comparison_Settings__c.Filterable_Fields_Field_Set_Name__c}",
+                chartTooltipFieldsFieldSetName: "{!$Setup.Claim_Comparison_Settings__c.Tooltip_Fields_Field_Set_Name__c}",
+                focusPointStyle: {
+                    "fill": "#EA9051",
+                    "stroke": "black",
+                    "stroke-width": 2
+                },
+                focusPointRadius: 6,
+                generalPointStyle: {
+                    "fill": "#4c9d2f",
+                    "stroke": "black",
+                    "stroke-width": 1
+                },
+                focusPointCustomPolygonPoints: [0,5, 4.702282018339785,6.472135954999579, 4.755282581475767,1.545084971874737, 7.608452130361228,-2.472135954999579, 2.9389262614623664,-4.045084971874736, 9.797174390547424e-16,-8, -2.938926261462365,-4.045084971874736, -7.608452130361227,-2.4721359549995805, -4.755282581475767,1.5450849718747364, -4.702282018339786,6.472135954999578],
+                generalPointRadius: 5,
+                xAxisConfig: {
+                    label: "Date of Loss",
+                    axisType: "Date",
+                    fieldName: "Date_of_Loss__c",
+                    orient: "bottom",
+                    className: "xAxis",
+                    tickPadding: 7,
+                    tickFormatFunc: function(d) {
+                        var asDate = new Date(d);
+                        return (asDate.getMonth() + 1) + "/" + asDate.getDate() + "/" + asDate.getFullYear();
+                    },
+                    axisTickLabelStyle: {
+                        "font-size": "15pt",
+                        "font-family": "sans-serif",
+                        "font-weight": "bold",
+                        "font-style": "normal"
+                    }
+                },
+                yAxisConfig: {
+                    label: "Net Incurred",
+                    axisType: "Numeric",
+                    fieldName: "Net_Incurred__c",
+                    orient: "left",
+                    className: "yAxis",
+                    tickPadding: 2,
+                    axisTickLabelStyle: {
+                        "font-size": "10pt",
+                        "font-family": "sans-serif",
+                        "font-weight": "bold",
+                        "font-style": "normal"
+                    },
+                    constLowerBound: 0
+                },
+                chartMargins: {
+                    left: 90,
+                    right: 45,
+                    top: 30,
+                    bottom: 55
+                },
+                dataHandlerConfig: {
+                    keyedFieldName: "Id",
+                    minimalQueryFields: ["Gross_Incurred__c", "Net_Incurred__c", "Age_of_Claim__c"],
+                    statsFormatFunc: function(value) {
+                        return Math.floor(value * 100) / 100;
+                    }
+                },
+                fieldConfigDisplayOptions: {
+                    otherFields: {
+                        financialField: {
+                            label: "Comparison Metric",
+                            order: "before",
+                            values: [
+                                {
+                                    label: "Net Incurred",
+                                    name: "Net_Incurred__c"
+                                },
+                                {
+                                    label: "Gross Incurred",
+                                    name: "Gross_Incurred__c"
+                                }
+                            ],
+                            onChangeHandler: function(e) {
+                                var selectedValue = $(this).find("option:selected");
+                                var fieldLabel = selectedValue.text();
+                                var fieldName = selectedValue.attr("value");
+                                window.chartAPI.currentChart.changeYAxisFocusField(fieldName, fieldLabel);
+                            }
+                        },
+                        removeZero: {
+                            label: "Exclude Zero Valued Claims",
+                            order: "after",
+                            values: [
+                                
+                                {
+                                    label: "True",
+                                    name: "true"
+                                },
+                                {
+                                    label: "False",
+                                    name: "false"
+                                }
+                            ],
+                            onChangeHandler: function(e) {
+                                var selectedValue = ($(this).val() === "true");
+                                if (selectedValue) {
+                                    chartAPI.currentChart.hideZeroes();
+                                } else {
+                                    chartAPI.currentChart.showZeroes();
+                                }
+                            }
+                        }
+                    }
+                },
+                statsDisplay: {
+                    min: {
+                        label: "Min",
+                        tableNum: 1,
+                        calcFunc: function(data, fieldName) {
+                            return this.getStat("extent")[0];
+                        }
+                    },
+                    max: {
+                        label: "Max",
+                        tableNum: 1,
+                        calcFunc: function(data, fieldName) {
+                            return this.getStat("extent")[1];
+                        }
+                    },
+                    average: {
+                        label: "Average",
+                        tableNum: 1,
+                        calcFunc: function(data, fieldName) {
+                            return d3.mean(d3.values(data), function(d) {
+                                return d[fieldName];
+                            });
+                        }
+                    },
+                    median: {
+                        label: "Median",
+                        tableNum: 1,
+                        calcFunc: function(data, fieldName) {
+                            return d3.median(d3.values(data), function(d) {
+                                return d[fieldName];
+                            });
+                        }
+                    },
+                    standardDeviation: {
+                        label: "Standard Deviation",
+                        tableNum: 1,
+                        calcFunc: function(data, fieldName) {
+                            var avg = this.getStat("average");
+                            var diffFromAvgSqrd = [];
+                            $.each(d3.values(data), function(dataIndex, d) {
+                                diffFromAvgSqrd.push(Math.pow(d[fieldName] - avg, 2));
+                            });
+                            var diffFromAvgSqrdAVG = d3.mean(diffFromAvgSqrd);
+                            return Math.sqrt(diffFromAvgSqrdAVG);
+                        }
+                    },
+                    targetIncurred: {
+                        label: "Target Claim Incurred",
+                        tableNum: 2,
+                        calcFunc: function(data, fieldName) {
+                            return chartAPI.currentChart.dataHandler.getFocusRecordFieldValue(fieldName);
+                        }
+                    },
+                    totalMatches: {
+                        label: "Total Matches",
+                        tableNum: 2,
+                        calcFunc: function(data, fieldName) {
+                            return d3.values(data).length-1;
+                        }
+                    },
+                    aboveTarget: {
+                        label: "# Above Target",
+                        tableNum: 2,
+                        calcFunc: function(data, fieldName) {
+                            var currentTargetValue = chartAPI.currentChart.dataHandler.getFocusRecordFieldValue(fieldName);
+                            var numAbove = 0;
+                            $.each(d3.values(data), function(dataIndex, d) {
+                                if (d[fieldName] > currentTargetValue) {
+                                    numAbove++;
+                                }
+                            });
+                            return numAbove;
+                        }
+                    },
+                    belowTarget: {
+                        label: "# Below Target",
+                        tableNum: 2,
+                        calcFunc: function(data, fieldName) {
+                            var currentTargetValue = chartAPI.currentChart.dataHandler.getFocusRecordFieldValue(fieldName);
+                            var numBelow = 0;
+                            $.each(d3.values(data), function(dataIndex, d) {
+                                if (d[fieldName] < currentTargetValue) {
+                                    numBelow++;
+                                }
+                            });
+                            return numBelow;
+                        }
+                    },
+                    aboveBelowMedian: {
+                        label: "Median Comparison",
+                        tableNum: 2,
+                        calcFunc: function(data, fieldName) {
+                            var median = this.getStat("median");
+                            var currentTargetValue = chartAPI.currentChart.dataHandler.getFocusRecordFieldValue(fieldName);
+                            if (currentTargetValue >= median) {
+                                return 1;
+                            } else {
+                                return -1;
+                            }
+                        },
+                        domModifier: function(calculatedValue) {
+                            if (!this.upArrowDom) {
+                                this.upArrowDom = $("<img/>").attr("width", "18px").attr("height", "18px")
+                                    .attr("src", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAApCAYAAABHomvIAAABemlDQ1BJQ0MgUHJvZmlsZQAAKM9jYGAqSSwoyGFhYGDIzSspCnJ3UoiIjFJgv8PAzcDDIMRgxSCemFxc4BgQ4MOAE3y7xsAIoi/rgsxK8/x506a1fP4WNq+ZclYlOgz4AXdKanEyAwMjB5CdnFKcnAtk5wDZOskFRSVA9gwgW7e8pADEPgFkixQBHQhk3wGx0yHsDyB2EpjNxAJWExLkDGRLANkCSRC2BoidDmFbgNjJGYkpQLYHyC6IG8CA08NFwdzAUteRgcogN6cUZgcotHhS80KDQe4AYhkGDwYXBgUGcwYDBksGXQbHktSKEpBC5/yCyqLM9IwSBUdgyKYqOOfnFpSWpBbpKHjmJevpKBgZGBqA1IHiDGL05yCw6Yxi5xFi+QsZGCyVGRiYexBiSdMYGLbvYWCQOIUQU5nHwMBvzcCw7VxBYlEi3OGM31gI8YvTjI0gbB4nBgbWe///f1ZjYGCfxMDwd+L//78X/f//dzHQfmCcHcgBACR3aeD1t000000blJJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gsODzsdJwdVAQAAAipJREFUWMPtmD1PAjEYx58WQw7cHFxIDCSuOJIYWU1cGIhyfAsHRiEuSMLEzMrIIRO7OODAxECCLyGRYPwExpGrAzlS7trj+oLcwH/ipdf++u9zffoUIORCKg+bpkn8/rcsC2kDJGR9rFarBXeH5545ZDuVtYaDwsMPInYUbDsKxEaAMQDCi4vH+wjdrt1uc2ERQmKAie4UgBAA6sGsVV41eLmp2gQIBkBUD/xBsp0K+MEGBhyPx3D1EVvvnAIbFKpeECS2ilmr7IEMBDgcDiH/dcSEG5g1AoQgUZigkH6A2PngA7eciCY4qk8oFotkU1vMmSENtxUFhcS7gHND+m1X2O9BUX3mTqCRXGiFxLw3VlSvl8fLWE6nIApykIEclHGvkVyAYRir7++5lLbMhFXdi8EC8ukU11FVF7GqexOOW4ZhCMcjy0UcJOlvijueROORZRCWdc8ddzzJxqPvNiMbd7JOawecCLoiG49SgLJuyOyPwoBB405nPB6INC7NIlCazZkpzq3bpzfo/caV8zWGkGsPqA3QOYaHElBH/aqzVvE7D+4c0m0WnYtR2Nzj1SShcc+zUQ/MGpI5uKZ6c8avcWX31hx8PiM7cdEZi/eieu5mEt3pv5Wem+CYMfh9fQqZTAZt20nWHU0gBx31+31oNptEtVZWvZvhAjoajUZQr9e1LDm9IsK3WzxAR/QdiigoD0wIUKW4dkOzYlc2nWrJHizosOT3vUKvPwhE/w4B4WUSAAAAAElFTkSuQmCC");
+                            }
+                            if (!this.downArrowDom) {
+                                this.downArrowDom = $("<img/>").attr("width", "18px").attr("height", "18px")
+                                    .attr("src", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAApCAYAAABHomvIAAABemlDQ1BJQ0MgUHJvZmlsZQAAKM9jYGAqSSwoyGFhYGDIzSspCnJ3UoiIjFJgv8PAzcDDIMRgxSCemFxc4BgQ4MOAE3y7xsAIoi/rgsxK8/x506a1fP4WNq+ZclYlOgz4AXdKanEyAwMjB5CdnFKcnAtk5wDZOskFRSVA9gwgW7e8pADEPgFkixQBHQhk3wGx0yHsDyB2EpjNxAJWExLkDGRLANkCSRC2BoidDmFbgNjJGYkpQLYHyC6IG8CA08NFwdzAUteRgcogN6cUZgcotHhS80KDQe4AYhkGDwYXBgUGcwYDBksGXQbHktSKEpBC5/yCyqLM9IwSBUdgyKYqOOfnFpSWpBbpKHjmJevpKBgZGBqA1IHiDGL05yCw6Yxi5xFi+QsZGCyVGRiYexBiSdMYGLbvYWCQOIUQU5nHwMBvzcCw7VxBYlEi3OGM31gI8YvTjI0gbB4nBgbWe///f1ZjYGCfxMDwd+L//78X/f//dzHQfmCcHcgBACR3aeD1t000000blJJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3gsODzogZnQoUQAAAg5JREFUWMPtmD1PwlAUht9b2PwJRhMTvxNWWBjEnUktIyszjOom/gD/BSWEgcXElcSEUUZISkx0cHBTGpc6aPW2vW3vuaW0Uc7UNPfj6XvfntxzgIwHi7uAruu2951hGCw1QBHQUG//PJeNc+E8VWimAjY8uwKY/H48NBU0cLBtf/HUajU3GECCE4F2Op3QBRi3fiigA0dVTFbNIFApQOdIeX8tMhzQRqPBKpUKDTBpOC9ksVhkrVZLCKilBcfvMRqN7PXeVDhGSwtOlKLWe1NMJpNgwGXDeY7bBoCjB7fr8mEJWCaqa++4Od73vd8aPJJUDErwWhbU86roA1RVLykvChVMW70gFbUsXa1EImUKMPInWQH+RcA8ZbBZ3Yw1tj820ZzlklNwb2AqK2FZFhmODPiBHPpjNciDu5fleLA5y8GyLNKcwxjKa0mr0R+bmEPuaEUXBi2qXIzjRxXfDfU28wGq1KwyfqQoLXXdoqoY5kcV33nVcwGqVv4ilSi+ixJGowyW8aNqvhOp5wN0VKRC8n6k5ruovTJRF3vVez7dCc+DqkouAk46UTt9kyQgZeEim0fAb3drEcfNf2wQXH/jFaVSSR6QhyQXWN9rlLsXkWAAcLs7R6FQkG+/icIH6/QM3bNR7l5KpRHYNsAYnk62hc0jMiDfRxEV2qFQvjVtXL/do16vu33HGFbxb+ITvWUC7pti67EAAAAASUVORK5CYII=");
+                            }
+                            if (calculatedValue > 0) {
+                                return this.upArrowDom;
+                            } else {
+                                return this.downArrowDom;
+                            }
+                        }
+                    }
+                },
+                chartTabs: {
+                    development: {
+                        label: "Claim Development Comparison",
+                        action: function() {
+                            var customQueryHandler = function(objectName, minimalQueryFields, whereClause, lastID, chunkSize, chartResultHandler) {
+console.log(minimalQueryFields);
+                               console.log(whereClause);
+                               console.log(chartAPI.currentChart.dataHandler.getFocusRecordFieldValue("Age_of_Claim__c"));
+                               console.log(lastID);
+                               console.log(chunkSize);
+                                ClaimComparisonChartController.getInDevelopmentClaims(minimalQueryFields, whereClause, chartAPI.currentChart.dataHandler.getFocusRecordFieldValue("Age_of_Claim__c"), lastID, chunkSize, chartResultHandler, {buffer: false, escape: false, timeout: 30000});
+                            };
+                            chartAPI.currentChart.refreshChartWithCustomQuery(customQueryHandler);
+                        }
+                    },
+                    closed: {
+                        label: "Closed Claim Comparison",
+                        action: function() {
+                            var customQueryHandler = function(objectName, minimalQueryFields, whereClause, lastID, chunkSize, chartResultHandler) {
+                                if (whereClause == null) {
+                                    whereClause = "";
+                                }
+                                if (whereClause.indexOf("Status__c='Closed'") == -1) {
+                                    whereClause += (whereClause.length > 0)?" AND Status__c='Closed'":"Status__c='Closed'";
+                                }
+                                ClaimComparisonChartController.querySimilarRecords(objectName, minimalQueryFields, whereClause, lastID, chunkSize, chartResultHandler, {buffer: false, escape: false, timeout: 30000});
+                            };
+                            chartAPI.currentChart.refreshChartWithCustomQuery(customQueryHandler);
+                        }
+                    }
+                }
+            };
+
+
+            chartAPI.currentChart = new chartAPI.ScatterChart(chartOptions);
+            chartAPI.currentChart.generateSVG();
+            
+
+        });
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-3 col-lg-3">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading panel-header-mod">
+                            Filters
+                        </div>
+                        <div id="fieldConfigContainer"></div>
+                    </div>
+                </div>
+                <div class="col-xs-9 col-lg-9">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <!--Claim Chart-->
+                        </div>
+                        <div id="chartContainer" class="chartContainer"></div>
+                    </div>
+                    <div class="panel panel-primary">
+                        <div class="panel-heading panel-header-mod">
+                            Claim Statistics
+                        </div>
+                        <div id="statisticsContainer" class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</apex:page>

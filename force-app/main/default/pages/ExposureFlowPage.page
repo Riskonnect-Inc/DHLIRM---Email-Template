@@ -1,0 +1,18 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as    05/30/2013
+           ******************************************************************* -->
+<apex:page showHeader="false" sidebar="false" StandardController="Exposure__c" standardStylesheets="false">
+    <apex:stylesheet value="{!$Resource.WrapperCSS}" />
+    <a href="/apex/InvestigationNew"><apex:image value="{!$Resource.RKLogo_White}"></apex:image></a>
+    <h1 style="font-family: verdana;text-align:center;font-weight:Regular; font-size: 120%;color: White">Exposure Collection</h1>
+        <body>
+            <div class = "container">
+                <div id = "content">
+                <br/><br/>
+                    <flow:interview name="ExposureFlow" buttonLocation="bottom" buttonStyle="btn">
+                    </flow:interview>                         
+                <br/><br/>
+                </div>
+            </div>
+        </body>
+</apex:page>

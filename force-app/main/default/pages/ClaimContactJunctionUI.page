@@ -1,0 +1,26 @@
+<apex:page controller="rkl.JS_Search" extensions="rkjb_ClaimContactJunctionUIController,rkl.JunctionSerializer" docType="html-5.0" sidebar="false" showHeader="false" standardStylesheets="false" cache="false">
+<head>
+<rkl:RKPIncludes includeModules="*" additionalJS="JunctionAPI_js"/>
+<style>
+.k-grid-header th.k-header a {
+font-weight: bold;
+}
+</style>
+</head>
+<body>
+<div id="content"></div>
+<div id="grid"></div>
+<script>
+var api = namespace("rkl.junctionApi");
+var jls = new api.JunctionController({
+controller: rkjb_ClaimContactJunctionUIController,
+cfgs: {!config},
+$parent: $("#content"),
+});
+jls.loadTable();
+jls.evtObs.bind('closeWindow',function(){
+window.location.href = '/'+rkl.junctionApi.getUrlParameter('id')+'{!dropBackAnchor}';
+});
+</script>
+</body>
+</apex:page>

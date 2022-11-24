@@ -1,0 +1,9 @@
+<aura:event
+	type="APPLICATION"
+	description="Event template"
+	access="global">
+	<aura:attribute
+		name="selectedId"
+		type="String"
+		access="global"/>
+</aura:event>

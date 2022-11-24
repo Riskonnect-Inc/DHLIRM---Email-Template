@@ -1,0 +1,6 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   03/25/2013
+           ******************************************************************* -->
+<apex:page tabstyle="Claim__c" showHeader="true" sidebar="false">
+    <apex:enhancedList id="all" type="Claim__c" height="500" customizable="false" />
+</apex:page>

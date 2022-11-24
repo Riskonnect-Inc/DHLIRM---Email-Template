@@ -1,0 +1,362 @@
+<apex:page controller="rkl.JS_Search" extensions="DemoPortal_Old_Controller" action="{!checkValidity}" sidebar="false" showHeader="false" standardStylesheets="false" cache="false">
+    <head>
+        <apex:includeScript value="{!$Resource.rkl__RKPortalInit_JS}"/>
+        <apex:includeScript value="{!$Resource.rkl__jquery1_8_3}"/>
+        <apex:stylesheet value="https://code.jquery.com/ui/1.11.0/themes/cupertino/jquery-ui.css"/>
+        <apex:includeScript value="https://code.jquery.com/ui/1.11.0/jquery-ui.js"/>
+        <apex:includeScript value="{!$Resource.rkl__RKDebug_js}" />
+        <apex:includeScript value="{!$Resource.rkl__jQuery_jController_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__jQuery_color_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__jQuery_scrollTo}"/>
+        <apex:includeScript value="{!$Resource.rkl__masked_input_js}"/>
+
+        <apex:stylesheet value="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+
+        <apex:stylesheet value="{!$Resource.rkl__portal_fullscreen_css}"/>
+        <apex:includescript value="{!$Resource.rkl__RKUtil_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKPortalUtil_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKPortalModel_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKPortalUI_Accordion_js}"/>
+        <apex:includeScript value="{!$Resource.rkl__RKIframe_JS}"/>
+
+        <apex:includeScript value="{!$Resource.rkl__RKTranslate_js}" />
+        <script>
+            ;(function() {
+                'use strict';
+
+                namespace('rkl.portal.ui.fields.picklistDependency').__load('{!$Resource.Picklist_Dependency_Cache}'); //Dependent Picklists
+            })();
+        </script>
+        <apex:includeScript value="{!$Resource.rkl__RKSearch}" />
+        <apex:stylesheet value="{!$Resource.rkl__rkl_search_css}" />
+        <apex:includeScript value="{!$Resource.rkl__FileController_js}" />
+        <apex:stylesheet value="{!$Resource.rkl__FileController_css}" />
+        <apex:includeScript value="{!$Resource.rkl__childrelcontroller_js}" />
+        <apex:stylesheet value="{!$Resource.rkl__childrelcontroller_css}" />
+        <style type="text/css">
+            body {
+                background: rgb(240, 240, 240);
+            }
+            .inlineFileClientContainer {
+                height: 185px;
+            }
+            #finishLater {
+                margin-top: 20px;
+                margin-right: 10px;
+            }
+            .rk-cnavTop {
+                height: 75px;
+            }
+            .rk-cnavBar {
+                top: 75px;
+            }
+            .rk-cnavMBody {
+                top: 75px;
+            }
+
+            .rk-cnavSplitter {
+                top: 75px;
+            }
+        </style>
+        <script>
+
+            (function($) {
+                "use strict";
+                $(document).on('programReady', function(event, program) {
+                  $('.initLoadScreen').fadeOut();
+                  var hideShow = function(srcSec, srcFld, showFun, showFields) {
+                    var hideShowFunc = function() {
+                      var show = showFun(srcSec.sobject().get(srcFld).value());
+                      $.each(showFields, function(i, f) {
+                        f.visible(show);
+                      });
+                    };
+                    srcSec.sobject().get(srcFld).on('localChange', hideShowFunc);
+                    hideShowFunc();
+                  }
+
+                  var is = function(x) { return function(v) { return v === x; }; };
+                  var isYes = is('Yes');
+                  var isNo = is('No');
+
+                  var sectionStatus = function(showFunc) {
+                      return function() {
+                          if(showFunc()) {
+                              if(inc.sobject().get('id').value()) return true;
+                              return 'disabled';
+                          }
+                          return false;
+                      };
+                  };
+
+                  var inc = program.findSection('Intake_Description');
+
+                  var involved = program.findSection('Involved_Parties');
+                  involved.visible(sectionStatus(function() { return(!(/^Yes/i.test(inc.sobject().get('near_miss__c').value()))); }));
+                  var nearMiss = program.findSection('Near_Miss');
+                  nearMiss.visible(sectionStatus(function() { return(/^Yes/i.test(inc.sobject().get('near_miss__c').value())); }));
+                  var witness = program.findSection('Witnesses');
+                  witness.visible(sectionStatus(function() { return true; }));
+
+                    if('{!employee}' !== ''){
+                        inc.sobject().get('reported_by_first_name__c').value('{!employee.FirstName}');
+                        inc.sobject().get('reported_by_last_name__c').value('{!employee.LastName}');
+                        inc.sobject().get('reported_by_phone__c').value('{!employee.Phone}');
+                        inc.fields('incident_location__c').rebind('{!employee.Location__c}');
+                    }
+
+                  var time = inc.fields('report_time__c');
+                  time.format('99:99')
+                    .hasValidValue(function() {
+                      var val = time.$input.val();
+                      return val === '' || rkl.portal.util.isMilitaryTime(val);
+                    })
+                    ._attachOnChange(function() {
+                      time._clearError();
+                      if(time.hasValidValue()) {
+                          time.store();
+                      } else {
+                          time.setErrorLabel('Invalid time format');
+                      }
+                    });
+
+                  hideShow(inc, 'occur_on_company_premises__c', isNo, [
+                    inc.fields('incident_address__c'),
+                    inc.fields('incident_address_2__c'),
+                    inc.fields('incident_city__c'),
+                    inc.fields('incident_state__c'),
+                    inc.fields('incident_postal_code__c'),
+                    ]);
+
+
+                  //Witness Section
+
+                  //v = input value  x = desired input to match
+                  var isOneOfMany = function(x) { return function(v) {
+                      var returnVal = false;
+                      $.each(x,function(key,value){ if( value === v ){ returnVal=true; } });
+                      return returnVal;
+                    }; };
+                  hideShow(witness, 'witnesses__c', is('Yes - 4+'), [
+                      witness.fields('additional_witnesses__c'),
+                    ]);
+                  hideShow(witness, 'witnesses__c', isOneOfMany(['Yes - 3','Yes - 4+']), [
+                      witness.fields('witness_3_contact_information__c'),
+                    witness.fields('witness_3_name__c'),
+                    ]);
+                  hideShow(witness, 'witnesses__c', isOneOfMany(['Yes - 2','Yes - 3','Yes - 4+']), [
+                    witness.fields('witness_2_contact_information__c'),
+                    witness.fields('witness_2_name__c'),
+                    ]);
+                  hideShow(witness, 'witnesses__c', isOneOfMany(['Yes - 1','Yes - 2','Yes - 3','Yes - 4+']), [
+                    witness.fields('witness_1_contact_information__c'),
+                    witness.fields('witness_1_name__c'),
+                    ]);
+
+
+                  //Involved Parties Section
+                  hideShow(involved, 'auto_incident__c', isYes, [
+                    involved.fields('auto_non_employee_injury__c'),
+                    involved.fields('auto_non_employee_property_damage__c'),
+                    involved.fields('auto_company_vehicle__c'),
+                    ]);
+
+
+                  var createSubsections = function(stgroup) {
+                      stgroup.addAnother()
+                          .done(function() {
+                              stgroup.program.init();
+                              if(stgroup.sections().length < stgroup.required()) {
+                                  createSubsections(stgroup);
+                              }
+                          })
+                          .fail(function() {
+                              console.log('Failed to prep initial ' + stgroup.name);
+                          });
+                  };
+
+                  var setUpClaim = function(sectionName, fieldName, dynCode) {
+                      var section = program.sections(sectionName);
+                      section.visible(sectionStatus(function() {
+                          return rkl.portal.util.isYes(involved.sobject().get(fieldName).value());
+                      }));
+                      section.sectionReadyCallback(dynCode);
+                      if(section.sections().length === 0 && inc.sobject().get('id').value()) {
+                          createSubsections(section);
+                      } else {
+                          var func = function() {
+                              createSubsections(section);
+                              inc.sobject().get('id').off('localChange', func);
+                          };
+                          inc.sobject().get('id').on('localChange', func);
+                      }
+                      //THIS IS A HACK - SHOULD BE FIXED IN RKL'S setupSTGroup
+                      $.each(section.sections(), function(i, sec) {
+                          if(sec.sobject().get('id').value()) {
+                              dynCode(sec);
+                          }
+                      });
+                  };
+
+                  var fatality = function(sec) {
+                      hideShow(sec, 'fatality__c', isYes, [
+                        sec.fields('date_of_death__c'),
+                        ]);
+                  }
+
+                  var treatment = function(sec) {
+                      hideShow(sec, 'initial_treatment__c', is('Off-Site Medical Treatment'), [
+                        sec.fields('treating_facility_name__c'),
+                        sec.fields('treating_facility_address__c'),
+                        sec.fields('treating_facility_address_2__c'),
+                        sec.fields('treating_facility_city__c'),
+                        sec.fields('treating_facility_state__c'),
+                        sec.fields('treating_facility_postal_code__c'),
+                        ]);
+                  }
+
+                  setUpClaim('Employee_Injury', 'employee_injury__c', function(psec) {
+                      var sec = psec.sections('Injuries');
+                      fatality(sec);
+                      treatment(sec);
+                      //Update header functionality does not work consistently in old portals
+                      //Ask dev for alternatives
+                      /*var updateHeader = function() {
+                          //var fname = psec.sobject().get('involved_party_first_name__c').value();
+                          //var lname = psec.sobject().get('involved_party_last_name__c').value();
+                          var name = psec.sobject().get('injured_employee__c').myUIField._val.record.Name;
+                          //if(fname || lname) {
+                          if (name) {
+                              psec.$head.find('span.recordLabel').text(name);
+                              //psec.$head.find('span').text(fname + ' ' + lname);
+                          }
+                      }
+                      //psec.sobject().get('involved_party_first_name__c').on('localChange', updateHeader);
+                      //psec.sobject().get('involved_party_last_name__c').on('localChange', updateHeader);
+                      psec.sobject().get('injured_employee__c').on('localChange', updateHeader);*/
+
+                  });
+                  setUpClaim('Auto_Non_Employee_Injury', 'auto_non_employee_injury__c', function(psec) {
+                      var sec = psec.sections('Auto_Non_Employee_Injury');
+                      fatality(sec);
+                      treatment(sec);
+                      //Update header functionality does not work consistently in old portals
+                      //Ask dev for alternatives
+                     /* var updateHeader = function() {
+                          var fname = psec.sobject().get('involved_party_first_name__c').value();
+                          var lname = psec.sobject().get('involved_party_last_name__c').value();
+                          if(fname || lname) {
+                              psec.$head.find('span').text(fname + ' ' + lname);
+                          }
+                      }
+                      psec.sobject().get('involved_party_first_name__c').on('localChange', updateHeader);
+                      psec.sobject().get('involved_party_last_name__c').on('localChange', updateHeader);*/
+                  });
+                  setUpClaim('Auto_Non_Employee_Property_Damage', 'auto_non_employee_property_damage__c', function(psec) {
+                      var sec = psec.sections('Auto_Non_Employee_Property_Damage');
+                      hideShow(sec, 'vehicle_owner_the_driver__c', isNo, [
+                        sec.fields('vehicle_owner_first_name__c'),
+                        sec.fields('vehicle_owner_last_name__c'),
+                        sec.fields('vehicle_owner_address__c'),
+                        sec.fields('vehicle_owner_address_2__c'),
+                        sec.fields('vehicle_owner_city__c'),
+                        sec.fields('vehicle_owner_state__c'),
+                        sec.fields('vehicle_owner_postal_code__c'),
+                        sec.fields('vehicle_owner_phone__c'),
+                        sec.fields('vehicle_owner_email__c'),
+                        ]);
+                  });
+                  setUpClaim('Auto_Company_Vehicle', 'auto_company_vehicle__c', function(psec) {
+
+                  });
+                  setUpClaim('3rd_Party_Bodily_Injury', 'x3rd_party_bodily_injury__c', function(psec) {
+                      var sec = psec.sections('3rd_Party_Bodily_Injury');
+                      var prodSec = psec.sections('Product_Information');
+                      fatality(sec);
+                      treatment(sec);
+                      prodSec.visible(sectionStatus(function() { return(/^Yes/i.test(sec.sobject().get('product_involved__c').value())); }));
+                      //Update header functionality does not work consistently in old portals
+                      //Ask dev for alternatives
+                      /*var updateHeader = function() {
+                          var fname = psec.sobject().get('involved_party_first_name__c').value();
+                          var lname = psec.sobject().get('involved_party_last_name__c').value();
+                          if(fname || lname) {
+                              psec.$head.find('span').text(fname + ' ' + lname);
+                          }
+                      }
+                      psec.sobject().get('involved_party_first_name__c').on('localChange', updateHeader);
+                      psec.sobject().get('involved_party_last_name__c').on('localChange', updateHeader);*/
+                 });
+                  setUpClaim('3rd_Party_Property_Damage', 'x3rd_party_property_damage__c', function(psec) {
+                    var sec = psec.sections('3rd_Party_Property_Damage');
+                    var prodSec = psec.sections('Product_Information');
+                    var propSec = psec.sections('Property_Information');
+                    prodSec.visible(sectionStatus(function() { return(/^Yes/i.test(sec.sobject().get('product_involved__c').value())); }));
+                    propSec.visible(sectionStatus(function() { return(/^No/i.test(sec.sobject().get('product_involved__c').value())); }));
+                  });
+                  setUpClaim('Company_Property_Damage', 'company_property_damage__c', function(psec) {
+
+                  });
+
+
+                  // build out submit section
+                  var submit = program.findSection('Submit');
+                  submit.setPredicate(sectionStatus(function() { return true; }));
+
+
+
+                  program.submitHooks({
+                      validations: [
+                          function() {
+                              var $def = new $.Deferred();
+                              submit.sobject().get('im_status__c').value('Completed');
+                              $def.resolve();
+                              return $def.promise();
+                          },
+                      ],
+                      prune_safety: [
+                          {
+                              sobjectType: 'intake__c',
+                              records: [], // if there are any records that may be hidden that we want to save
+                              fields: ['im_status__c'],  // if there are any fields that may be hidden that we want to save
+                          },
+                      ],
+                      prune_verify: [function() {
+                          var $def = new $.Deferred();
+
+                          console.log('Pruned', arguments);
+                          $def.resolve();
+                          return $def.promise();
+                      }],
+                      final_save_done: [function() {
+                          var $def = new $.Deferred();
+                          window.location = '{!$Page.DemoPortalSummary_Old}?incId=' + submit.sobject().get('id').value();
+                          $def.resolve();
+                          return $def.promise();
+                      }]
+                  });
+
+                  program.init();
+                  if(program.$topBar) {
+                      $('<a id="finishLater" class="btn pull-right" href="{!$Page.DemoPortalLanding_Old}">Return Home</a>')
+                          .appendTo(program.$topBar);
+                      $('<img height="75" src="{!$Resource.rkLogo3}"></img>').appendTo(program.$topBar);
+                  }
+
+                });
+
+                {!uiBuilderJS}
+            })(jQuery);
+        </script>
+    </head>
+    <body>
+        <div class="ui-widget-overlay ui-front initLoadScreen" style="display: true;">
+            <div class="crMsg" style="text-align: center;font-weight: bold;">
+                Loading... <br/>
+                <img src="{!$Resource.rkl__ajax_loader_gif}" height="50" width="50"/> <br/>
+                Please Wait...
+            </div>
+        </div>
+        <div id="incidentPortalRoot"></div>
+    </body>
+</apex:page>

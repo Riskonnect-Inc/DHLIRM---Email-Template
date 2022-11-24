@@ -1,0 +1,39 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 6/24/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" showheader="false">
+<p> </p>
+
+        <p style="position:float;left:25px;">
+            <apex:outputtext value="{0,date,MMMMMMM' 'dd', 'yyyy}"><apex:param value="{!TODAY()}"></apex:param></apex:outputtext></p>
+<br/>
+    {!Claim__c.Claimant_First_Name__c} {!Claim__c.Claimant_Last_Name__c}
+<br/>
+    {!Claim__c.Claimant_Address_Line1__c}
+<br/>
+    {!Claim__c.Claimant_City__c}, {!Claim__c.Claimant_State__c}  {!Claim__c.Claimant_Postal_Code__c}
+<p>
+     </p>
+
+<p>
+                Date of Loss:       <apex:outputText value="  {0,date,MMMMMMM' 'dd', 'yyyy}"><apex:param value="{!Claim__c.Date_of_Loss__c}" /></apex:outputText>  <br/>
+
+                Claim Number:        {!Claim__c.name}</p>
+<p>
+     </p>
+<p>
+    Dear  {!Claim__c.Claimant_First_Name__c}  {!Claim__c.Claimant_Last_Name__c}:</p>
+<br/><br/><br/><br/><br/><br/>
+ <p>  
+  Sincerely,</p>
+<p>
+     </p>
+<p>
+            {!$User.FirstName}  {!$User.LastName}<br/>
+            {!$User.Title} <br/>
+            {!$User.Phone}
+            
+            </p>
+
+
+</apex:page>

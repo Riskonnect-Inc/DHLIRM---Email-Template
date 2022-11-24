@@ -1,0 +1,11 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as   05/26/2015
+           ******************************************************************* -->
+<apex:page standardController="Project_UAT__c" standardStylesheets="False" showheader="False" sidebar="false">
+    
+    <flow:interview name="Remediation_to_Request"  buttonLocation="bottom"  buttonStyle="btn" finishLocation="/{!Id}" >   
+     
+    </flow:interview>
+    
+
+</apex:page>

@@ -1,0 +1,57 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 5/29/2013
+           ******************************************************************* -->
+<apex:page standardController="Policy__c" recordSetvar="policies"   cache="true" 
+   extensions="PageSizeExt"   contentType="application/vnd.ms-excel#policylist.xls" showheader="false" sidebar="false"   >
+    <!-- Andrew Barnhart 4/12/13 modified from ClaimExporttoExcel -->
+        <apex:dataTable title="Policy List" value="{!policies}" var="c" id="prop_table">
+
+            <!-- Fields to be exported  START -->
+ 
+                 <apex:column >
+                     <apex:facet name="header">Policy Name</apex:facet>
+                     <apex:outputLink value="{!URLFOR(LEFT($Api.Partner_Server_URL_140,FIND('.com',$Api.Partner_Server_URL_140)+4)+c.id)}" id="theLink"> {!c.name}</apex:outputLink>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Carrier</apex:facet>
+                     <apex:outputLink value="{!URLFOR(LEFT($Api.Partner_Server_URL_140,FIND('.com',$Api.Partner_Server_URL_140)+4)+c.Carrier__c)}" id="theLink2"> {!c.Carrier__r.Name}</apex:outputLink>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Coverage Line</apex:facet>
+                     <apex:outputText id="Coverage_Line__c" value="{!c.Coverage_Line__c}"></apex:outputText>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Date Policy Effective</apex:facet>
+                     <apex:outputText value="{0,date,MM'/'dd'/'yyyy}" id="Date_Policy_Effective__c"><apex:param value="{!c.Date_Policy_Effective__c}" /></apex:outputText>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Date Policy Expiration</apex:facet>
+                     <apex:outputText value="{0,date,MM'/'dd'/'yyyy}" id="Date_Policy_Expiration__c"><apex:param value="{!c.Date_Policy_Expiration__c}" /></apex:outputText>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Policy Aggregate Limit</apex:facet>
+                     <apex:outputText value="{0, number, $###,###,###,###,###,##0.00}" id="Policy_Aggregate_Limit__c"><apex:param value="{!c.Policy_Aggregate_Limit__c}" /></apex:outputText>
+                 </apex:column>
+
+                 <apex:column >
+                     <apex:facet name="header">Retention Type</apex:facet>
+                     <apex:outputText value="{!c.Retention_Type__c}" id="Retention_Type__c"></apex:outputText>
+                 </apex:column>
+                 
+                 <apex:column >
+                     <apex:facet name="header">Policy Type</apex:facet>
+                     <apex:outputText value="{!c.Policy_Type__c}" id="Policy_Type__c"></apex:outputText>
+                 </apex:column>
+                 
+
+                
+            <!-- Fields to be exported  END  -->  
+    
+        </apex:dataTable>
+    
+</apex:page>

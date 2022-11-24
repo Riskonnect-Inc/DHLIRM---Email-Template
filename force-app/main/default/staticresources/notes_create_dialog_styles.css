@@ -1,0 +1,59 @@
+
+.notesCreateRecordTypes .changeRecordTypeRow {
+    /*margin-top: 1.5rem*/
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.notesCreateRecordTypes .changeRecordTypeOptionRightColumn{
+        width: 90%;
+        float: right;
+        text-align: left;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        padding: 0.2em;
+}
+
+.notesCreateRecordTypes .changeRecordTypeRow {
+    /*margin-top: 1.5rem;*/
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.notesCreateRecordTypes .changeRecordTypeLeftRightContent legend {
+    width: initial;
+    margin-left: auto;
+    margin-right: 0;
+    text-align: right;
+}
+
+.notesCreateRecordTypes .changeRecordTypeOptionRightColumn {
+    width: 90%;
+    float: right;
+    text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.notesCreateRecordTypes .changeRecordTypeItemDescription {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-bottom: .75rem;
+    padding-left: 2.5rem;
+    word-wrap: break-word;
+}
+
+.notesCreateRecordTypes .changeRecordTypeLabel {
+    font-size: .8125rem;
+    color: rgb(112, 110, 107);
+}
+
+.notesCreateRecordTypes .changeRecordTypeOptionRightColumn {
+    width: 90%;
+    float: right;
+    text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}

@@ -1,0 +1,117 @@
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 6/24/2013
+           ******************************************************************* -->
+<apex:page standardController="Claim__c" showheader="false">
+
+<p style="text-align: left; ">
+    <strong style="font-family: 'courier new', courier, monospace; font-size: 36px; ">FAX</strong></p>
+<table border="1" cellpadding="0" cellspacing="0">
+    <tbody>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                    <strong>DATE:</strong>  <apex:outputText value="{0,date,MMMMMMM' 'dd', 'yyyy}"><apex:param value="{!TODAY()}" /></apex:outputText></p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                     </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                     </p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                     </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                    <strong>TO:</strong>                     </p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                    <strong>FROM:   {!$User.FirstName}  {!$User.LastName} </strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                     </p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                     </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                    <strong>FAX:        </strong>        </p>
+            </td>
+            <td style="width:324px;">
+                <h3>
+                    FAX:    {!$User.fax}  </h3>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                     </p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                     </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                    <strong> Claim No.: {!Claim__c.name}</strong></p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                    <strong></strong>      </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                     </p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                     </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                    <strong>PAGES:   </strong>     </p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                    <strong>CC:        </strong>     </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:348px;">
+                <p>
+                     </p>
+            </td>
+            <td style="width:324px;">
+                <p>
+                     </p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>
+    COMMENTS:       </p>
+<p>
+     </p>
+</apex:page>

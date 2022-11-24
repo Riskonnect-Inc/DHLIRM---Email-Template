@@ -1,0 +1,327 @@
+<!-- Mike Ulveling -->
+<!---- ****************************************************************
+                        Added to RK base RMIS product as 05/02/2014
+           ******************************************************************* -->
+<apex:page controller="AttachDownloadController" showHeader="false" sidebar="false" standardStylesheets="false" docType="html-5.0">
+    
+    <apex:includeScript value="{!$Resource.base64utils}"/>
+    <apex:includeScript value="{!$Resource.jszip}"/>
+    <apex:includeScript value="{!$Resource.rkl__jquery_1_8}"/>
+    <apex:includeScript value="/soap/ajax/33.0/connection.js"/>
+    
+    <style type="text/css">
+        #dwnldStatus {
+            font-family: Monaco, Consolas, "Lucida Console", monospace;
+            font-size: 0.9em;
+            font-weight: bold;
+            font-style: italic;
+        }
+    
+        #dwnldStatus>div {
+            text-align: center;
+        }
+        
+        #dwnldStatus .close {
+            margin-top: 1em;
+        }
+        
+        #dwnldStatus .close button {
+            display: none;
+        }
+    </style>
+    
+    <div id="dwnldStatus">
+        <div class="spinner">
+            <img src="{!$Resource.rkl__ajax_loader_gif}" />
+        </div>
+        <div class="msg">
+            <div id="linkdiv">  </div>
+            <span>Compiling Attachments [{!HTMLENCODE(recordName)}]; Please Wait...</span>
+        </div>
+        <div class="close">
+            <button>Close</button>
+        </div>
+    </div>
+    
+    
+    <script type="text/javascript">
+        var __sfdcSessionId = sforce.connection.sessionId = "{!$Api.Session_Id}";
+    
+        (function($) {
+            
+            var JS_ZIP = {
+                mapAtt : {},
+                mapCha : {},
+                mapCom : {},
+                preloadMap : function(){
+                    var that = this;
+                    var records = JSON.parse('{!myAttachmentsJSON}');
+                    var anyAttachments = false;
+                    //console.log(records);
+                    if(records.Attachment){
+                        anyAttachments = true;
+                        $.each(records.Attachment, function(i,r){
+                            that.mapAtt[r] = {};
+                        })
+                    }
+                    if(records.ChatterFeed){
+                        anyAttachments = true;
+                        $.each(records.ChatterFeed, function(i,r){
+                            that.mapCha[r] = {};
+                        })
+                    }
+                    if(records.ChatterComment){
+                        anyAttachments = true;
+                        $.each(records.ChatterComment, function(i,r){
+                            that.mapCom[r] = {};
+                        })
+                    }
+                    return anyAttachments;
+                },
+                recordAttachmentsMapping : function(record){                   
+                    this.mapAtt[record.Id] = {name : record.Name,
+                                         att : record.Body}
+                    this.checkMap();
+                },
+                recordChatterFeedMapping : function(record){                        
+                    this.mapCha[record.Id] = {name : record.ContentFileName,
+                                         att : record.ContentData}
+                    this.checkMap();
+                },
+                recordChatterComMapping : function(record){                      
+                    this.mapCom[record.Id] = {name : (record.Title+'.'+record.FileExtension),
+                                         att : record.VersionData}
+                    this.checkMap();
+                },
+                getMyAttachments : function(){
+                    var that = this;
+                    var fetchingsComplete = {};
+                    $.each(Object.keys(this.mapAtt), function(i,r){
+                        fetchingsComplete[r] = $.Deferred();
+                        sforce.connection.query("Select Id, Body, Name From Attachment Where Id='"+r+"'", { 
+                            onSuccess: function(result) {
+                                if (result.records) {
+                                    fetchingsComplete[r].resolve(result.records);
+                                } else{
+                                    fetchingsComplete[r].reject(result);
+                                }
+                            },
+                            onFailure: function() {
+                                fetchingsComplete[r].reject(arguments);
+                            }
+                        });
+                        fetchingsComplete[r].done(function(msg){
+                            that.recordAttachmentsMapping(msg);
+                        });
+                        fetchingsComplete[r].fail(function(msg){
+                            //console.log(msg);
+                        });
+                    });
+                },
+                getChatterFeedAttachments : function(id){
+                    var that = this;
+                    var fetchingsComplete = {};
+                    $.each(Object.keys(this.mapCha), function(i,r){
+                        fetchingsComplete[r] = $.Deferred();
+                        sforce.connection.query("select Id, ContentData, ContentFileName from FeedItem where Id = '"+r+"'", { 
+                            onSuccess: function(result) {
+                                if (result.records) {
+                                    fetchingsComplete[r].resolve(result.records);
+                                } else{
+                                    fetchingsComplete[r].reject(result);
+                                }
+                            },
+                            onFailure: function() {
+                                fetchingsComplete[r].reject(arguments);
+                            }
+                        });
+                        fetchingsComplete[r].done(function(msg){
+                            that.recordChatterFeedMapping(msg);
+                        });
+                        fetchingsComplete[r].fail(function(msg){
+                            //console.log(msg);
+                        });
+                    });
+                },
+                getChatterCommentAttachments : function(ids){
+                    //select CommentType from FeedComment where FeedItemId in: feedCommentIds
+                    var that = this;
+                    var fetchingsComplete = {};
+                    $.each(Object.keys(this.mapCom), function(i,r){
+                        fetchingsComplete[r] = $.Deferred();
+                        sforce.connection.query("select Id, Title, VersionData, FileExtension from ContentVersion where Id = '"+r+"'", { 
+                            onSuccess: function(result) {
+                                if (result.records) {
+                                    fetchingsComplete[r].resolve(result.records);
+                                } else{
+                                    fetchingsComplete[r].reject(result);
+                                }
+                            },
+                            onFailure: function() {
+                                fetchingsComplete[r].reject(arguments);
+                            }
+                        });
+                        fetchingsComplete[r].done(function(msg){
+                            that.recordChatterComMapping(msg);
+                        });
+                        fetchingsComplete[r].fail(function(msg){
+                            //console.log(msg);
+                        });
+                    });
+                },
+                noDownload : function(){
+                    $("#dwnldStatus").find(".spinner").remove();
+                    $("#dwnldStatus").find(".msg>span").text("There are no attachments for record [{!JSENCODE(recordName)}].");
+                    $("#dwnldStatus").find(".close>button").show().click(function() {
+                        window.close();
+                    });
+                },
+                noSupport : function(){
+                    $("#dwnldStatus").find(".spinner").remove();
+                    $("#dwnldStatus").find(".msg>span").text("Sorry your browser does not support our Zip functionality.");
+                    $("#dwnldStatus").find(".close>button").show().click(function() {
+                        window.close();
+                    });
+                },
+                dispatchDownload : function(blobUrl, actualBlob){
+                    var $anchor = $('<a/>');
+                    if(console && console.log){
+                        console.log(blobUrl, actualBlob);    
+                    }
+                    if (typeof $anchor[0].download !== "undefined") {
+                        $anchor
+                        .prop("href", blobUrl)
+                        .attr("download", "Attachments {!JSENCODE(recordName)}.zip")
+                        .appendTo(document.body)
+                        [0].click();
+                    } else if(window.navigator && window.navigator.msSaveBlob) {
+                        window.navigator.msSaveBlob(actualBlob, 'Attachments {!JSENCODE(recordName)}.zip')
+                    } else{
+                        $('#linkdiv').html('<a href="'+ blobUrl +'">Right Click, Save As</a>');
+                    }
+                    $("#dwnldStatus").find(".spinner").remove();
+                    $("#dwnldStatus").find(".msg>span").text("Attachments [{!JSENCODE(recordName)}] Download Complete");
+                    $("#dwnldStatus").find(".close>button").show().click(function() {
+                        window.close();
+                    });
+                },
+                checkMap :function() {
+                    for (var id in this.mapAtt) {
+                        if (typeof this.mapAtt[id].att === "undefined") {
+                            return;
+                        }
+                    }
+                    for (var id in this.mapCha) {
+                        if (typeof this.mapCha[id].att === "undefined") {
+                            return;
+                        }
+                    }
+                    for (var id in this.mapCom) {
+                        if (typeof this.mapCom[id].att === "undefined") {
+                            return;
+                        }
+                    }
+                    var zip = new JSZip();
+                    var nameCounterMap = {};
+                    function setupNaming(fileName){
+                        if(typeof nameCounterMap[fileName] === "undefined"){
+                            nameCounterMap[fileName] = 0;
+                        } else{
+                            nameCounterMap[fileName] += 1;
+                            var name = fileName.split('.');
+                            if(name.length==1){
+                                fileName = name[0]+'('+nameCounterMap[fileName]+')';
+                            } else{
+                                var isFirst = true;
+                                var newName = fileName;
+                                for(var i=0;i<name.length;i++){
+                                    if(i==(name.length-1)){
+                                        newName += '('+nameCounterMap[fileName]+').'+name[i];
+                                    } else if(!isFirst){
+                                        newName += '.'+name[i];
+                                    } else{
+                                        newName = name[i];
+                                        isFirst=false;
+                                    }
+                                }
+                                fileName = newName;
+                            }
+                        }
+                        return fileName
+                    }
+                    for (var id in this.mapAtt) {
+                        var attach = this.mapAtt[id];
+                        // !! modern browsers that support Uint8Array (i.e. typed arrays) can do the base64 decoding MUCH
+                        // faster than with plain untyped JavaScript objects. also note that the base64DecToArr function -- 
+                        // from the base64utils import -- required some function inlining to be performant in Firefox, which
+                        // is especially ironic since the bloody thing came from the Mozilla Developer network.
+                        attach.name = setupNaming(attach.name);
+                        if (typeof Uint8Array !== "undefined" && typeof base64DecToArr === "function") {
+                            var arr = base64DecToArr(attach.att);
+                            zip.file(attach.name, arr);
+                        } else {
+                            zip.file(attach.name, attach.att, {base64: true});
+                        }
+                    }
+                    for (var id in this.mapCha) {
+                        var attach = this.mapCha[id];
+                        attach.name = setupNaming(attach.name);
+                        if (typeof Uint8Array !== "undefined" && typeof base64DecToArr === "function") {
+                            var arr = base64DecToArr(attach.att);
+                            zip.file(attach.name, arr);
+                        } else {
+                            zip.file(attach.name, attach.att, {base64: true});
+                        }
+                    }
+                    for (var id in this.mapCom) {
+                        var attach = this.mapCom[id]; 
+                        attach.name = setupNaming(attach.name);
+                        if (typeof Uint8Array !== "undefined" && typeof base64DecToArr === "function") {
+                            var arr = base64DecToArr(attach.att);
+                            zip.file(attach.name, arr);
+                        } else {
+                            zip.file(attach.name, attach.att, {base64: true});
+                        }
+                    }
+                    
+                    var ie = (function(){
+ 
+                        var undef,
+                            v = 3,
+                            div = document.createElement('div'),
+                            all = div.getElementsByTagName('i');
+                     
+                        while (
+                            div.innerHTML = '<!--[if gt IE ' + (++v) + ']><i></i><![endif]-->',
+                            all[0]
+                        );
+                     
+                        return v > 4 ? v : undef;
+                     
+                    }());
+                    
+                    if(ie<10){
+                        this.noSupport()
+                    } else{
+                        var zipData = zip.generate({type: "blob"});
+                        this.dispatchDownload(window.URL.createObjectURL(zipData),zipData);
+                    }
+                    
+                },
+                start : function(){
+                    if(this.preloadMap()){
+                        this.getMyAttachments();
+                        this.getChatterFeedAttachments();
+                        this.getChatterCommentAttachments();
+                    } else{
+                        this.noDownload();
+                    }
+                }
+            }
+
+            var fetchingDef = JS_ZIP.start();
+            
+        })(jQuery);
+
+    </script>
+</apex:page>

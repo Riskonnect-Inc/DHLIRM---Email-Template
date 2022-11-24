@@ -1,0 +1,119 @@
+<apex:component controller="rkl.pGenericSearchFiltersCtrl" access="global" layout="block">
+    
+    <!-- users of this component must set exactly 1 of the following 2 attributes: -->
+    <apex:attribute name="searchModel" type="rkl.GenericSearch" required="true" assignTo="{!searchObjAttr}" description="use of searchName instead of this attribute is preferred" access="global"/>
+
+    <apex:attribute name="initCollapsed" type="Boolean" required="false" default="false" description="true if the the filters should initially be collapsed" access="global"/>
+
+    <apex:attribute name="path" type="String" default="'#root'" required="false" description="a selector path to the parent component node; may be a comma-delimited list of ECMAScript string literals, in which the 1st element must be a valid $cnode selector expression and subsequent elements must be valid syntax for the 1st argument of jQuery.fn.addClass" access="global"/>
+    <apex:attribute name="ident" type="String" required="false" default="" description="1 or more class names, space delemited, to uniquely distingish multiple instances of this component hooked up to the same GenericSearch data-model. should not be needed under normal circumstances." access="global"/>
+    
+    <apex:actionRegion >
+        <!-- instantiates the cnode instance and writes its reference into $cnode.last -->
+        <script type="text/javascript">
+            $cnode({!path}, 'genericSearch {!searchIdent}', 'filters {!ident}');
+        </script>
+        <!-- allows for a componentBody script to attach any number & type of event handlers (e.g. via $cnode.last.offOnSelf) to various aspects of
+             this GenericSearchResults node by referencing (and optionally traversing) the $cnode.last variable set above: -->
+        <apex:componentBody />
+        
+        <apex:outputPanel id="search">
+            <apex:actionSupport event="onfocus" action="{!doSearch}" rerender="{!curryRerender}" />
+        </apex:outputPanel>
+        
+        <apex:outputPanel layout="block" id="top" styleClass="gs-filters-top">
+            <apex:outputPanel layout="block" id="header" styleClass="gs-header">
+                <span style="font-weight:bold;font-size:110%">Search {!dataModel.searchSObjectTypePluralLabel}</span>&nbsp;
+                <a class="gs-hide-show"></a>
+            </apex:outputPanel>
+        
+            <apex:outputPanel layout="block" id="inputs" styleClass="gs-inputs">
+                <apex:pageMessages />
+                <apex:dynamicComponent componentValue="{!searchModel.filtersPanel}" />
+            </apex:outputPanel>
+        
+            <apex:outputPanel layout="block" id="buttons" styleClass="gs-btns">
+                <apex:outputPanel id="search-btn" styleClass="gs-search-btn">Search</apex:outputPanel>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+        <script type="text/javascript">
+            (function($) {
+                var $gsFilters = $(document.getElementById("{!$Component.top}")).gsFilters({ initCollapsed: {!initCollapsed} });
+                
+                // define the core element and action aspects of this component-type's API:
+                var cnode = $cnode({!path}, 'genericSearch {!searchIdent}', 'filters {!ident}', { 
+                    // component writers are responsible for defining the element aspects of a component type:
+                    elements: {
+                        // properties that have string values starting with "j_id<digit>" are interpreted as a DOM-id and are resolved to a DOM
+                        // node (via document.getElementById) in the cnode API's getElements() result:
+                        top: "{!$Component.top}",
+                        header: "{!$Component.header}",
+                        inputs: "{!$Component.inputs}",
+                        btns: "{!$Component.btns}",
+                        $gsFilters: $gsFilters
+                    },
+                    
+                    // component writers are also responsible for defining the action aspects of a component type:
+                    actions: {
+                        // TODO: grid results should also define the following actions: refresh, setPage, setPageSize
+                        search: {
+                            
+                            // actions expect an "onfocus"-type apex:actionSupport binding element; $cnode will pluck the action function from
+                            // the onfocus prop and wraps it in a special ECMAScript function that provides our desired action API:
+                            binding: "{!$Component.search}",
+                            
+                            /*
+                            // the component user could override these callbacks at the time of action invocation, but this is not best-practice:
+                            //   1. component writers should define the before and oncomplete callbacks for each action; the implementation
+                            //      should trigger a $cnode event (to be defined and documented by the component writer)
+                            //   2. component users should attach their custom handlers -- to the various $cnode events defined for that
+                            //      component type -- by acquiring a reference to the cnode instance and binding via on/off/onOff/etc. 
+                            before:
+                                function() {
+                                    cnode.triggerBoth("beforeAction", "sort");
+                                },
+                            oncomplete:
+                                function() {
+                                    cnode.triggerBoth("afterAction", "sort");
+                                },
+                            */
+                            
+                            // the component writer can define an action's parameters before the point of invocation. invokers of the action may
+                            // optionally override these parameters and/or supply additional parameters of their own. a parameter value may be a
+                            // function, in which case it will be called -- and thus resolved to its final value -- at time of action invocation
+                            parameters: {
+                                // this demonstrates that you can compute an action's rerender via script. this is very powerful; some component
+                                // types will want to search for elements of associated components to add to the rerenders -- e.g. an edit
+                                // dialog's save action should rerender both the dialog contents (its "top" element), and any associated search
+                                // grids' dataLoaders (the "dataLoader" element). external callers of an action may optionally mixin additional
+                                // rerenders, at the time of invocation, by providing a parameter named "additionalRerender".
+                                curryRerender: function() {
+                                    var r = [cnode.getComponentApi().elements.inputs];
+                                    // rerender all results components that are logically associated with this filters component:
+                                    cnode.parent().find(".results").each(function() {
+                                        var elmts = $(this).getComponentApi().elements;
+                                        r.push(elmts.dataLoader);
+                                        if (elmts.paginator) {
+                                            r.push(elmts.paginator);
+                                        }
+                                    });
+                                    return r;
+                                }
+                            },
+                            
+                            oncomplete: function() {
+                                $gsFilters.gsFiltersApi().refreshInputs();
+                            }
+                        }
+                    }
+                });
+                
+                $gsFilters.gsFiltersApi().setComponentApi(cnode.getComponentApi());
+                
+            })(jQuery);
+        </script>
+        
+    </apex:actionRegion>
+
+</apex:component>
