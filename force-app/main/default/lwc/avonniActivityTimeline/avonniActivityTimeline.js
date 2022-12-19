@@ -41,6 +41,10 @@ import {
     normalizeString,
     normalizeArray
 } from 'c/utilsPrivate';
+import { NavigationMixin } from 'lightning/navigation';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { refreshApex } from '@salesforce/apex';
+import deleteRecord from "@salesforce/apex/SearchableActivityController.deleteRecord";
 
 const BUTTON_ICON_POSITIONS = { valid: ['left', 'right'], default: 'left' };
 
@@ -89,7 +93,7 @@ const SORTED_DIRECTIONS = {
  * @storyId example-activity-timeline--base
  * @public
  */
-export default class AvonniActivityTimeline extends LightningElement {
+export default class AvonniActivityTimeline extends NavigationMixin(LightningElement) {
     /**
      * The Lightning Design System name of the icon displayed in the header, before the title. Specify the name in the format 'utility:down' where 'utility' is the category, and 'down' is the specific icon to be displayed.
      * When omitted, a simplified timeline bullet replaces it.
@@ -142,7 +146,7 @@ export default class AvonniActivityTimeline extends LightningElement {
     _buttonShowMoreIconPosition = BUTTON_ICON_POSITIONS.default;
     _buttonVariant = BUTTON_VARIANTS.default;
     _closed = false;
-    _collapsible = false;
+    _collapsible;
     _groupBy = GROUP_BY_OPTIONS.default;
     _hideItemDate = false;
     _iconSize = ICON_SIZES.default;
@@ -876,6 +880,7 @@ export default class AvonniActivityTimeline extends LightningElement {
                 detail: event.detail
             })
         );
+        this.deleteItem(event);
     }
 
     /**
@@ -986,4 +991,39 @@ export default class AvonniActivityTimeline extends LightningElement {
         this.showMore = !this.showMore;
         this.initActivityTimeline();
     }
+
+    async deleteItem(event) {
+        try {  
+            const response = await deleteRecord({
+                recordId: event.detail.targetName,
+            });         
+            if (response.isSuccess) {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Record deleted',
+                        variant: 'success'
+                    })
+                );  
+                const loadTimeline = new CustomEvent("timelinechange", {
+                    detail: response.isSuccess
+                });
+                this.dispatchEvent(loadTimeline);
+                //this.handleNavigation();            
+            } 
+        } catch (e) {
+            this.handleSearchError(e);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    /*handleNavigation() {
+        this[NavigationMixin.Navigate]({
+        // type: 'standard__component',
+         attributes: {
+             componentName: 'c__SearchableActivityTimeline'
+         }
+     });
+    }*/
 }

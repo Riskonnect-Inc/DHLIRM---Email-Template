@@ -1,0 +1,177 @@
+<template> 
+    <div class="slds-p-bottom_medium slds-p-top_large">
+        <lightning-button
+            class="slds-p-around_x-small"
+            label="New Email"
+            onclick={newEmail}>
+        </lightning-button>
+        <lightning-button
+            class="slds-p-around_x-small"
+            label="New Task"
+            onclick={newTask}>
+        </lightning-button>
+        
+        <div class="slds-float_right">
+            <lightning-button-menu alternative-text="Show menu" icon-name="utility:settings">
+                <div class="slds-panel slds-size_medium slds-p-around_x-small">
+                    <lightning-button-icon 
+                        size="small"
+                        title="Close"
+                        class="slds-p-left_x-small slds-float_right"
+                        variant="bare"
+                        icon-name="utility:close"
+                        onclick={closeMenu}> 
+                    </lightning-button-icon>
+
+                    <div class="slds-grid slds-wrap slds-p-bottom_large">
+                        <div class="slds-col slds-size_6-of-12">
+                            <lightning-radio-group name="dateGroup"
+                                label="Date Range"
+                                options={dateRangeOptions1}
+                                value={dateRangeValue}
+                                type="radio">
+                            </lightning-radio-group>
+                        </div>
+                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                            <lightning-radio-group name="dateGroup"
+                                label="Date Range"
+                                options={dateRangeOptions2}
+                                value={dateRangeValue}
+                                type="radio"
+                                variant="label-hidden">
+                            </lightning-radio-group>
+                        </div>
+                        
+                        <div class="slds-col slds-size_6-of-12">
+                            <lightning-radio-group name="emailGroup"
+                                label="Emails To Show"
+                                options={emailGroupOptions1}
+                                value={emailGroupValue}
+                                type="radio">
+                            </lightning-radio-group>
+                        </div>
+                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                            <lightning-radio-group name="emailGroup"
+                                label="Emails To Show"
+                                options={emailGroupOptions2}
+                                value={emailGroupValue}
+                                type="radio"
+                                variant="label-hidden">
+                            </lightning-radio-group>
+                        </div>
+
+                        <div class="slds-col slds-size_6-of-12">
+                            <lightning-radio-group name="activityGroup"
+                                label="Activities To Show"
+                                options={activityGroupOptions1}
+                                value={activityGroupValue}
+                                type="radio">
+                            </lightning-radio-group>
+                        </div>
+                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                            <lightning-radio-group name="activityGroup"
+                                label="Activities To Show"
+                                options={activityGroupOptions2}
+                                value={activityGroupValue}
+                                type="radio"
+                                variant="label-hidden">
+                            </lightning-radio-group>
+                        </div>
+
+                        <div class="slds-col slds-size_6-of-12">
+                            <lightning-radio-group name="activitySort"
+                                label="Sort Activities"
+                                options={activitySortOptions1}
+                                value={activitySortValue}
+                                type="radio">
+                            </lightning-radio-group>
+                        </div>
+                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                            <lightning-radio-group name="activitySort"
+                                label="Sort Activities"
+                                options={activitySortOptions2}
+                                value={activitySortValue}
+                                type="radio"
+                                variant="label-hidden">
+                            </lightning-radio-group>
+                        </div>
+
+                        <div class="slds-col slds-size_6-of-12">
+                            <lightning-checkbox-group name="activityType"
+                                label="Activity Type"
+                                options={activityTypeOptions1}
+                                value={activityTypeValue}
+                                onchange={handleActivityTypeChange}>
+                            </lightning-checkbox-group>
+                        </div>
+                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                            <lightning-checkbox-group name="activityType"
+                                label="Activity Type"
+                                options={activityTypeOptions2}
+                                value={activityTypeValue}
+                                onchange={handleActivityTypeChange}
+                                variant="label-hidden">
+                            </lightning-checkbox-group>
+                        </div>
+
+                        <div class="slds-col slds-size_12-of-12">
+                            <lightning-input
+                                type="search" 
+                                value={searchValue}
+                                placeholder="Search">
+                            </lightning-input>
+                        </div>
+                    </div>
+                    
+                </div>   
+                <footer class=" slds-modal__footer slds-align_absolute-center slds-docked-form-footer slds-p-around_x-small">
+                    <lightning-button label='Restore Defaults' class='slds-m-left_x-small'></lightning-button>
+                    <lightning-button variant="brand" type="save" class='slds-m-left_x-small' label="Apply" onclick={handleSuccess}> </lightning-button>
+                </footer>      
+            </lightning-button-menu>
+        </div>
+    </div>
+
+    <!--lightning-tabset variant="scoped">
+        <lightning-tab label="Activity Timeline"-->
+            
+    <!-- Adding avonni component-->
+    <c-avonni-activity-timeline
+        actions={actionList}
+        group-by="month"
+        collapsible
+        item-date-format="T | dd-LLL yyyy"
+        item-icon-size="small"
+        items={items}
+        ontimelinechange={timelineChange}
+        max-visible-items="3"
+        button-show-more-icon-name="utility:down"
+        button-show-less-icon-name="utility:up">
+            <lightning-spinner
+                if:true={showSpinner}
+                alternative-text="loading"
+                size="large"
+                data-element-id="lightning-spinner">
+            </lightning-spinner>
+    </c-avonni-activity-timeline>
+        <!--/lightning-tab>
+        <lightning-tab label="Sent"-->
+            <!-- Adding avonni component-->
+            <!--c-avonni-activity-timeline
+                actions={actionList}
+                group-by="month"
+                collapsible=""
+                item-date-format="T | dd-LLL yyyy"
+                item-icon-size="small"></c-avonni-activity-timeline>
+        </lightning-tab>
+        <lightning-tab label="Received"-->
+            <!-- Adding avonni component-->
+            <!--c-avonni-activity-timeline
+                actions={actionList}
+                group-by="month"
+                collapsible=""
+                item-date-format="T | dd-LLL yyyy"
+                item-icon-size="small"></c-avonni-activity-timeline>
+        </lightning-tab>        
+    </lightning-tabset-->
+</template>
