@@ -1010,7 +1010,15 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
                 });
                 this.dispatchEvent(loadTimeline);
                 //this.handleNavigation();            
-            } 
+            } else {
+                const evt = new ShowToastEvent({
+                    title: 'Toast Error',
+                    message: response.errorMessage,
+                    variant: 'error',
+                    mode: 'dismissable'
+                });
+                this.dispatchEvent(evt);
+            }
         } catch (e) {
             this.handleSearchError(e);
         } finally {
@@ -1023,7 +1031,7 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
         // type: 'standard__component',
          attributes: {
              componentName: 'c__SearchableActivityTimeline'
-         }
+    }
      });
     }*/
 }

@@ -10,6 +10,9 @@ public with sharing class SearchableActivityController {
 
         @AuraEnabled
         public List<Map<String,Object>> taskList {get; set;}
+
+        @AuraEnabled
+        public String errorMessage {get; set;}
     }
 
     @AuraEnabled (cacheable=true)
@@ -99,11 +102,18 @@ public with sharing class SearchableActivityController {
         try {
             res.isSuccess = true;
             String sObjName = recordId.getSObjectType().getDescribe().getName();
-            String delQuery = 'SELECT Id FROM '+sObjName+' WHERE Id =: recordId';
-            SObject delRecord = Database.query(delQuery);
-            delete delRecord;
+            Boolean isDelete = recordId.getSobjectType().getDescribe().isDeletable();
+            if(isDelete) {
+                String delQuery = 'SELECT Id FROM '+sObjName+' WHERE Id =: recordId';
+                SObject delRecord = Database.query(delQuery);
+                delete delRecord;
+            } else {
+                res.isSuccess = false;
+                res.errorMessage = 'Delete failed! User does not have access to delete the record.';
+            }       
         } catch (Exception e) {
             res.isSuccess = false;
+            res.errorMessage = e.getMessage();
             throw new AuraHandledException(e.getMessage());
         }
         return res;
