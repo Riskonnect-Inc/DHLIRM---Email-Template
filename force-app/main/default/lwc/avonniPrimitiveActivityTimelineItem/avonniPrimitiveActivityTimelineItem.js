@@ -146,6 +146,19 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      * @public
      * @type {boolean}
      */
+    @api itemType;
+    /**
+     *
+     * @public
+     * @type {string}
+     */
+    @api received;
+    /**
+     * If true, it will display a pill with label received. Else it will display a pill with label sent
+     *
+     * @public
+     * @type {boolean}
+     */
     @api isActive;
 
     _actions = [];
@@ -161,6 +174,8 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
     _iconSize = ICON_SIZES.default;
     _isLoading = false;
     _color;
+    _pillLabel;
+    _isEmail;
 
     renderedCallback() {
         this.setLineColor();
@@ -623,5 +638,16 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
         if (icon === null) return;
         const style = getComputedStyle(icon);
         this._color = style.backgroundColor;
+    }
+
+    get pillLabel() {
+        this._isEmail = (this.itemType == 'email') ? true : false;
+        this._pillLabel = (this._isEmail && this.received) ? 'Received' : 'Sent';
+        return this._pillLabel;
+    }
+
+    get isEmail() {
+        this._isEmail = (this.itemType == 'email') ? true : false;
+        return this._isEmail;
     }
 }

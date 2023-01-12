@@ -165,6 +165,9 @@
                     class="slds-m-horizontal_xx-small slds-truncate"
                     if:true={description}
                 >
+                    <span class = "slds-p-right_medium" if:true={isEmail}>
+                        <span class="slds-badge"> <b>{pillLabel}</b> </span> 
+                    </span>
                     {description}
                 </p>
                 <template if:false={closed}>
