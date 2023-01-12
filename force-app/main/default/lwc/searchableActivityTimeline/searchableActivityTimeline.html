@@ -3,14 +3,16 @@
         <lightning-button
             class="slds-p-around_x-small"
             label="New Email"
+            icon-name="utility:email"
             onclick={newEmail}>
         </lightning-button>
         <lightning-button
             class="slds-p-around_x-small"
             label="New Task"
+            icon-name="utility:task"
             onclick={newTask}>
         </lightning-button>
-        
+
         <div class="slds-float_right">
             <lightning-button-menu alternative-text="Show menu" icon-name="utility:settings">
                 <div class="slds-panel slds-size_medium slds-p-around_x-small">
@@ -120,7 +122,6 @@
                                 value={searchValue}
                                 placeholder="Search">
                             </lightning-input>
-                        </div>
                     </div>
                     
                 </div>   

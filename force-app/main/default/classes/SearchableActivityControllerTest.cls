@@ -108,9 +108,9 @@ public class SearchableActivityControllerTest {
         pastTask.WhatId = claim.Id;
         
         insert pastTask;
-        
-        
+              
         SearchableActivityController.Result loadTestItems = SearchableActivityController.loadItems(claim.Id);
+        String testGetActivityDigest = SearchableActivityController.getActivityDigest(claim.Id);
         SearchAbleActivityController.Result deleteTestItem = SearchableActivityController.deleteRecord(presentTask.Id);
         
     }

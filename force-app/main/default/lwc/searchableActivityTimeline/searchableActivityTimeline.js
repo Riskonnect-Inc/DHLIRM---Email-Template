@@ -6,20 +6,31 @@ import { getRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 
 //import findItems from "@salesforce/apex/SearchableActivityController.findItems";
 import loadItems from "@salesforce/apex/SearchableActivityController.loadItems";
+import loadEmailDetails from "@salesforce/apex/SearchableActivityController.loadEmailDetails";
+import getActivityDigest from "@salesforce/apex/SearchableActivityController.getActivityDigest";
 
 class InterruptiblePoller {
-    constructor(interval=5000, maxFires) {
+    context;
+
+    constructor(context, interval=5000, maxFires) {
+        this.context = context;
         // Fire every 5 seconds (default value) after the last worker call completed:
         this.interval = interval;
         // How many times we've fired the worker call so far:
         this.fires = 0;
         this.maxFires = maxFires;
+
+        this.working = false;
+        this.workingFiresNext = false;
     }
 
     async start(whenLambo) {
+        if (this.working) {
+            this.workingFiresNext = true;
+            return;
+        }
         if (this.timeoutId) {
             window.clearTimeout(this.timeoutId);
-        } else {
         }
         if (typeof this.maxFires === "number" && this.fires >= this.maxFires) {
             this.stop();
@@ -27,8 +38,14 @@ class InterruptiblePoller {
         }
         this.timeoutId = window.setTimeout(async () => {
             try {
+                this.working = true;
                 await this.doWork();
             } finally {
+                this.working = false;
+                if (this.workingFiresNext) {
+                    this.workingFiresNext = false;
+                    this.start(0);
+                }
                 this.fires++;
                 this.start();
             }
@@ -53,6 +70,14 @@ class InterruptiblePoller {
     // (e.g. query for new emails or tasks). The "Got lambo" is a joke referencing the "when lambo?" meme 
     // used to make fun of crypto bros ;)
     async doWork() {
+        console.log('Polling ' + (this.fires + 1));
+        let newActivityDigest = await getActivityDigest({ claimId: this.context.recordId });
+        console.log('New item digest: ' + newActivityDigest);
+        if (newActivityDigest != this.context.activityDigest) {
+            this.context.activityDigest = newActivityDigest;
+            console.log('Refreshing apex...');
+            refreshApex(this.context.activitiesList);
+        }
     }
 }
 
@@ -77,6 +102,9 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     activitySortValue = '';
     activityTypeValue = '';
 
+    poller;
+    activityDigest;
+
     @wire(loadItems, {
         claimId: '$recordId'
     })
@@ -85,6 +113,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         this.activitiesList = loadActivities;
         const {error, data} = loadActivities;
         if (data) {
+            console.log('Wire Item Digest:' + data.activityDigest);
+            this.activityDigest = data.activityDigest;
             this.emails = data.emailList;
             this.tasks = data.taskList;
             let emailListObj = [];
@@ -178,7 +208,13 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             this.items = emailListObj;
             this.showSpinner = false;
         } 
-    } 
+    }
+
+    connectedCallback() {
+        console.log('Connected!');
+        this.poller = new InterruptiblePoller(this, 5000, 1000);
+        this.poller.start();
+    }
 
     timelineChange() {
         refreshApex(this.activitiesList);
@@ -201,13 +237,13 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         };
         this[NavigationMixin.Navigate](pageRef);
         // Start a new interruptable poller with an interval of 5 seconds and a max of 10 worker call fires:
-        let pol = new InterruptiblePoller(5000, 10);
-        pol.start();
+//        let pol = new InterruptiblePoller(5000, 10);
+//        pol.start();
         // Schedule an "interrupt" fire in 6 seconds, regardless of where the poller currently stands (it will 
         // have fired once so far, and was ~ 1 second into the next 5-second wait). Note the next worker call 
         // after this interrupt call will resume exactly 5 seconds later - i.e. this very simple poller dynamically 
         // regulates itself!
-        setTimeout(() => { pol.fireNow() }, 6000);
+//        setTimeout(() => { pol.fireNow() }, 6000);
         /*let emailCount = this.activitiesList.data.emailList.length;
         let intervalComponent1 = setInterval(() => {
             console.log(emailCount);
@@ -237,13 +273,13 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         };
         this[NavigationMixin.Navigate](pageRef);
         // Start a new interruptable poller with an interval of 5 seconds and a max of 10 worker call fires:
-        let pol = new InterruptiblePoller(5000, 10);
-        pol.start();
+//        let pol = new InterruptiblePoller(5000, 10);
+//        pol.start();
         // Schedule an "interrupt" fire in 6 seconds, regardless of where the poller currently stands (it will 
         // have fired once so far, and was ~ 1 second into the next 5-second wait). Note the next worker call 
         // after this interrupt call will resume exactly 5 seconds later - i.e. this very simple poller dynamically 
         // regulates itself!
-        setTimeout(() => { pol.fireNow() }, 6000);
+//        setTimeout(() => { pol.fireNow() }, 6000);
         /*let taskCount = this.activitiesList.data.taskList.length;
         let intervalComponent2 = setInterval(() => {
             console.log(taskCount);

@@ -11,8 +11,31 @@ public with sharing class SearchableActivityController {
         @AuraEnabled
         public List<Map<String,Object>> taskList {get; set;}
 
+        // {email count}:{last email timestamp}:{task count}
+        @AuraEnabled
+        public String activityDigest;
+
         @AuraEnabled
         public String errorMessage {get; set;}
+    }
+
+    @AuraEnabled(cacheable=false)
+    public static String getActivityDigest(Id claimId) {
+        Integer emailCount = 0;
+        Long lastEmailTime = 0;
+        for (EmailMessage email : [ SELECT MessageDate FROM EmailMessage WHERE RelatedToId =: claimId ]) {
+            emailCount++;
+            lastEmailTime = Math.max(lastEmailTime, email.MessageDate.getTime());
+        }
+        Integer taskCount = 0;
+        Date lastTaskDate = Date.newInstance(1900, 1, 1); // hack, ugh
+        for (Task t : [ SELECT ActivityDate FROM Task WHERE WhatId =: claimId AND TaskSubType = 'Task' ]) {
+            taskCount++;
+            if (t.ActivityDate > lastTaskDate) {
+                lastTaskDate = t.ActivityDate;
+            }
+        }
+        return emailCount + ':' + lastEmailTime + ':' + taskCount + ':' + DateTime.newInstance(lastTaskDate, Time.newInstance(0, 0, 0, 0)).format('yyyy-MM-dd');
     }
 
     @AuraEnabled (cacheable=true)
@@ -27,6 +50,10 @@ public with sharing class SearchableActivityController {
             List<EmailMessage> emailList = Database.query(emailQuery);
             String taskQuery = 'SELECT Id, Subject, Description, ActivityDate, Status, Priority, Type, TaskSubType, Entry_Date__c, OwnerId, Owner.Name FROM Task WHERE WhatId =: claimId AND TaskSubType =\'' +taskText+ '\'';
             List<Task> taskList = Database.query(taskQuery);
+            Integer emailCount = 0;
+            Integer taskCount = 0;
+            Long lastEmailTime = 0;
+            Date lastTaskDate = Date.newInstance(1900, 1, 1); // hack, ugh
             if(emailList.size() > 0) {
                 for(EmailMessage e : emailList) {
                     Boolean sentBySelf = false;
@@ -65,6 +92,8 @@ public with sharing class SearchableActivityController {
                     emailElement.put('toAddress', e.ToAddress);
                     emailElement.put('textBody', e.TextBody);
                     emails.add(emailElement);
+                    emailCount++;
+                    lastEmailTime = Math.max(lastEmailTime, e.MessageDate.getTime());
                 }
             }
             if(taskList.size() > 0) {
@@ -85,10 +114,15 @@ public with sharing class SearchableActivityController {
                     taskElement.put('status', t.Status);
                     taskElement.put('priority', t.Priority);
                     tasks.add(taskElement);
+                    taskCount++;
+                    if (t.ActivityDate > lastTaskDate) {
+                        lastTaskDate = t.ActivityDate;
+                    }
                 }
             }
             res.emailList = emails;
             res.taskList = tasks;
+            res.activityDigest = emailCount + ':' + lastEmailTime + ':' + taskCount + ':' + DateTime.newInstance(lastTaskDate, Time.newInstance(0, 0, 0, 0)).format('yyyy-MM-dd');
         } catch (Exception e) {
             res.isSuccess = false;
             throw new AuraHandledException(e.getMessage());
@@ -118,6 +152,59 @@ public with sharing class SearchableActivityController {
         }
         return res;
     }
+
+    /*@AuraEnabled
+    public static Result loadEmailDetails(Id emailId, String emailType){
+        Result res = new Result();
+        List<Map<String,Object>> emails = new List<Map<String,Object>>();
+        try {
+            String subType = '';
+            res.isSuccess = true;
+            String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, BccAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, HtmlBody, HasAttachment FROM EmailMessage WHERE Id =: emailId';
+            List<EmailMessage> emailList = Database.query(emailQuery);
+            System.debug(emailList[0].HtmlBody);
+            if(emailList.size() > 0) {
+                String prevMessage = emailList[0].HtmlBody;
+                String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+UserInfo.getName()+' </b><br> &lt;'+UserInfo.getUserEmail()+'&gt;<br>Date: '+emailList[0].MessageDate + '<br>'+prevMessage;
+                Map<String,Object> emailElement = new Map<String,Object>();
+                emailElement.put('Id', emailList[0].Id);
+                if(emailType == 'Reply') {
+                    subType = 'Re: ';
+                    if(emailList[0].FromAddress == UserInfo.getUserEmail()) {
+                        emailElement.put('toAddress', emailList[0].ToAddress);
+                    } else {
+                        emailElement.put('toAddress', emailList[0].FromAddress);
+                    }
+                    emailElement.put('subject', subType + emailList[0].subject);
+                } else if(emailType == 'Reply All') {
+                    subType = 'Re: ';
+                    if(emailList[0].FromAddress == UserInfo.getUserEmail()) {
+                        emailElement.put('toAddress', emailList[0].ToAddress);
+                    } else {
+                        emailElement.put('toAddress', emailList[0].FromAddress);
+                    }
+                    emailElement.put('ccAddress', emailList[0].CcAddress);
+                    emailElement.put('bccAddress', emailList[0].BccAddress);
+                    emailElement.put('subject', subType + emailList[0].subject);
+                } else if(emailType == 'Forward') {
+                    subType = 'Fw: ';
+                    emailElement.put('subject', subType + emailList[0].subject);
+                    if(emailList[0].HasAttachment) {
+                        List<ContentDocumentLink> attachmentList = [SELECT Id FROM ContentDocumentLink WHERE LinkedEntityId =: emailList[0].Id];
+                        Set<Id> attachIds = (new Map<Id,SObject>(attachmentList)).keySet();
+                        String attachList = String.valueOf(attachIds).replace('{','').replace('}','');
+                        emailElement.put('attachments', attachList);
+                    }
+                }
+                emailElement.put('body', addMessage);
+                emails.add(emailElement);            
+            }
+            res.emailList = emails;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+        return res;
+    }*/
 
     /*
     @AuraEnabled
