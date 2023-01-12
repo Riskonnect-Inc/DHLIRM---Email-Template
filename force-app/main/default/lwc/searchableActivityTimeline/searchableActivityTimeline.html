@@ -13,6 +13,13 @@
             onclick={newTask}>
         </lightning-button>
 
+        <!--lightning-input
+            class="slds-p-around_x-small slds-size_1-of-3"
+            type="search" 
+            value={searchValue}
+            placeholder="Search">
+        </lightning-input-->
+        
         <div class="slds-float_right">
             <lightning-button-menu alternative-text="Show menu" icon-name="utility:settings">
                 <div class="slds-panel slds-size_medium slds-p-around_x-small">
@@ -116,12 +123,13 @@
                             </lightning-checkbox-group>
                         </div>
 
-                        <div class="slds-col slds-size_12-of-12">
+                        <!--div class="slds-col slds-size_12-of-12">
                             <lightning-input
                                 type="search" 
                                 value={searchValue}
                                 placeholder="Search">
                             </lightning-input>
+                        </div-->
                     </div>
                     
                 </div>   
@@ -131,6 +139,11 @@
                 </footer>      
             </lightning-button-menu>
         </div>
+        <lightning-input
+            type="search" 
+            value={searchValue}
+            placeholder="Search">
+        </lightning-input>
     </div>
 
     <!--lightning-tabset variant="scoped">
@@ -147,7 +160,8 @@
         ontimelinechange={timelineChange}
         max-visible-items="3"
         button-show-more-icon-name="utility:down"
-        button-show-less-icon-name="utility:up">
+        button-show-less-icon-name="utility:up"
+        onemailactiontype={emailAction}>
             <lightning-spinner
                 if:true={showSpinner}
                 alternative-text="loading"
