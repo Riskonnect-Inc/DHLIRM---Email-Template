@@ -1,3 +1,11 @@
-<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global">
-	<c:searchableActivityTimeline recordId="{!v.recordId}"></c:searchableActivityTimeline>
+<aura:component implements="flexipage:availableForRecordHome,force:lightningQuickAction,force:hasRecordId" access="global">
+	<lightning:quickActionAPI aura:id="quickActionAPI"/>
+	<aura:attribute name="toAddress" type="String" default=""/>
+	<aura:attribute name="ccAddress" type="String" default=""/>
+	<aura:attribute name="bccAddress" type="String" default=""/>
+	<aura:attribute name="subject" type="String" default=""/>
+	<aura:attribute name="htmlBody" type="String" default=""/>
+	<aura:attribute name="attachmentIds" type="List" default=""/>
+	<aura:attribute name="recId" type="Id" default=""/>
+	<c:searchableActivityTimeline recordId="{!v.recordId}" onreplyforwardevent="{!c.handleReplyForwardEvent}"></c:searchableActivityTimeline>
 </aura:component>

@@ -112,6 +112,9 @@ public class SearchableActivityControllerTest {
         SearchableActivityController.Result loadTestItems = SearchableActivityController.loadItems(claim.Id);
         String testGetActivityDigest = SearchableActivityController.getActivityDigest(claim.Id);
         SearchAbleActivityController.Result deleteTestItem = SearchableActivityController.deleteRecord(presentTask.Id);
-        
+        SearchAbleActivityController.Result loadTestEmailDetails = SearchableActivityController.loadEmailDetails(email.Id, 'Reply');
+        SearchAbleActivityController.Result loadTestEmailDetails2 = SearchableActivityController.loadEmailDetails(email.Id, 'Reply All');
+        SearchAbleActivityController.Result loadTestEmailDetails3 = SearchableActivityController.loadEmailDetails(email.Id, 'Forward');
+
     }
 }

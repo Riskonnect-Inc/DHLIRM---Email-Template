@@ -75,11 +75,7 @@
                             has-checkbox={item.hasCheckbox}
                             has-error={item.hasError}
                             closed={item.closed}
-                            button-label={item.buttonLabel}
-                            button-icon-name={item.buttonIconName}
-                            button-variant={item.buttonVariant}
-                            button-icon-position={item.buttonIconPosition}
-                            button-disabled={item.buttonDisabled}
+                            buttons={item.buttons}
                             is-loading={item.isLoading}
                             is-active={item.isActive}
                             loading-state-alternative-text={item.loadingStateAlternativeText}
@@ -127,11 +123,7 @@
                                         has-checkbox={item.hasCheckbox}
                                         has-error={item.hasError}
                                         closed={item.closed}
-                                        button-label={item.buttonLabel}
-                                        button-icon-name={item.buttonIconName}
-                                        button-variant={item.buttonVariant}
-                                        button-icon-position={item.buttonIconPosition}
-                                        button-disabled={item.buttonDisabled}
+                                        buttons={item.buttons}
                                         is-loading={item.isLoading}
                                         is-active={item.isActive}
                                         loading-state-alternative-text={item.loadingStateAlternativeText}
@@ -140,7 +132,8 @@
                                         data-element-id="avonni-primitive-activity-timeline-item"
                                         data-name={item.name}
                                         item-type={item.itemType}
-                                        received={item.received}
+                                        received={item.received} 
+                                        onbuttonclick={emailSelected}
                                     >
                                     </c-avonni-primitive-activity-timeline-item>
                                 </li>

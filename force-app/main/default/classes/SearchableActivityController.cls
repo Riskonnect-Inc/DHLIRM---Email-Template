@@ -153,7 +153,7 @@ public with sharing class SearchableActivityController {
         return res;
     }
 
-    /*@AuraEnabled
+    @AuraEnabled
     public static Result loadEmailDetails(Id emailId, String emailType){
         Result res = new Result();
         List<Map<String,Object>> emails = new List<Map<String,Object>>();
@@ -162,7 +162,6 @@ public with sharing class SearchableActivityController {
             res.isSuccess = true;
             String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, BccAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, HtmlBody, HasAttachment FROM EmailMessage WHERE Id =: emailId';
             List<EmailMessage> emailList = Database.query(emailQuery);
-            System.debug(emailList[0].HtmlBody);
             if(emailList.size() > 0) {
                 String prevMessage = emailList[0].HtmlBody;
                 String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+UserInfo.getName()+' </b><br> &lt;'+UserInfo.getUserEmail()+'&gt;<br>Date: '+emailList[0].MessageDate + '<br>'+prevMessage;
@@ -204,7 +203,7 @@ public with sharing class SearchableActivityController {
             throw new AuraHandledException(e.getMessage());
         }
         return res;
-    }*/
+    }
 
     /*
     @AuraEnabled
@@ -225,7 +224,7 @@ public with sharing class SearchableActivityController {
         } catch (Exception e) {
             res.isSuccess = false;
             throw new AuraHandledException(e.getMessage());
-        }
+    }
         return res;
     }*/
 
