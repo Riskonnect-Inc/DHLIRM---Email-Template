@@ -1045,10 +1045,10 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
 
     emailSelected(event) {
         const emailId = event.detail.name;
-        const emailType = event.detail.buttonLabel
+        const emailType = event.detail.buttonName
         this.dispatchEvent(
             new CustomEvent('emailactiontype', {
-                detail: {name: emailId, buttonLabel: emailType}
+                detail: {name: emailId, buttonName: emailType}
             })
         );
         //this.loadEmailDetails(emailId, emailType);

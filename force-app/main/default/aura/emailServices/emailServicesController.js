@@ -1,42 +1,43 @@
 ({
 	handleReplyForwardEvent : function(component, event, helper) {
-		console.log('Inside controller');
-		component.set("v.recId",event.getParam('Id'));
-		component.set("v.toAddress",event.getParam('toAddress'));
-		component.set("v.ccAddress",event.getParam('ccAddress'));
-		component.set("v.bccAddress",event.getParam('bccAddress'));
-		component.set("v.subject",event.getParam('subject'));
-		component.set("v.htmlBody",event.getParam('htmlBody'));
-		component.set("v.attachmentIds",event.getParam('attachmentIds'));
+
+		let recId = event.getParam('Id');
+		let toAddress = event.getParam('toAddress');
+		let ccAddress = event.getParam('ccAddress');
+		let bccAddress = event.getParam('bccAddress');
+		let subject = event.getParam('subject');
+		let htmlBody = event.getParam('htmlBody');
+		let attachmentIds = [];
+		attachmentIds.push(event.getParam('attachmentIds'));
 
 		var actionAPI = component.find("quickActionAPI");
 		//var targetFields = {Subject:{value:"Sets by lightning:quickActionAPI component 3"}, HtmlBody:{value:'HTML BODY'}};
 		var targetFields = {
 			RelatedToId:{
-				value: component.get("v.recordId")
+				value: recId
 			},
 			ToAddress:{
-				value: component.get("v.toAddress")
+				value: toAddress
 			},
 			CcAddress:{
-				value: component.get("v.ccAddress")
+				value: ccAddress
 			},
 			BccAddress:{
-				value: component.get("v.bccAddress")
+				value: bccAddress
 			},
 			Subject:{
-				value: component.get("v.subject")
+				value: subject
 			}, 
 			HtmlBody:{
-				value: component.get("v.htmlBody")
-			}//,
-			//ContentDocumentIds:{
-				//value: ['']/*component.get("v.attachmentIds")*/
-			//}
+				value: htmlBody
+			},
+			ContentDocumentIds:{
+				value: attachmentIds
+			}
 		};
 		var args = {actionName: "Claim__c.Send_Email",  entityName: "Claim__c", targetFields: targetFields};
 
-		actionAPI.selectAction(args).then(function(result){
+		/*actionAPI.selectAction(args).then(function(result){
 			//All available action fields shown for Log a Call
 			//console.log('##getAvailableActions#result==', JSON.stringify(result));
 		}).catch(function(e){
@@ -45,7 +46,7 @@
 			if(e.errors){
 				//If the specified action isn't found on the page, show an error message in the my component 
 			}
-		});
+		});*/
 		
 		/*actionAPI.getAvailableActions().then(function(result){
 			//All available action fields shown for Log a Call
@@ -67,7 +68,7 @@
 			if(e.errors){
 				//If the specified action isn't found on the page, show an error message in the my component 
 			}
-		});
+		});*/
 		
 		actionAPI.setActionFieldValues(args).then(function(response){
 			//console.log('##WORKING#setActionFieldValues##', response, args);
@@ -75,6 +76,6 @@
 			console.log('##WORKING#setActionFieldValues##');
 		}).catch(function(e){
 			console.error(e.errors);
-		});*/
+		});
 	}
 })

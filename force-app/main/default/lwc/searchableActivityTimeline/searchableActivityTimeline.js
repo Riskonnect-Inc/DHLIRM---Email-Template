@@ -11,7 +11,7 @@ import getActivityDigest from "@salesforce/apex/SearchableActivityController.get
 
 class InterruptiblePoller {
     context;
-
+    
     constructor(context, interval=5000, maxFires) {
         this.context = context;
         // Fire every 5 seconds (default value) after the last worker call completed:
@@ -374,7 +374,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
 
     emailAction(event) {
         this.emailId = event.detail.name;
-        this.emailType = event.detail.buttonLabel
+        this.emailType = event.detail.buttonName
         this.replyOrForwardEmail(this.emailId, this.emailType);
     }
 

@@ -627,7 +627,7 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
 
         this.dispatchEvent(
             new CustomEvent('buttonclick', {
-                detail: {name: this.name, buttonLabel: event.currentTarget.label}
+                detail: {name: this.name, buttonName: event.currentTarget.label}
             })
         );  
     }
