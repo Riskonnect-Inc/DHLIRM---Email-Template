@@ -1,3 +1,5 @@
-<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global">
-	<c:searchableActivityTimeline recordId="{!v.recordId}"></c:searchableActivityTimeline>
+<aura:component implements="flexipage:availableForRecordHome,force:lightningQuickAction,force:hasRecordId" access="global">
+	<lightning:quickActionAPI aura:id="quickActionAPI"/>
+
+	<c:searchableActivityTimeline recordId="{!v.recordId}" onreplyforwardevent="{!c.handleReplyForwardEvent}"></c:searchableActivityTimeline>
 </aura:component>

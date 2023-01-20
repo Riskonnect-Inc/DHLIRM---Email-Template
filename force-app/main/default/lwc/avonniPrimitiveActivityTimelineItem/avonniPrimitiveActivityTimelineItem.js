@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import {
     normalizeBoolean,
     normalizeArray,
@@ -80,7 +80,14 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      * @public
      * @type {string}
      */
-    @api buttonLabel;
+    @track buttonLabel;
+    /**
+     * The name for the button element. This value is optional and can be used to identify the button in a callback.
+     *
+     * @public
+     * @type {string}
+     */
+    @api buttonName;
     /**
      * The value to be formatted, which can be a Date object, timestamp, or an ISO8601 formatted string. Use lightning-formatted-date-time.
      *
@@ -176,6 +183,8 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
     _color;
     _pillLabel;
     _isEmail;
+    _buttons = [];
+    label;
 
     renderedCallback() {
         this.setLineColor();
@@ -208,11 +217,11 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      * @default false
      */
     @api
-    get buttonDisabled() {
+    get disabled() {
         return this._buttonDisabled;
     }
 
-    set buttonDisabled(value) {
+    set disabled(value) {
         this._buttonDisabled = normalizeBoolean(value);
     }
 
@@ -224,11 +233,11 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      * @default left
      */
     @api
-    get buttonIconPosition() {
+    get iconPosition() {
         return this._buttonIconPosition;
     }
 
-    set buttonIconPosition(value) {
+    set iconPosition(value) {
         this._buttonIconPosition = normalizeString(value, {
             fallbackValue: BUTTON_ICON_POSITIONS.default,
             validValues: BUTTON_ICON_POSITIONS.valid
@@ -318,6 +327,21 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
     }
 
     /**
+     * Array of buttons.
+     *
+     * @public
+     * @type {object[]}
+     */
+    @api
+    get buttons() {
+        return this._buttons;
+    }
+
+    set buttons(value) {
+        this._buttons = normalizeArray(value);
+    }
+
+    /**
      * If true, a checkbox is present before the label.
      *
      * @public
@@ -397,6 +421,15 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      */
     get hasFields() {
         return this._fields.length > 0;
+    }
+
+    /**
+     * Check if buttons are populated.
+     *
+     * @type {boolean}
+     */
+    get hasButtons() {
+        return this._buttons.length > 0;
     }
 
     /**
@@ -567,19 +600,36 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
     /**
      * Buttonclick event handler.
      */
-    handleButtonClick() {
+    /*handleButtonClick() {
         /**
          * The event fired when the button in the details section is clicked.
          * @event
          * @public
          * @name buttonclick
          */
+        /*console.log('Button');
         this.dispatchEvent(
             new CustomEvent('buttonclick', {
                 detail: { name: this.name },
                 bubbles: true
             })
         );
+    }*/
+
+    emailActionButtonClick(event) {
+        /**
+         * The event fired when the button in the details section is clicked.
+         * @event
+         * @public
+         * @param {string} targetName Unique name of the item the action belongs to.
+         * @name buttonclick
+         */
+
+        this.dispatchEvent(
+            new CustomEvent('buttonclick', {
+                detail: {name: this.name, buttonName: event.currentTarget.label}
+            })
+        );  
     }
 
     /**

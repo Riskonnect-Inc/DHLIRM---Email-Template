@@ -45,6 +45,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import deleteRecord from "@salesforce/apex/SearchableActivityController.deleteRecord";
+import loadEmailDetails from "@salesforce/apex/SearchableActivityController.loadEmailDetails";
 
 const BUTTON_ICON_POSITIONS = { valid: ['left', 'right'], default: 'left' };
 
@@ -102,6 +103,22 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
      * @type {string}
      */
     @api iconName;
+
+    /**
+     * Position of the Icon.
+     *
+     * @public
+     * @type {string}
+     */
+    @api iconPosition;
+
+    /**
+     * Label of the Button.
+     *
+     * @public
+     * @type {string}
+     */
+    @api buttonLabel;
 
     /**
      * Title of the timeline, displayed in the header.
@@ -1026,12 +1043,32 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
         }
     }
 
-    /*handleNavigation() {
-        this[NavigationMixin.Navigate]({
-        // type: 'standard__component',
-         attributes: {
-             componentName: 'c__SearchableActivityTimeline'
+    emailSelected(event) {
+        const emailId = event.detail.name;
+        const emailType = event.detail.buttonName
+        this.dispatchEvent(
+            new CustomEvent('emailactiontype', {
+                detail: {name: emailId, buttonName: emailType}
+            })
+        );
+        //this.loadEmailDetails(emailId, emailType);
     }
-     });
+
+    /*async loadEmailDetails(emailId, emailType) {
+        var pageRef = {
+            type: "standard__quickAction",
+            attributes: {
+                apiName: "Global.SendEmail"
+            },
+            state: {
+                recordId: this.recordId,
+                defaultFieldValues:
+                encodeDefaultFieldValues({
+                    HtmlBody : "", 
+                    Subject : ""
+                })
+            },
+        };
+        this[NavigationMixin.Navigate](pageRef);
     }*/
 }

@@ -11,7 +11,7 @@ import getActivityDigest from "@salesforce/apex/SearchableActivityController.get
 
 class InterruptiblePoller {
     context;
-
+    
     constructor(context, interval=5000, maxFires) {
         this.context = context;
         // Fire every 5 seconds (default value) after the last worker call completed:
@@ -70,12 +70,9 @@ class InterruptiblePoller {
     // (e.g. query for new emails or tasks). The "Got lambo" is a joke referencing the "when lambo?" meme 
     // used to make fun of crypto bros ;)
     async doWork() {
-        console.log('Polling ' + (this.fires + 1));
         let newActivityDigest = await getActivityDigest({ claimId: this.context.recordId });
-        console.log('New item digest: ' + newActivityDigest);
         if (newActivityDigest != this.context.activityDigest) {
             this.context.activityDigest = newActivityDigest;
-            console.log('Refreshing apex...');
             refreshApex(this.context.activitiesList);
         }
     }
@@ -94,6 +91,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     tasks = [];
     showSpinner = false;
     activitiesList;
+    emailId;
+    emailType;
 
     //Radio button values
     dateRangeValue = '';
@@ -113,7 +112,6 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         this.activitiesList = loadActivities;
         const {error, data} = loadActivities;
         if (data) {
-            console.log('Wire Item Digest:' + data.activityDigest);
             this.activityDigest = data.activityDigest;
             this.emails = data.emailList;
             this.tasks = data.taskList;
@@ -156,6 +154,23 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                             label: 'Text Body',
                             value: this.emails[i].textBody,
                             type: 'text'
+                        }
+                    ],
+                    buttons: [
+                        {
+                            buttonLabel: "Reply",
+                            buttonName: "reply", 
+                            iconName: "utility:reply"
+                        },
+                        {
+                            buttonLabel: 'Reply All', 
+                            buttonName: 'reply-all', 
+                            iconName: 'utility:reply_all'
+                        },
+                        {
+                            buttonLabel: "Forward", 
+                            buttonName: "reply-all", 
+                            iconName: "utility:forward"
                         }
                     ]
                 };
@@ -211,7 +226,6 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     }
 
     connectedCallback() {
-        console.log('Connected!');
         this.poller = new InterruptiblePoller(this, 5000, 1000);
         this.poller.start();
     }
@@ -356,5 +370,106 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             { label: 'Events', value: 'events' },
             { label: 'Tasks', value: 'tasks' },
         ]
+    }
+
+    emailAction(event) {
+        this.emailId = event.detail.name;
+        this.emailType = event.detail.buttonName
+        this.replyOrForwardEmail(this.emailId, this.emailType);
+    }
+
+    async replyOrForwardEmail(id, type) {
+        let attachmentIds = [];
+        try {
+            const response = await loadEmailDetails({
+                emailId : id,
+                emailType : type
+            });
+            if(response.isSuccess) {
+                let recId = response.emailList[0].Id;
+                let toAddress = response.emailList[0].toAddress;
+                let ccAddress = response.emailList[0].ccAddress;
+                let bccAddress = response.emailList[0].bccAddress;
+                let htmlBody = response.emailList[0].body;
+                let subject = response.emailList[0].subject;
+                attachmentIds.push(response.emailList[0].attachments);
+                if(type == 'Forward') {
+                    const replyOrForwardEvent = new CustomEvent('replyforwardevent', {
+                        detail: { 
+                            Id: recId,
+                            toAddress: toAddress, 
+                            ccAddress: ccAddress,
+                            bccAddress: bccAddress,
+                            htmlBody: htmlBody,
+                            subject: subject,
+                            attachmentIds: attachmentIds /*isSuccess: response.isSuccess, name: response.emailList[0].toAddress*/ 
+                        },
+                    });
+                    this.dispatchEvent(replyOrForwardEvent);
+                } else {
+                    var pageRef = {
+                        type: "standard__quickAction",
+                        attributes: {
+                            apiName: "Global.SendEmail"
+                        },
+                        state: {
+                            recordId: this.recordId,
+                            defaultFieldValues: 
+                            encodeDefaultFieldValues({
+                                ToAddress : response.emailList[0].toAddress,
+                                CcAddress : response.emailList[0].ccAddress,
+                                BccAddress : response.emailList[0].bccAddress,
+                                HtmlBody : response.emailList[0].body, 
+                                Subject : response.emailList[0].subject,
+                                //ContentDocumentIds : '0697Z000002doqDQAQ'
+                            }),
+                        },
+                    };
+                    this[NavigationMixin.Navigate](pageRef);
+//                    let pol = new InterruptiblePoller(5000, 10);
+//                    pol.start();
+                    // Schedule an "interrupt" fire in 6 seconds, regardless of where the poller currently stands (it will 
+                    // have fired once so far, and was ~ 1 second into the next 5-second wait). Note the next worker call 
+                    // after this interrupt call will resume exactly 5 seconds later - i.e. this very simple poller dynamically 
+                    // regulates itself!
+//                    setTimeout(() => { pol.fireNow() }, 6000);
+                }
+                
+                //attachmentIds.push(response.emailList[0].attachments)
+                /*console.log(JSON.parse(JSON.stringify(attachmentIds)));
+                var pageRef = {
+                    type: "standard__quickAction",
+                    attributes: {
+                        apiName: "Global.SendEmail"
+                    },
+                    state: {
+                        recordId: this.recordId,
+                        
+                        defaultFieldValues: 
+                        encodeDefaultFieldValues({
+                            ToAddress : response.emailList[0].toAddress,
+                            CcAddress : response.emailList[0].ccAddress,
+                            BccAddress : response.emailList[0].bccAddress,
+                            HtmlBody : response.emailList[0].body, 
+                            Subject : response.emailList[0].subject,
+                            //ContentDocumentIds : '0697Z000002doqDQAQ'
+                        }),
+                        
+                    },
+                };
+                this[NavigationMixin.Navigate](pageRef);
+                let pol = new InterruptiblePoller(5000, 10);
+                pol.start();
+                // Schedule an "interrupt" fire in 6 seconds, regardless of where the poller currently stands (it will 
+                // have fired once so far, and was ~ 1 second into the next 5-second wait). Note the next worker call 
+                // after this interrupt call will resume exactly 5 seconds later - i.e. this very simple poller dynamically 
+                // regulates itself!
+                setTimeout(() => { pol.fireNow() }, 6000);*/
+            }
+        } catch (e) {
+            console.log(e);
+        } finally {
+            this.isLoading = false;
+        }     
     }
 }
