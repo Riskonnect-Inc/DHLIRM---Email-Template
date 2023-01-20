@@ -205,47 +205,76 @@ public with sharing class SearchableActivityController {
         return res;
     }
 
-    /*
+    
     @AuraEnabled
-    public static Result findItems(Id claimId, String searchText){
+    public static Result findItems(String searchText, Id recordId){
         Result res = new Result();
         res.isSuccess = true;
+	    List<List<SObject>> searchList = [FIND :searchText IN ALL FIELDS RETURNING EmailMessage(Id, ParentId, ActivityId, CreatedById, CreatedDate, LastModifiedDate, LastModifiedById, SystemModstamp, TextBody, HtmlBody, Headers, Subject, FromName, FromAddress, ValidatedFromAddress, ToAddress, CcAddress, BccAddress, Incoming, HasAttachment, Status, MessageDate, IsDeleted, ReplyToEmailMessageId, IsExternallyVisible, MessageIdentifier, ThreadIdentifier, IsClientManaged, RelatedToId, IsTracked, IsOpened, FirstOpenedDate, LastOpenedDate, IsBounced, EmailTemplateId WHERE RelatedToId =: recordId), Task(Id, WhoId, WhatId, Subject, ActivityDate, Status, Priority, IsHighPriority, OwnerId, Description, Type, IsDeleted, AccountId, IsClosed, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, IsArchived, CallDurationInSeconds, CallType, CallDisposition, CallObject, ReminderDateTime, IsReminderSet, RecurrenceActivityId, IsRecurrence, RecurrenceStartDateOnly, RecurrenceEndDateOnly, RecurrenceTimeZoneSidKey, RecurrenceType, RecurrenceInterval, RecurrenceDayOfWeekMask, RecurrenceDayOfMonth, RecurrenceInstance, RecurrenceMonthOfYear, RecurrenceRegeneratedType, TaskSubtype, CompletedDateTime Where WhatId =: recordId)]; 
+        EmailMessage [] emailList = ((List<EmailMessage>)searchList[0]);
+        Task [] taskList = ((List<Task>)searchList[1]);
         List<Map<String,Object>> emails = new List<Map<String,Object>>();
         List<Map<String,Object>> tasks = new List<Map<String,Object>>();
-        try {
-            //List<EmailMessage> emailList = [FIND '*{searchText}*' IN ALL FIELDS RETURNING EmailMessage(Id, Subject, FromName, FromAddress, ToAddress, CreatedDate, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status WHERE RelatedToId =: claimId)];
-            String searchKeyword = '%' + searchText + '%';
-            //String query = 'SELECT Id, FromName, TextBody, FromAddress, ToAddress FROM EmailMessage WHERE RelatedToId =: claimId AND TextBody LIKE: searchText';
-            emails = [SELECT Id, FromName, TextBody, FromAddress, ToAddress, CreatedDate, MessageDate FROM EmailMessage WHERE RelatedToId =: claimId AND ToAddress LIKE: searchKeyword];
-            res.emailList = emails;
-            tasks = [SELECT Id, Subject, Description, Status, ActivityDate FROM Task WHERE WhatId =: claimId];
-            res.taskList = tasks;
-            System.debug(res);
-        } catch (Exception e) {
-            res.isSuccess = false;
-            throw new AuraHandledException(e.getMessage());
+        if(emailList.size() > 0) {
+                for(EmailMessage e : emailList) {
+                    Boolean sentBySelf = false;
+                    List<String> toAddressList = new List<String>();
+                    List<String> ccAddressList = new List<String>();
+                    if(e.ToAddress != null) {
+                        toAddressList = e.ToAddress.split(';');
+                    }
+                    if(e.CcAddress != null) {
+                        ccAddressList = e.CcAddress.split(';');
+                    }
+                    String descriptionText = '';
+                    Integer toAddressCount = toAddressList.size() + ccAddressList.size() - 1;
+                    String count = String.valueOf(toAddressCount);
+                    if(e.FromAddress == UserInfo.getUserEmail() && toAddressCount == 1) {
+                        descriptionText = 'You sent an email to '+toAddressList[0]+' and '+count+' other';
+                    } else if(e.FromAddress == UserInfo.getUserEmail() && toAddressCount > 1) {
+                        descriptionText = 'You sent an email to '+toAddressList[0]+' and '+count+' others';
+                    } else if(e.FromAddress == UserInfo.getUserEmail() && toAddressCount < 1) {
+                        descriptionText = 'You sent an email to '+toAddressList[0];
+                    } else if(e.FromAddress != UserInfo.getUserEmail() && toAddressCount == 1) {
+                        descriptionText = e.FromAddress+' sent an email to '+toAddressList[0]+' and '+count+' other';
+                    } else if(e.FromAddress != UserInfo.getUserEmail() && toAddressCount > 1) {
+                        descriptionText = e.FromAddress+' sent an email to '+toAddressList[0]+' and '+count+' others';
+                    } 
+                                       
+                    Map<String,Object> emailElement = new Map<String,Object>();
+                    emailElement.put('name', e.Id);
+                    emailElement.put('title', e.Subject);
+                    emailElement.put('received', e.Incoming);           
+                    emailElement.put('description', descriptionText);
+                    emailElement.put('datetimeValue', e.MessageDate);
+                    emailElement.put('fromAddress', e.FromAddress);
+                    emailElement.put('toAddress', e.ToAddress);
+                    emailElement.put('textBody', e.TextBody);
+                    emails.add(emailElement);
+                }
+            }
+            if(taskList.size() > 0) {
+                for(Task t : taskList) {
+                    String taskDescription = '';
+                    if(t.ActivityDate < System.today()) {
+                        taskDescription = 'You had a task';
+                    } else if(t.ActivityDate >= System.today()) {
+                        taskDescription = 'You have an upcoming task';
+                    }
+                    Map<String,Object> taskElement = new Map<String,Object>();
+                    taskElement.put('name', t.Id);
+                    taskElement.put('title', t.Subject);
+                    //taskElement.put('assignedTo', t.Owner.Name);
+                    taskElement.put('assignedId', t.OwnerId);
+                    taskElement.put('description', taskDescription);
+                    taskElement.put('datetimeValue', t.ActivityDate);
+                    taskElement.put('status', t.Status);
+                    taskElement.put('priority', t.Priority);
+                    tasks.add(taskElement);
+                }
+            }
+        res.emailList = emails;
+        res.taskList = tasks;
+        return res;
     }
-        return res;
-    }*/
-
-    /*@AuraEnabled
-    public static Result loadItems(Id claimId) {
-        Result res = new Result();
-        res.isSuccess = true;
-        List<EmailMessage> emails = new List<EmailMessage>();
-        List<Task> tasks = new List<Task>();
-        String taskText = 'Task';
-        try {
-            String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CreatedDate, MessageDate, TextBody FROM EmailMessage WHERE RelatedToId =: claimId';
-            emails = Database.query(emailQuery);
-            String taskQuery = 'SELECT Id, Subject, Description, ActivityDate, Status, Type, TaskSubType, Entry_Date__c, WhoId FROM Task WHERE WhatId =: claimId AND TaskSubType =\'' +taskText+ '\'';
-            tasks = Database.query(taskQuery);
-            res.emailList = emails;
-            res.taskList = tasks;
-        } catch (Exception e) {
-            res.isSuccess = false;
-            throw new AuraHandledException(e.getMessage());
-        }
-        return res;
-    }*/
 }

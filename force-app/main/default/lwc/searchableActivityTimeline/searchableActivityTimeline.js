@@ -4,7 +4,7 @@ import { encodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
 import { refreshApex } from '@salesforce/apex';
 import { getRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 
-//import findItems from "@salesforce/apex/SearchableActivityController.findItems";
+import findItems from "@salesforce/apex/SearchableActivityController.findItems";
 import loadItems from "@salesforce/apex/SearchableActivityController.loadItems";
 import loadEmailDetails from "@salesforce/apex/SearchableActivityController.loadEmailDetails";
 import getActivityDigest from "@salesforce/apex/SearchableActivityController.getActivityDigest";
@@ -80,6 +80,9 @@ class InterruptiblePoller {
 
 let i = 0;
 export default class SearchableActivityTimeline extends NavigationMixin(LightningElement) {
+
+    @track showSearchResult = false;
+    @track showLoadResult = true;
     @api recordId;
     actionList = [];
     searchValue;
@@ -89,11 +92,16 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     items = [];
     emails = [];
     tasks = [];
+    items1 = [];
+    emails1 = [];
+    tasks1 = [];
+    showSpinner1 = false;
     showSpinner = false;
     activitiesList;
     emailId;
     emailType;
 
+    @track searchKeyword;
     //Radio button values
     dateRangeValue = '';
     activityGroupValue  = '';
@@ -229,6 +237,139 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         this.poller = new InterruptiblePoller(this, 5000, 1000);
         this.poller.start();
     }
+
+    getEmailAndTask(event){
+		this.searchKeyword = event.target.value;
+        if(this.searchKeyword.length == 0){
+            this.showSearchResult = false;
+            this.showLoadResult = true;
+        }else{
+            findItems({ searchText: this.searchKeyword })
+		.then(result => {
+            this.showSpinner1 = true;
+        //this.activitiesList = loadActivities;
+        if (result.isSuccess) {
+            this.showLoadResult = false;
+            this.showSearchResult = true;
+            this.emails1 = result.emailList;
+            this.tasks1 = result.taskList;
+            let emailListObj1 = [];
+            this.actionList = [
+                { label: "Link and Categorize Attachments", name: "link-attachments" }, 
+                { label: "Delete", name: "delete-item" }
+            ];
+            for(i = 0; i< this.emails1.length; i++) { 
+                let emailObj = 
+                {
+                    name: this.emails1[i].name,
+                    title: this.emails1[i].title,
+                    description: this.emails1[i].description,
+                    received: this.emails1[i].received,
+                    itemType: 'email',
+                    datetimeValue: this.emails1[i].datetimeValue,
+                    href: '/lightning/r/'+this.emails1[i].name+'/view',
+                    iconName: 'standard:email',
+                    closed: true,
+                    //icons: ['utility:refresh'],
+                    fields: [
+                        {
+                            label: 'From Address',
+                            value: this.emails1[i].fromAddress,
+                            type: 'url',
+                            typeAttributes: {
+                                label: this.emails1[i].fromAddress
+                            },           
+                        },
+                        {
+                            label: 'To Address',
+                            value: this.emails1[i].toAddress,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.emails1[i].toAddress
+                            }
+                        },
+                        {
+                            label: 'Text Body',
+                            value: this.emails1[i].textBody,
+                            type: 'text'
+                        }
+                    ],
+                    buttons: [
+                        {
+                            buttonLabel: "Reply",
+                            buttonName: "reply", 
+                            iconName: "utility:reply"
+                        },
+                        {
+                            buttonLabel: 'Reply All', 
+                            buttonName: 'reply-all', 
+                            iconName: 'utility:reply_all'
+                        },
+                        {
+                            buttonLabel: "Forward", 
+                            buttonName: "reply-all", 
+                            iconName: "utility:forward"
+                        }
+                    ]
+                };
+                emailListObj1.push(emailObj);
+            }
+            for(i = 0; i < this.tasks1.length; i++) {
+                let taskObj = {
+                    name: this.tasks1[i].name,
+                    title: this.tasks1[i].title,
+                    description: this.tasks1[i].description,
+                    datetimeValue: this.tasks1[i].datetimeValue,
+                    itemType: 'task',
+                    href: '/lightning/r/'+this.tasks1[i].name+'/view',
+                    iconName: 'standard:task',
+                    closed: true,
+                    fields: [
+                        {
+                            label: 'Status',
+                            value: this.tasks1[i].status,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.tasks1[i].status
+                            }
+                        },
+                        {
+                            label: 'Priority',
+                            value: this.tasks1[i].priority,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.tasks1[i].priority
+                            }
+                        },
+                        {
+                            label: 'Assigned To',
+                            value: '/lightning/r/'+this.tasks1[i].assignedId+'/view',
+                            type: 'url',
+                            typeAttributes: {
+                                label: this.tasks1[i].assignedTo
+                            }
+                        },
+                        {
+                            label: 'Description',
+                            value: this.tasks1[i].description,
+                            type: 'text'
+                        }
+                    ]
+                };
+                emailListObj1.push(taskObj);
+            }
+            this.items1 = emailListObj1;
+            this.showSpinner1 = false;
+        }
+		})
+		.catch(error => {
+            this.showSearchResult = false;
+            debugger;
+			this.error = error;
+		})
+        }
+		
+	} 
 
     timelineChange() {
         refreshApex(this.activitiesList);
