@@ -1,26 +1,29 @@
 <template> 
-    <div class="slds-p-bottom_medium slds-p-top_large">
-        <lightning-button
-            class="slds-p-around_x-small"
-            label="New Email"
-            icon-name="utility:email"
-            onclick={newEmail}>
-        </lightning-button>
-        <lightning-button
-            class="slds-p-around_x-small"
-            label="New Task"
-            icon-name="utility:task"
-            onclick={newTask}>
-        </lightning-button>
-
-        <!--lightning-input
-            class="slds-p-around_x-small slds-size_1-of-3"
-            type="search" 
-            value={searchValue}
-            placeholder="Search">
-        </lightning-input-->
-        
-        <div class="slds-float_right">
+    <div style="width:100%;height: 50px;">
+        <div style="width: 14%;margin-top: 10px;float: left;margin-left: 10px">
+            <lightning-button
+                label="New Email"
+                icon-name="utility:email"
+                onclick={newEmail}>
+            </lightning-button>
+        </div>
+        <div style="width: 14%;margin-top: 10px;float: left;margin-left: 10px">
+            <lightning-button
+                label="New Task"
+                icon-name="utility:task"
+                onclick={newTask}>
+            </lightning-button>
+        </div>
+        <!--<div >-->
+            <lightning-input
+                style="width: 28%;margin-top: 10px;float: left;margin-left: 32%"
+                variant="label-hidden"
+                type="search" 
+                value={searchValue}
+                placeholder="Search"
+                onchange={getEmailAndTask}>
+            </lightning-input>
+        <div style="width: 8%;margin-top: 10px;float: left;margin-left: 10px">
             <lightning-button-menu alternative-text="Show menu" icon-name="utility:settings">
                 <div class="slds-panel slds-size_medium slds-p-around_x-small">
                     <lightning-button-icon 
@@ -139,54 +142,53 @@
                 </footer>      
             </lightning-button-menu>
         </div>
-        <lightning-input
-            type="search" 
-            value={searchValue}
-            placeholder="Search">
-        </lightning-input>
     </div>
-
-    <!--lightning-tabset variant="scoped">
-        <lightning-tab label="Activity Timeline"-->
-            
-    <!-- Adding avonni component-->
-    <c-avonni-activity-timeline
+    
+    <template if:true={showSearchResult}>
+        <c-avonni-activity-timeline
         actions={actionList}
         group-by="month"
         collapsible
         item-date-format="T | dd-LLL yyyy"
         item-icon-size="small"
-        items={items}
+        items={items1}
         ontimelinechange={timelineChange}
         max-visible-items="3"
         button-show-more-icon-name="utility:down"
         button-show-less-icon-name="utility:up"
         onemailactiontype={emailAction}>
             <lightning-spinner
-                if:true={showSpinner}
+                if:true={showSpinner1}
                 alternative-text="loading"
                 size="large"
                 data-element-id="lightning-spinner">
             </lightning-spinner>
     </c-avonni-activity-timeline>
-        <!--/lightning-tab>
-        <lightning-tab label="Sent"-->
-            <!-- Adding avonni component-->
-            <!--c-avonni-activity-timeline
-                actions={actionList}
-                group-by="month"
-                collapsible=""
-                item-date-format="T | dd-LLL yyyy"
-                item-icon-size="small"></c-avonni-activity-timeline>
-        </lightning-tab>
-        <lightning-tab label="Received"-->
-            <!-- Adding avonni component-->
-            <!--c-avonni-activity-timeline
-                actions={actionList}
-                group-by="month"
-                collapsible=""
-                item-date-format="T | dd-LLL yyyy"
-                item-icon-size="small"></c-avonni-activity-timeline>
-        </lightning-tab>        
-    </lightning-tabset-->
+    </template>
+    
+    <!--lightning-tabset variant="scoped">
+        <lightning-tab label="Activity Timeline"-->
+            
+    <!-- Adding avonni component-->
+    <template if:true={showLoadResult}>
+        <c-avonni-activity-timeline
+            actions={actionList}
+            group-by="month"
+            collapsible
+            item-date-format="T | dd-LLL yyyy"
+            item-icon-size="small"
+            items={items}
+            ontimelinechange={timelineChange}
+            max-visible-items="3"
+            button-show-more-icon-name="utility:down"
+            button-show-less-icon-name="utility:up"
+            onemailactiontype={emailAction}>
+                <lightning-spinner
+                    if:true={showSpinner}
+                    alternative-text="loading"
+                    size="large"
+                    data-element-id="lightning-spinner">
+                </lightning-spinner>
+        </c-avonni-activity-timeline>
+    </template>
 </template>
