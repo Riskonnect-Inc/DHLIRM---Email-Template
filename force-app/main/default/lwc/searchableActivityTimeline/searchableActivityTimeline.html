@@ -41,7 +41,8 @@
                                 label="Date Range"
                                 options={dateRangeOptions1}
                                 value={dateRangeValue}
-                                type="radio">
+                                type="radio"
+                                onchange={handleDateChange}>
                             </lightning-radio-group>
                         </div>
                         <div class="slds-col slds-size_6-of-12 slds-p-top_large">
@@ -50,7 +51,8 @@
                                 options={dateRangeOptions2}
                                 value={dateRangeValue}
                                 type="radio"
-                                variant="label-hidden">
+                                variant="label-hidden"
+                                onchange={handleDateChange}>
                             </lightning-radio-group>
                         </div>
                         
@@ -59,7 +61,8 @@
                                 label="Emails To Show"
                                 options={emailGroupOptions1}
                                 value={emailGroupValue}
-                                type="radio">
+                                type="radio"
+                                onchange={handleEmailChange}>
                             </lightning-radio-group>
                         </div>
                         <div class="slds-col slds-size_6-of-12 slds-p-top_large">
@@ -68,7 +71,8 @@
                                 options={emailGroupOptions2}
                                 value={emailGroupValue}
                                 type="radio"
-                                variant="label-hidden">
+                                variant="label-hidden"
+                                onchange={handleEmailChange}>
                             </lightning-radio-group>
                         </div>
 
@@ -77,7 +81,8 @@
                                 label="Activities To Show"
                                 options={activityGroupOptions1}
                                 value={activityGroupValue}
-                                type="radio">
+                                type="radio"
+                                onchange={handleActivityChange}>
                             </lightning-radio-group>
                         </div>
                         <div class="slds-col slds-size_6-of-12 slds-p-top_large">
@@ -86,7 +91,8 @@
                                 options={activityGroupOptions2}
                                 value={activityGroupValue}
                                 type="radio"
-                                variant="label-hidden">
+                                variant="label-hidden"
+                                onchange={handleActivityChange}>
                             </lightning-radio-group>
                         </div>
 
@@ -95,7 +101,8 @@
                                 label="Sort Activities"
                                 options={activitySortOptions1}
                                 value={activitySortValue}
-                                type="radio">
+                                type="radio"
+                                onchange={handleSortActivityChange}>
                             </lightning-radio-group>
                         </div>
                         <div class="slds-col slds-size_6-of-12 slds-p-top_large">
@@ -104,7 +111,8 @@
                                 options={activitySortOptions2}
                                 value={activitySortValue}
                                 type="radio"
-                                variant="label-hidden">
+                                variant="label-hidden"
+                                onchange={handleSortActivityChange}>
                             </lightning-radio-group>
                         </div>
 

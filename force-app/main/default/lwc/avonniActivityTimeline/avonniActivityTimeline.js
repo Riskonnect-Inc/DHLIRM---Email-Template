@@ -45,6 +45,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import deleteRecord from "@salesforce/apex/SearchableActivityController.deleteRecord";
+import editReceivedEmails from "@salesforce/apex/SearchableActivityController.editReceivedEmails";
 import loadEmailDetails from "@salesforce/apex/SearchableActivityController.loadEmailDetails";
 
 const BUTTON_ICON_POSITIONS = { valid: ['left', 'right'], default: 'left' };
@@ -1052,6 +1053,32 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
             })
         );
         //this.loadEmailDetails(emailId, emailType);
+    }
+
+    async emailIconSelected(event) {
+        try {
+            const response = await editReceivedEmails({
+                emailId: event.detail.name,
+            });
+            if(response.isSuccess) {
+                const loadTimeline = new CustomEvent("timelinechange", {
+                    detail: !response.isUnread
+                });
+                this.dispatchEvent(loadTimeline);
+            } else {
+                const evt = new ShowToastEvent({
+                    title: 'Toast Error',
+                    message: response.errorMessage,
+                    variant: 'error',
+                    mode: 'dismissable'
+                });
+                this.dispatchEvent(evt);
+            }
+        } catch (e) {
+            this.handleSearchError(e);
+        } finally {
+            this.isLoading = false;
+        }
     }
 
     /*async loadEmailDetails(emailId, emailType) {

@@ -105,21 +105,25 @@
                             onclick={handleTitleClick}
                         >
                             <a if:true={href} href={href}>
-                                <h3 class="slds-truncate">{title}</h3>
+                                <h3 if:true={isUnread} class="slds-truncate"><b>{title}</b></h3>
+                                <h3 if:false={isUnread} class="slds-truncate">{title}</h3>
                             </a>
                             <h3 if:false={href} class="slds-truncate">
                                 {title}
                             </h3>
                         </div>
 
-                        <div if:true={icons} class="slds-no-flex">
+                        <div if:true={isReceived} class="slds-no-flex">
                             <template for:each={icons} for:item="icon">
-                                <lightning-icon
-                                    key={icon}
-                                    icon-name={icon}
-                                    size="xx-small"
+                                <lightning-button-icon
+                                    key={icon.iconName}
+                                    icon-name={icon.iconName}
+                                    alternative-text={icon.alternativeText}
+                                    variant="bare"
+                                    size="medium"
                                     class="slds-p-left_x-small"
-                                ></lightning-icon>
+                                    onclick={iconActionButtonClick}
+                                ></lightning-button-icon>
                             </template>
                         </div>
                     </div>

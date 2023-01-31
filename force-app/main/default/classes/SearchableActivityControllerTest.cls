@@ -33,6 +33,7 @@ public class SearchableActivityControllerTest {
         email.Subject = 'Test Subject';
         email.TextBody = 'Test Body';
         email.RelatedToId = claim.Id;
+        email.isUnread__c = true;
         
         insert email;
         
@@ -42,6 +43,7 @@ public class SearchableActivityControllerTest {
         emailNonUser.Subject = 'Test Subject';
         emailNonUser.TextBody = 'Test Body';
         emailNonUser.RelatedToId = claim.Id;
+       	emailNonUser.isUnread__c = false;
         
         insert emailNonUser;
         
@@ -108,13 +110,25 @@ public class SearchableActivityControllerTest {
         pastTask.WhatId = claim.Id;
         
         insert pastTask;
+        
+        Task futureTask = new Task();
+        futureTask.Subject = 'Litigation';
+        futureTask.ActivityDate = System.today() + 2;
+        futureTask.Priority = 'Normal';
+        futureTask.Status = 'Not Started';
+        futureTask.TaskSubtype = 'Task';
+        futureTask.WhatId = claim.Id;
+        
+        insert futureTask;
+        
         SearchableActivityController.Result loadTestItems = SearchableActivityController.loadItems(claim.Id);
         String testGetActivityDigest = SearchableActivityController.getActivityDigest(claim.Id);
         SearchAbleActivityController.Result deleteTestItem = SearchableActivityController.deleteRecord(presentTask.Id);
         SearchAbleActivityController.Result loadTestEmailDetails = SearchableActivityController.loadEmailDetails(email.Id, 'Reply');
         SearchAbleActivityController.Result loadTestEmailDetails2 = SearchableActivityController.loadEmailDetails(email.Id, 'Reply All');
         SearchAbleActivityController.Result loadTestEmailDetails3 = SearchableActivityController.loadEmailDetails(email.Id, 'Forward');
-        //SearchAbleActivityController.Result loadTestEmailDetails4 = SearchableActivityController.findItems('test', claim.Id);
+        SearchAbleActivityController.Result receivedTestEmails = SearchableActivityController.editReceivedEmails(email.Id);
+        SearchAbleActivityController.Result receivedTestEmails2 = SearchableActivityController.editReceivedEmails(emailNonUser.Id);
     }
     @isTest
     public static void findItems_TEST(){
@@ -148,7 +162,7 @@ public class SearchableActivityControllerTest {
         Id[] fsrIds = new Id[0];
         EmailMessage drEmailMessage;
         Task drTask;
-        drEmailMessage=new EmailMessage(FromAddress='test@riskonnect.com',Status='0');
+        drEmailMessage=new EmailMessage(FromAddress='test@riskonnect.com', ToAddress='test1@riskonnect.com', RelatedToId = claim.Id);
         dsr=Database.insert(drEmailMessage,false);
         fsrIds.add(drEmailMessage.Id);
         drTask=new Task(Subject='test');
@@ -160,10 +174,10 @@ public class SearchableActivityControllerTest {
         Id[] fsrIds1 = new Id[0];
         EmailMessage drEmailMessage1;
         Task drTask1;
-        drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com',Status='0', RelatedToId = claim.Id);
+        drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com', ToAddress='test@riskonnect.com', RelatedToId = claim.Id);
         dsr1=Database.insert(drEmailMessage1,false);
         fsrIds1.add(drEmailMessage1.Id);
-        drTask1=new Task(Subject='test1', WhatId = claim.Id);
+        drTask1=new Task(Subject='Litigation', WhatId = claim.Id);
         Database.insert(drTask1,false);
         fsrIds1.add(drTask1.Id);
         Test.setFixedSearchResults(fsrIds1);

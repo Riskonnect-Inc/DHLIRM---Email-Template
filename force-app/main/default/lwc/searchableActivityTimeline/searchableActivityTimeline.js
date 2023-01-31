@@ -83,6 +83,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
 
     @track showSearchResult = false;
     @track showLoadResult = true;
+    @track dateRange; emailToShow;activitiesToShow; sortActivities; activityType;
     @api recordId;
     actionList = [];
     searchValue;
@@ -136,11 +137,18 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                     description: this.emails[i].description,
                     received: this.emails[i].received,
                     itemType: 'email',
+                    canMark: this.emails[i].canMark,
+                    isUnread: (this.emails[i].canMark && !this.emails[i].open) ? true : false,
                     datetimeValue: this.emails[i].datetimeValue,
                     href: '/lightning/r/'+this.emails[i].name+'/view',
                     iconName: 'standard:email',
                     closed: true,
-                    //icons: ['utility:refresh'],
+                    icons: [
+                        {
+                            iconName: (this.emails[i].canMark && this.emails[i].open) ? 'utility:email_open' : 'utility:email',
+                            alternativeText: (this.emails[i].canMark && this.emails[i].open) ? 'Mark as Unread' : 'Mark as Read'
+                        }
+                    ],
                     fields: [
                         {
                             label: 'From Address',
@@ -191,6 +199,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                     description: this.tasks[i].description,
                     datetimeValue: this.tasks[i].datetimeValue,
                     itemType: 'task',
+                    upcoming: this.tasks[i].upcoming,
+                    overdue: this.tasks[i].overdue,
                     href: '/lightning/r/'+this.tasks[i].name+'/view',
                     iconName: 'standard:task',
                     closed: true,
@@ -244,7 +254,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             this.showSearchResult = false;
             this.showLoadResult = true;
         }else{
-            findItems({ searchText: this.searchKeyword })
+            findItems({ searchText: this.searchKeyword, recordId: this.recordId })
 		.then(result => {
             this.showSpinner1 = true;
         //this.activitiesList = loadActivities;
@@ -270,7 +280,14 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                     href: '/lightning/r/'+this.emails1[i].name+'/view',
                     iconName: 'standard:email',
                     closed: true,
-                    //icons: ['utility:refresh'],
+                    canMark: this.emails1[i].canMark,
+                    isUnread: (this.emails1[i].canMark && !this.emails1[i].open) ? true : false,
+                    icons: [
+                        {
+                            iconName: (this.emails[i].canMark && this.emails[i].open) ? 'utility:email_open' : 'utility:email',
+                            alternativeText: (this.emails[i].canMark && this.emails[i].open) ? 'Mark as Unread' : 'Mark as Read'
+                        }
+                    ],
                     fields: [
                         {
                             label: 'From Address',
@@ -324,6 +341,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                     href: '/lightning/r/'+this.tasks1[i].name+'/view',
                     iconName: 'standard:task',
                     closed: true,
+                    upcoming: this.tasks1[i].upcoming,
+                    overdue: this.tasks1[i].overdue,
                     fields: [
                         {
                             label: 'Status',
@@ -612,5 +631,36 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         } finally {
             this.isLoading = false;
         }     
+    }
+
+    handleSuccess(){
+        alert('Record Filter');
+        alert(this.emails1.length);
+    }
+    handleDateChange(event){
+        var dateRange1 = event.target.value;
+        this.dateRange = dateRange1;
+        alert(this.dateRange);
+    }
+    //@track dateRange; emailToShow;activitiesToShow; sortActivities; activityType;
+    handleEmailChange(event){
+        var emailChange1 = event.target.value;
+        this.emailToShow = emailChange1;
+        alert(this.emailToShow);
+    }
+    handleActivityChange(event){
+        var activityChange1 = event.target.value;
+        this.activitiesToShow = activityChange1;
+        alert(this.activitiesToShow);
+    }
+    handleSortActivityChange(event){
+        var sortActivityChange1 = event.target.value;
+        this.sortActivities = sortActivityChange1;
+        alert(this.sortActivities);
+    }
+    handleActivityTypeChange(event){
+        var activityType1 = event.target.value;
+        this.activityType = activityType1;
+        alert(this.activityType);
     }
 }
