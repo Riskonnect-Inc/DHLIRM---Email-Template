@@ -17,6 +17,9 @@ public with sharing class SearchableActivityController {
 
         @AuraEnabled
         public String errorMessage {get; set;}
+
+        @AuraEnabled
+        public Boolean isUnread {get; set;}
     }
 
     @AuraEnabled(cacheable=false)
@@ -46,7 +49,7 @@ public with sharing class SearchableActivityController {
         List<Map<String,Object>> tasks = new List<Map<String,Object>>();
         String taskText = 'Task';
         try {
-            String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status FROM EmailMessage WHERE RelatedToId =: claimId';
+            String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, isUnread__c FROM EmailMessage WHERE RelatedToId =: claimId';
             List<EmailMessage> emailList = Database.query(emailQuery);
             String taskQuery = 'SELECT Id, Subject, Description, ActivityDate, Status, Priority, Type, TaskSubType, Entry_Date__c, OwnerId, Owner.Name FROM Task WHERE WhatId =: claimId AND TaskSubType =\'' +taskText+ '\'';
             List<Task> taskList = Database.query(taskQuery);
@@ -65,9 +68,21 @@ public with sharing class SearchableActivityController {
                     if(e.CcAddress != null) {
                         ccAddressList = e.CcAddress.split(';');
                     }
+
+                    String currentUserEmail = UserInfo.getUserEmail();
+                    String[] recipients = toAddressList.clone();
+                    recipients.addAll(ccAddressList);
+                    Integer recipientCount = recipients.size();
+                    String descriptionText = (e.FromAddress == currentUserEmail ? 'You' : e.FromAddress) + ' sent an email to ' +
+                        (recipientCount == 0 ? 
+                            '<No Recipients>' 
+                            : recipients[0] + (recipientCount > 1 ? (' and ' + (recipientCount - 1) + ' other' + (recipientCount > 2 ? 's' : '')) : ''));
+
+                    /*
                     String descriptionText = '';
                     Integer toAddressCount = toAddressList.size() + ccAddressList.size() - 1;
                     String count = String.valueOf(toAddressCount);
+
                     if(e.FromAddress == UserInfo.getUserEmail() && toAddressCount == 1) {
                         descriptionText = 'You sent an email to '+toAddressList[0]+' and '+count+' other';
                     } else if(e.FromAddress == UserInfo.getUserEmail() && toAddressCount > 1) {
@@ -81,11 +96,23 @@ public with sharing class SearchableActivityController {
                     } else if (e.FromAddress != UserInfo.getUserEmail() && toAddressCount < 1) {
                         descriptionText = e.FromAddress+' sent an email to '+toAddressList[0];
                     }
+                    */
                                        
                     Map<String,Object> emailElement = new Map<String,Object>();
                     emailElement.put('name', e.Id);
-                    emailElement.put('title', e.Subject);
-                    emailElement.put('received', e.Incoming);           
+                    emailElement.put('title', (e.Subject == null ? '[No Subject]' : e.Subject));
+                    emailElement.put('received', e.Incoming);
+                    if(e.Incoming) {
+                        emailElement.put('canMark', true);
+                        if(e.isUnread__c) {
+                            emailElement.put('open', false);
+                        } else {
+                            emailElement.put('open', true);
+                        }
+                    } else {
+                        emailElement.put('canMark', false);
+                        emailElement.put('open', false);
+                    }
                     emailElement.put('description', descriptionText);
                     emailElement.put('datetimeValue', e.MessageDate);
                     emailElement.put('fromAddress', e.FromAddress);
@@ -113,6 +140,13 @@ public with sharing class SearchableActivityController {
                     taskElement.put('datetimeValue', t.ActivityDate);
                     taskElement.put('status', t.Status);
                     taskElement.put('priority', t.Priority);
+                    if(t.ActivityDate > System.today()) {
+                        taskElement.put('upcoming', true);
+                        taskElement.put('overdue', false);
+                    } else if(t.ActivityDate < System.today() && t.Status != 'Completed') {
+                        taskElement.put('upcoming', false);
+                        taskElement.put('overdue', true);
+                    }
                     tasks.add(taskElement);
                     taskCount++;
                     if (t.ActivityDate > lastTaskDate) {
@@ -189,10 +223,20 @@ public with sharing class SearchableActivityController {
                     subType = 'Fw: ';
                     emailElement.put('subject', subType + emailList[0].subject);
                     if(emailList[0].HasAttachment) {
-                        List<ContentDocumentLink> attachmentList = [SELECT Id FROM ContentDocumentLink WHERE LinkedEntityId =: emailList[0].Id];
+                        /*
+                        List<ContentDocumentLink> attachmentList = [SELECT ContentDocumentId FROM ContentDocumentLink WHERE LinkedEntityId =: emailList[0].Id];
                         Set<Id> attachIds = (new Map<Id,SObject>(attachmentList)).keySet();
                         String attachList = String.valueOf(attachIds).replace('{','').replace('}','');
                         emailElement.put('attachments', attachList);
+                        */
+                        String[] docIDs = new String[]{};
+                        for (ContentDocumentLink lnk : [
+                                SELECT ContentDocumentId 
+                                FROM ContentDocumentLink 
+                                WHERE LinkedEntityId =: emailList[0].Id ]) {
+                            docIDs.add(lnk.ContentDocumentId);
+                        }
+                        emailElement.put('attachments', String.join(docIDs, ','));
                     }
                 }
                 emailElement.put('body', addMessage);
@@ -204,13 +248,12 @@ public with sharing class SearchableActivityController {
         }
         return res;
     }
-
-    
+   
     @AuraEnabled
     public static Result findItems(String searchText, Id recordId){
         Result res = new Result();
         res.isSuccess = true;
-	    List<List<SObject>> searchList = [FIND :searchText IN ALL FIELDS RETURNING EmailMessage(Id, ParentId, ActivityId, CreatedById, CreatedDate, LastModifiedDate, LastModifiedById, SystemModstamp, TextBody, HtmlBody, Headers, Subject, FromName, FromAddress, ValidatedFromAddress, ToAddress, CcAddress, BccAddress, Incoming, HasAttachment, Status, MessageDate, IsDeleted, ReplyToEmailMessageId, IsExternallyVisible, MessageIdentifier, ThreadIdentifier, IsClientManaged, RelatedToId, IsTracked, IsOpened, FirstOpenedDate, LastOpenedDate, IsBounced, EmailTemplateId WHERE RelatedToId =: recordId), Task(Id, WhoId, WhatId, Subject, ActivityDate, Status, Priority, IsHighPriority, OwnerId, Description, Type, IsDeleted, AccountId, IsClosed, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, IsArchived, CallDurationInSeconds, CallType, CallDisposition, CallObject, ReminderDateTime, IsReminderSet, RecurrenceActivityId, IsRecurrence, RecurrenceStartDateOnly, RecurrenceEndDateOnly, RecurrenceTimeZoneSidKey, RecurrenceType, RecurrenceInterval, RecurrenceDayOfWeekMask, RecurrenceDayOfMonth, RecurrenceInstance, RecurrenceMonthOfYear, RecurrenceRegeneratedType, TaskSubtype, CompletedDateTime Where WhatId =: recordId)]; 
+	    List<List<SObject>> searchList = [FIND :searchText IN ALL FIELDS RETURNING EmailMessage(Id, ParentId, isUnread__c, ActivityId, CreatedById, CreatedDate, LastModifiedDate, LastModifiedById, SystemModstamp, TextBody, HtmlBody, Headers, Subject, FromName, FromAddress, ValidatedFromAddress, ToAddress, CcAddress, BccAddress, Incoming, HasAttachment, Status, MessageDate, IsDeleted, ReplyToEmailMessageId, IsExternallyVisible, MessageIdentifier, ThreadIdentifier, IsClientManaged, RelatedToId, IsTracked, IsOpened, FirstOpenedDate, LastOpenedDate, IsBounced, EmailTemplateId WHERE RelatedToId =: recordId), Task(Id, WhoId, WhatId, Subject, ActivityDate, Status, Priority, IsHighPriority, OwnerId, Description, Type, IsDeleted, AccountId, IsClosed, CreatedDate, CreatedById, LastModifiedDate, LastModifiedById, SystemModstamp, IsArchived, CallDurationInSeconds, CallType, CallDisposition, CallObject, ReminderDateTime, IsReminderSet, RecurrenceActivityId, IsRecurrence, RecurrenceStartDateOnly, RecurrenceEndDateOnly, RecurrenceTimeZoneSidKey, RecurrenceType, RecurrenceInterval, RecurrenceDayOfWeekMask, RecurrenceDayOfMonth, RecurrenceInstance, RecurrenceMonthOfYear, RecurrenceRegeneratedType, TaskSubtype, CompletedDateTime Where WhatId =: recordId AND TaskSubtype = 'Task')]; 
         EmailMessage [] emailList = ((List<EmailMessage>)searchList[0]);
         Task [] taskList = ((List<Task>)searchList[1]);
         List<Map<String,Object>> emails = new List<Map<String,Object>>();
@@ -226,10 +269,18 @@ public with sharing class SearchableActivityController {
                     if(e.CcAddress != null) {
                         ccAddressList = e.CcAddress.split(';');
                     }
-                    String descriptionText = '';
-                    Integer toAddressCount = toAddressList.size() + ccAddressList.size() - 1;
-                    String count = String.valueOf(toAddressCount);
-                    if(e.FromAddress == UserInfo.getUserEmail() && toAddressCount == 1) {
+                    /*String descriptionText = '';
+                    /*Integer toAddressCount = toAddressList.size() + ccAddressList.size() - 1;
+                    String count = String.valueOf(toAddressCount);*/
+                    String currentUserEmail = UserInfo.getUserEmail();
+                    String[] recipients = toAddressList.clone();
+                    recipients.addAll(ccAddressList);
+                    Integer recipientCount = recipients.size();
+                    String descriptionText = (e.FromAddress == currentUserEmail ? 'You' : e.FromAddress) + ' sent an email to ' +
+                        (recipientCount == 0 ? 
+                            '<No Recipients>' 
+                            : recipients[0] + (recipientCount > 1 ? (' and ' + (recipientCount - 1) + ' other' + (recipientCount > 2 ? 's' : '')) : ''));
+                    /*if(e.FromAddress == UserInfo.getUserEmail() && toAddressCount == 1) {
                         descriptionText = 'You sent an email to '+toAddressList[0]+' and '+count+' other';
                     } else if(e.FromAddress == UserInfo.getUserEmail() && toAddressCount > 1) {
                         descriptionText = 'You sent an email to '+toAddressList[0]+' and '+count+' others';
@@ -239,12 +290,23 @@ public with sharing class SearchableActivityController {
                         descriptionText = e.FromAddress+' sent an email to '+toAddressList[0]+' and '+count+' other';
                     } else if(e.FromAddress != UserInfo.getUserEmail() && toAddressCount > 1) {
                         descriptionText = e.FromAddress+' sent an email to '+toAddressList[0]+' and '+count+' others';
-                    } 
+                    } */
                                        
                     Map<String,Object> emailElement = new Map<String,Object>();
                     emailElement.put('name', e.Id);
                     emailElement.put('title', e.Subject);
-                    emailElement.put('received', e.Incoming);           
+                    emailElement.put('received', e.Incoming);  
+                    if(e.Incoming) {
+                        emailElement.put('canMark', true);
+                        if(e.isUnread__c) {
+                            emailElement.put('open', false);
+                        } else {
+                            emailElement.put('open', true);
+                        }
+                    } else {
+                        emailElement.put('canMark', false);
+                        emailElement.put('open', false);
+                    }         
                     emailElement.put('description', descriptionText);
                     emailElement.put('datetimeValue', e.MessageDate);
                     emailElement.put('fromAddress', e.FromAddress);
@@ -270,11 +332,40 @@ public with sharing class SearchableActivityController {
                     taskElement.put('datetimeValue', t.ActivityDate);
                     taskElement.put('status', t.Status);
                     taskElement.put('priority', t.Priority);
+                    if(t.ActivityDate > System.today()) {
+                        taskElement.put('upcoming', true);
+                        taskElement.put('overdue', false);
+                    } else if(t.ActivityDate < System.today() && t.Status != 'Completed') {
+                        taskElement.put('upcoming', false);
+                        taskElement.put('overdue', true);
+                    }
                     tasks.add(taskElement);
                 }
             }
         res.emailList = emails;
         res.taskList = tasks;
+        return res;
+    }
+
+    @AuraEnabled
+    public static Result editReceivedEmails(Id emailId){
+        Result res = new Result();
+        try {
+            res.isSuccess = true;
+            //String sObjName = emailId.getSObjectType().getDescribe().getName();
+            EmailMessage email = [SELECT Id, isUnread__c FROM EmailMessage WHERE Id =: emailId];
+            if(email.isUnread__c) {
+                email.isUnread__c = false;
+            } else {
+                email.isUnread__c = true;
+            }
+            update email;
+            res.isUnread = email.isUnread__c;
+        } catch(Exception e) {
+            res.isSuccess = false;
+            res.errorMessage = e.getMessage();
+            throw new AuraHandledException(e.getMessage());
+        }
         return res;
     }
 }

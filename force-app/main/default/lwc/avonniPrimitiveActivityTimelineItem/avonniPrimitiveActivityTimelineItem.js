@@ -118,12 +118,19 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      */
     @api iconName;
     /**
+     * The alternative Text for the icon when we focus on it
+     *
+     * @public
+     * @type {string}
+     */
+    @api alternativeText;
+    /**
      * Icon or list of icons next to the title.
      *
      * @public
      * @type {string[]}
      */
-    @api icons;
+    //@api icons;
     /**
      * Message displayed while the detail section is in the loading state.
      *
@@ -167,6 +174,7 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      * @type {boolean}
      */
     @api isActive;
+    @api unread;
 
     _actions = [];
     _buttonDisabled = false;
@@ -184,6 +192,9 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
     _pillLabel;
     _isEmail;
     _buttons = [];
+    _icons = [];
+    _isReceived;
+    _isUnread;
     label;
 
     renderedCallback() {
@@ -339,6 +350,21 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
 
     set buttons(value) {
         this._buttons = normalizeArray(value);
+    }
+
+    /**
+     * Array of icon.
+     *
+     * @public
+     * @type {object[]}
+     */
+    @api
+    get icons() {
+        return this._icons;
+    }
+
+    set icons(value) {
+        this._icons = normalizeArray(value);
     }
 
     /**
@@ -632,6 +658,21 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
         );  
     }
 
+    iconActionButtonClick(event) {
+       /**
+         * The event fired when the button in the details section is clicked.
+         * @event
+         * @public
+         * @param {string} targetName Unique name of the item the action belongs to.
+         * @name buttonclick
+         */
+        this.dispatchEvent(
+            new CustomEvent('iconclick', {
+                detail: {name: this.name}
+            })
+        );  
+    }
+
     /**
      * Check event handler.
      *
@@ -699,5 +740,15 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
     get isEmail() {
         this._isEmail = (this.itemType == 'email') ? true : false;
         return this._isEmail;
+    }
+
+    get isReceived() {
+        this._isReceived = (this._isEmail && this.received) ? true : false;
+        return this._isReceived;
+    }
+
+    get isUnread() {
+        this._isUnread = (this.isEmail && this.isReceived && this.unread) ? true : false;
+        return this._isUnread;
     }
 }
