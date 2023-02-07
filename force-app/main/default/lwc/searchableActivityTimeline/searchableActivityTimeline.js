@@ -4,8 +4,12 @@ import { encodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
 import { refreshApex } from '@salesforce/apex';
 import { getRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 
+import { loadStyle } from 'lightning/platformResourceLoader';
+import customStyles from '@salesforce/resourceUrl/searchableActivity_styleHacks';
+
 import findItems from "@salesforce/apex/SearchableActivityController.findItems";
 import loadItems from "@salesforce/apex/SearchableActivityController.loadItems";
+import filterLoadResult from "@salesforce/apex/SearchableActivityController.filterLoadResult";
 import loadEmailDetails from "@salesforce/apex/SearchableActivityController.loadEmailDetails";
 import getActivityDigest from "@salesforce/apex/SearchableActivityController.getActivityDigest";
 
@@ -83,7 +87,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
 
     @track showSearchResult = false;
     @track showLoadResult = true;
-    @track dateRange; emailToShow;activitiesToShow; sortActivities; activityType;
+    @track showFilterResult = false;
+    @track dateRange; emailToShow;activitiesToShow; sortActivities; activityType; order = 'asc';
     @api recordId;
     actionList = [];
     searchValue;
@@ -96,6 +101,10 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     items1 = [];
     emails1 = [];
     tasks1 = [];
+    items2 = [];
+    emails2 = [];
+    tasks2 = [];
+    showSpinner2 = false;
     showSpinner1 = false;
     showSpinner = false;
     activitiesList;
@@ -244,6 +253,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     }
 
     connectedCallback() {
+        loadStyle(this, customStyles);
         this.poller = new InterruptiblePoller(this, 5000, 1000);
         this.poller.start();
     }
@@ -284,8 +294,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                     isUnread: (this.emails1[i].canMark && !this.emails1[i].open) ? true : false,
                     icons: [
                         {
-                            iconName: (this.emails[i].canMark && this.emails[i].open) ? 'utility:email_open' : 'utility:email',
-                            alternativeText: (this.emails[i].canMark && this.emails[i].open) ? 'Mark as Unread' : 'Mark as Read'
+                            iconName: (this.emails1[i].canMark && this.emails1[i].open) ? 'utility:email_open' : 'utility:email',
+                            alternativeText: (this.emails1[i].canMark && this.emails1[i].open) ? 'Mark as Unread' : 'Mark as Read'
                         }
                     ],
                     fields: [
@@ -394,6 +404,15 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         refreshApex(this.activitiesList);
     }
 
+    timelineChangeFilter(){
+        this.handleSuccess();
+    }
+
+    timelineChangeSearch(){
+
+    
+    }
+
     newEmail() {
         var pageRef = {
             type: "standard__quickAction",
@@ -486,13 +505,12 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
 
     get activityGroupOptions1() {
         return [
-            { label: 'All Activities', value: 'allActivities' },
-            { label: 'My Activities', value: 'myActivities' },
+            { label: 'Read', value: 'read' }
         ];
     }
     get activityGroupOptions2() {
         return [
-            { label: 'My Activities', value: 'myActivities' },
+            { label: 'Unread', value: 'unread' },
         ];
     }
 
@@ -634,33 +652,171 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     }
 
     handleSuccess(){
-        alert('Record Filter');
-        alert(this.emails1.length);
+        filterLoadResult({ recordId: this.recordId , dateRange: this.dateRange, emailsToShow: this.emailToShow, activitiesToShow: this.activitiesToShow, sortActivites: this.sortActivities})
+		.then(result => {
+            this.showSpinner1 = true;
+        //this.activitiesList = loadActivities;
+        if (result.isSuccess) {
+            this.showLoadResult = false;
+            this.showSearchResult = false;
+            this.showFilterResult = true;
+            this.emails2 = result.emailList;
+            //this.tasks2 = result.taskList;
+            let emailListObj2 = [];
+            this.actionList = [
+                { label: "Link and Categorize Attachments", name: "link-attachments" }, 
+                { label: "Delete", name: "delete-item" }
+            ];
+            for(i = 0; i< this.emails2.length; i++) { 
+                let emailObj = 
+                {
+                    name: this.emails2[i].name,
+                    title: this.emails2[i].title,
+                    description: this.emails2[i].description,
+                    received: this.emails2[i].received,
+                    itemType: 'email',
+                    datetimeValue: this.emails2[i].datetimeValue,
+                    href: '/lightning/r/'+this.emails2[i].name+'/view',
+                    iconName: 'standard:email',
+                    closed: true,
+                    canMark: this.emails2[i].canMark,
+                    isUnread: (this.emails2[i].canMark && !this.emails2[i].open) ? true : false,
+                    icons: [
+                        {
+                            iconName: (this.emails2[i].canMark && this.emails2[i].open) ? 'utility:email_open' : 'utility:email',
+                            alternativeText: (this.emails2[i].canMark && this.emails2[i].open) ? 'Mark as Unread' : 'Mark as Read'
+                        }
+                    ],
+                    fields: [
+                        {
+                            label: 'From Address',
+                            value: this.emails2[i].fromAddress,
+                            type: 'url',
+                            typeAttributes: {
+                                label: this.emails2[i].fromAddress
+                            },           
+                        },
+                        {
+                            label: 'To Address',
+                            value: this.emails2[i].toAddress,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.emails2[i].toAddress
+                            }
+                        },
+                        {
+                            label: 'Text Body',
+                            value: this.emails2[i].textBody,
+                            type: 'text'
+                        }
+                    ],
+                    buttons: [
+                        {
+                            buttonLabel: "Reply",
+                            buttonName: "reply", 
+                            iconName: "utility:reply"
+                        },
+                        {
+                            buttonLabel: 'Reply All', 
+                            buttonName: 'reply-all', 
+                            iconName: 'utility:reply_all'
+                        },
+                        {
+                            buttonLabel: "Forward", 
+                            buttonName: "reply-all", 
+                            iconName: "utility:forward"
+                        }
+                    ]
+                };
+                emailListObj2.push(emailObj);
+            }
+            /*for(i = 0; i < this.tasks2.length; i++) {
+                let taskObj = {
+                    name: this.tasks2[i].name,
+                    title: this.tasks2[i].title,
+                    description: this.tasks2[i].description,
+                    datetimeValue: this.tasks2[i].datetimeValue,
+                    itemType: 'task',
+                    href: '/lightning/r/'+this.tasks2[i].name+'/view',
+                    iconName: 'standard:task',
+                    closed: true,
+                    upcoming: this.tasks2[i].upcoming,
+                    overdue: this.tasks2[i].overdue,
+                    fields: [
+                        {
+                            label: 'Status',
+                            value: this.tasks2[i].status,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.tasks2[i].status
+                            }
+                        },
+                        {
+                            label: 'Priority',
+                            value: this.tasks2[i].priority,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.tasks2[i].priority
+                            }
+                        },
+                        {
+                            label: 'Assigned To',
+                            value: '/lightning/r/'+this.tasks2[i].assignedId+'/view',
+                            type: 'url',
+                            typeAttributes: {
+                                label: this.tasks2[i].assignedTo
+                            }
+                        },
+                        {
+                            label: 'Description',
+                            value: this.tasks2[i].description,
+                            type: 'text'
+                        }
+                    ]
+                };
+                emailListObj2.push(taskObj);
+            }*/
+            this.items2 = emailListObj2;
+            this.showSpinner2 = false;
+        }
+		})
+		.catch(error => {
+            this.showSearchResult = false;
+            debugger;
+			this.error = error;
+		})
+        
+    }
+
+    handleRestoreDefault(){
+        this.dateRangeValue = undefined;
+        this.emailGroupValue = undefined;
+        this.activityGroupValue = undefined;
+        this.activitySortValue = undefined;
+        this.showLoadResult = true;
+        this.showFilterResult = false;
+        this.showSearchResult = false;
+        debugger;
     }
     handleDateChange(event){
         var dateRange1 = event.target.value;
         this.dateRange = dateRange1;
-        alert(this.dateRange);
     }
     //@track dateRange; emailToShow;activitiesToShow; sortActivities; activityType;
     handleEmailChange(event){
         var emailChange1 = event.target.value;
         this.emailToShow = emailChange1;
-        alert(this.emailToShow);
     }
     handleActivityChange(event){
         var activityChange1 = event.target.value;
         this.activitiesToShow = activityChange1;
-        alert(this.activitiesToShow);
     }
     handleSortActivityChange(event){
         var sortActivityChange1 = event.target.value;
         this.sortActivities = sortActivityChange1;
-        alert(this.sortActivities);
     }
     handleActivityTypeChange(event){
         var activityType1 = event.target.value;
         this.activityType = activityType1;
-        alert(this.activityType);
     }
 }

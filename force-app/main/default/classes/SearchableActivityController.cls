@@ -213,10 +213,15 @@ public with sharing class SearchableActivityController {
                     subType = 'Re: ';
                     if(emailList[0].FromAddress == UserInfo.getUserEmail()) {
                         emailElement.put('toAddress', emailList[0].ToAddress);
+                        emailElement.put('ccAddress', emailList[0].CcAddress);
                     } else {
                         emailElement.put('toAddress', emailList[0].FromAddress);
+                        if(emailList[0].CcAddress == null) {
+                            emailElement.put('ccAddress', emailList[0].ToAddress);
+                        } else {
+                            emailElement.put('ccAddress', emailList[0].ToAddress + ';' + emailList[0].CcAddress);
+                        }
                     }
-                    emailElement.put('ccAddress', emailList[0].CcAddress);
                     emailElement.put('bccAddress', emailList[0].BccAddress);
                     emailElement.put('subject', subType + emailList[0].subject);
                 } else if(emailType == 'Forward') {
@@ -368,4 +373,121 @@ public with sharing class SearchableActivityController {
         }
         return res;
     }
+
+    @AuraEnabled (cacheable=true)
+    public static Result filterLoadResult(Id recordId, String dateRange, String emailsToShow, String activitiesToShow, String sortActivites) {
+        Result res = new Result();
+        res.isSuccess = true;
+        List<Map<String,Object>> emails = new List<Map<String,Object>>();
+        List<Map<String,Object>> tasks = new List<Map<String,Object>>();
+        String taskText = 'Task';
+        String emailQuery;
+        try {
+            emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, isUnread__c FROM EmailMessage WHERE RelatedToId =: recordId';
+            //List<EmailMessage> emailList = Database.query(emailQuery);
+            //String taskQuery = 'SELECT Id, Subject, Description, ActivityDate, Status, Priority, Type, TaskSubType, Entry_Date__c, OwnerId, Owner.Name FROM Task WHERE WhatId =: recordId AND TaskSubType =\'' +taskText+ '\'';
+            //List<Task> taskList = Database.query(taskQuery);
+            emailQuery = dateRange == 'nextSeven' ? emailQuery += ' AND CreatedDate = NEXT_N_DAYS:7' : dateRange == 'lastSeven' ? emailQuery += ' AND CreatedDate = LAST_N_DAYS:7' : dateRange == 'lastThirty' ? emailQuery += ' AND CreatedDate = LAST_N_DAYS:30' : emailQuery;
+            emailQuery = emailsToShow == 'sentEmails' ? emailQuery += ' AND Incoming = false' : emailsToShow == 'receivedEmails' ? emailQuery += ' AND Incoming = true' : emailQuery;
+            //emailQuery = activitiesToShow == 'read' ? emailQuery += ' AND isUnread__c = false' : emailQuery += ' AND isUnread__c = true';
+            //taskQuery = dateRange == 'nextSeven' ? taskQuery += ' AND Entry_Date__c = NEXT_N_DAYS:7' : dateRange == 'lastSeven' ? taskQuery += ' AND Entry_Date__c = LAST_N_DAYS:7' : dateRange == 'lastThirty' ? taskQuery += ' AND Entry_Date__c = LAST_N_DAYS:30' : taskQuery; 
+            //taskQuery = activitiesToShow == 'myActivities' ? taskQuery += ' AND OwnerId =: UserInfo.getUserID()' : taskQuery;
+            if(activitiesToShow == 'read'){
+                emailQuery += ' AND isUnread__c = false';
+                //taskQuery += ' ORDER BY Subject ASC';
+            }else if(activitiesToShow == 'unread'){
+                emailQuery += ' AND isUnread__c = true';
+                //taskQuery += ' ORDER BY Subject DESC';
+            }
+            List<EmailMessage> emailList = Database.query(emailQuery);
+            //List<Task> taskList = Database.query(taskQuery);
+            Integer emailCount = 0;
+            Integer taskCount = 0;
+            Long lastEmailTime = 0;
+            Date lastTaskDate = Date.newInstance(1900, 1, 1); // hack, ugh
+            if(emailList.size() > 0) {
+                for(EmailMessage e : emailList) {
+                    Boolean sentBySelf = false;
+                    List<String> toAddressList = new List<String>();
+                    List<String> ccAddressList = new List<String>();
+                    if(e.ToAddress != null) {
+                        toAddressList = e.ToAddress.split(';');
+                    }
+                    if(e.CcAddress != null) {
+                        ccAddressList = e.CcAddress.split(';');
+                    }
+
+                    String currentUserEmail = UserInfo.getUserEmail();
+                    String[] recipients = toAddressList.clone();
+                    recipients.addAll(ccAddressList);
+                    Integer recipientCount = recipients.size();
+                    String descriptionText = (e.FromAddress == currentUserEmail ? 'You' : e.FromAddress) + ' sent an email to ' +
+                        (recipientCount == 0 ? 
+                            '<No Recipients>' 
+                            : recipients[0] + (recipientCount > 1 ? (' and ' + (recipientCount - 1) + ' other' + (recipientCount > 2 ? 's' : '')) : ''));
+                            Map<String,Object> emailElement = new Map<String,Object>();
+                            emailElement.put('name', e.Id);
+                            emailElement.put('title', (e.Subject == null ? '[No Subject]' : e.Subject));
+                            emailElement.put('received', e.Incoming);
+                            if(e.Incoming) {
+                                emailElement.put('canMark', true);
+                                if(e.isUnread__c) {
+                                    emailElement.put('open', false);
+                                } else {
+                                    emailElement.put('open', true);
+                                }
+                            } else {
+                                emailElement.put('canMark', false);
+                                emailElement.put('open', false);
+                            }
+                            emailElement.put('description', descriptionText);
+                            emailElement.put('datetimeValue', e.MessageDate);
+                            emailElement.put('fromAddress', e.FromAddress);
+                            emailElement.put('toAddress', e.ToAddress);
+                            emailElement.put('textBody', e.TextBody);
+                            emails.add(emailElement);
+                            emailCount++;
+                            lastEmailTime = Math.max(lastEmailTime, e.MessageDate.getTime());
+                        }
+                    }
+                    /*if(taskList.size() > 0) {
+                        for(Task t : taskList) {
+                            String taskDescription = '';
+                            if(t.ActivityDate < System.today()) {
+                                taskDescription = 'You had a task';
+                            } else if(t.ActivityDate >= System.today()) {
+                                taskDescription = 'You have an upcoming task';
+                            }
+                            Map<String,Object> taskElement = new Map<String,Object>();
+                            taskElement.put('name', t.Id);
+                            taskElement.put('title', t.Subject);
+                            taskElement.put('assignedTo', t.Owner.Name);
+                            taskElement.put('assignedId', t.OwnerId);
+                            taskElement.put('description', taskDescription);
+                            taskElement.put('datetimeValue', t.ActivityDate);
+                            taskElement.put('status', t.Status);
+                            taskElement.put('priority', t.Priority);
+                            if(t.ActivityDate > System.today()) {
+                                taskElement.put('upcoming', true);
+                                taskElement.put('overdue', false);
+                            } else if(t.ActivityDate < System.today() && t.Status != 'Completed') {
+                                taskElement.put('upcoming', false);
+                                taskElement.put('overdue', true);
+                            }
+                            tasks.add(taskElement);
+                            taskCount++;
+                            if (t.ActivityDate > lastTaskDate) {
+                                lastTaskDate = t.ActivityDate;
+                            }
+                        }
+                    }*/
+                    res.emailList = emails;
+                    //res.taskList = tasks;
+                    res.activityDigest = emailCount + ':' + lastEmailTime + ':' + taskCount + ':' + DateTime.newInstance(lastTaskDate, Time.newInstance(0, 0, 0, 0)).format('yyyy-MM-dd');
+                } catch (Exception e) {
+                    res.isSuccess = false;
+                    throw new AuraHandledException(e.getMessage());
+                }
+                return res;
+            }
 }
