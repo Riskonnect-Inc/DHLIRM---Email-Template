@@ -78,7 +78,7 @@
 
                         <div class="slds-col slds-size_6-of-12">
                             <lightning-radio-group name="activityGroup"
-                                label="Activities To Show"
+                                label="Email Status"
                                 options={activityGroupOptions1}
                                 value={activityGroupValue}
                                 type="radio"
@@ -87,7 +87,7 @@
                         </div>
                         <div class="slds-col slds-size_6-of-12 slds-p-top_large">
                             <lightning-radio-group name="activityGroup"
-                                label="Activities To Show"
+                                label="Email Status"
                                 options={activityGroupOptions2}
                                 value={activityGroupValue}
                                 type="radio"
@@ -116,7 +116,7 @@
                             </lightning-radio-group>
                         </div>
 
-                        <div class="slds-col slds-size_6-of-12">
+                        <!--<div class="slds-col slds-size_6-of-12">
                             <lightning-checkbox-group name="activityType"
                                 label="Activity Type"
                                 options={activityTypeOptions1}
@@ -132,7 +132,7 @@
                                 onchange={handleActivityTypeChange}
                                 variant="label-hidden">
                             </lightning-checkbox-group>
-                        </div>
+                        </div>-->
 
                         <!--div class="slds-col slds-size_12-of-12">
                             <lightning-input
@@ -145,7 +145,7 @@
                     
                 </div>   
                 <footer class=" slds-modal__footer slds-align_absolute-center slds-docked-form-footer slds-p-around_x-small">
-                    <lightning-button label='Restore Defaults' class='slds-m-left_x-small'></lightning-button>
+                    <lightning-button label='Restore Defaults' class='slds-m-left_x-small' onclick={handleRestoreDefault}></lightning-button>
                     <lightning-button variant="brand" type="save" class='slds-m-left_x-small' label="Apply" onclick={handleSuccess}> </lightning-button>
                 </footer>      
             </lightning-button-menu>
@@ -160,8 +160,31 @@
         item-date-format="T | dd-LLL yyyy"
         item-icon-size="small"
         items={items1}
-        ontimelinechange={timelineChange}
+        ontimelinechange={timelineChangeSearch}
         max-visible-items="3"
+        button-show-more-icon-name="utility:down"
+        button-show-less-icon-name="utility:up"
+        onemailactiontype={emailAction}>
+            <lightning-spinner
+                if:true={showSpinner1}
+                alternative-text="loading"
+                size="large"
+                data-element-id="lightning-spinner">
+            </lightning-spinner>
+    </c-avonni-activity-timeline>
+    </template>
+
+    <template if:true={showFilterResult}>
+        <c-avonni-activity-timeline
+        actions={actionList}
+        group-by="month"
+        collapsible
+        item-date-format="T | dd-LLL yyyy"
+        item-icon-size="small"
+        items={items2}
+        ontimelinechange={timelineChangeFilter}
+        max-visible-items="3"
+        sorted-direction={order}
         button-show-more-icon-name="utility:down"
         button-show-less-icon-name="utility:up"
         onemailactiontype={emailAction}>

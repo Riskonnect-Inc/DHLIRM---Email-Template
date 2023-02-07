@@ -187,4 +187,59 @@ public class SearchableActivityControllerTest {
         Test.stopTest();
     }
     
+    @isTest
+    public static void filterLoadResult_TEST(){
+        rkl__RK_Hierarchy_Node__c hierarchy = new rkl__RK_Hierarchy_Node__c();
+        hierarchy.Name = 'Test Hierarchy';
+        hierarchy.rkl__Node_Code__c = 'Test Code';
+        hierarchy.rkl__Node_Name__c = 'Test';
+        hierarchy.rkl__Node_Key__c = 'Test';
+        hierarchy.rkl__Node_Level__c = 5;
+        hierarchy.Regional_Reporting_Business_Partner__c = 'Global Forwarding';
+        hierarchy.rkl__Country__c = 'USA';
+        
+        insert hierarchy;
+        
+        Claim__c claim = new Claim__c();
+        claim.Name = '1234567890';
+        claim.Business_Unit__c = hierarchy.Id;
+        claim.Business_Partner__c = 'Freight';
+        claim.Category__c = 'Claim';
+        claim.Reported_Date__c = System.today();
+        claim.Date_Claim_Received_by_Business_Partner__c = System.today();
+        claim.Date_of_Loss__c = System.today();
+        claim.Accident_Description__c = 'Test Description';
+        claim.Shipment_Number__c = '56789';
+        claim.Cargo_Insured__c ='No Insurance';
+        claim.Claimant_Category__c = 'Cargo Insurer';
+        
+        insert claim;
+        
+        Database.SaveResult dsr;
+        Id[] fsrIds = new Id[0];
+        EmailMessage drEmailMessage;
+        Task drTask;
+        drEmailMessage=new EmailMessage(FromAddress='test@riskonnect.com', ToAddress='test1@riskonnect.com', RelatedToId = claim.Id);
+        dsr=Database.insert(drEmailMessage,false);
+        fsrIds.add(drEmailMessage.Id);
+        drTask=new Task(Subject='test');
+        Database.insert(drTask,false);
+        fsrIds.add(drTask.Id);
+        Test.setFixedSearchResults(fsrIds);
+        
+        Database.SaveResult dsr1;
+        Id[] fsrIds1 = new Id[0];
+        EmailMessage drEmailMessage1;
+        Task drTask1;
+        drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com', ToAddress='test@riskonnect.com', RelatedToId = claim.Id);
+        dsr1=Database.insert(drEmailMessage1,false);
+        fsrIds1.add(drEmailMessage1.Id);
+        drTask1=new Task(Subject='Litigation', WhatId = claim.Id);
+        Database.insert(drTask1,false);
+        fsrIds1.add(drTask1.Id);
+        Test.setFixedSearchResults(fsrIds1);
+        Test.startTest();
+        SearchableActivityController.filterLoadResult(claim.Id, 'allTime', 'allEmails', 'read', null);
+        Test.stopTest();
+    }
 }
