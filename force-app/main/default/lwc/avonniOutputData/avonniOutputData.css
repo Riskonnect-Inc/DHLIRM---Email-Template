@@ -54,3 +54,7 @@ span {
 .avonni-output-data__label_inline {
     width: 30%;
 }
+
+.slds-truncate {
+    white-space: normal;
+}

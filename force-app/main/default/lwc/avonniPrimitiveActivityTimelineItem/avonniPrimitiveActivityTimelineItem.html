@@ -104,7 +104,7 @@
                             data-element-id="div-title"
                             onclick={handleTitleClick}
                         >
-                            <a if:true={href} href={href}>
+                            <a if:true={href} href={href} title={title}>
                                 <h3 if:true={isUnread} class="slds-truncate"><b>{title}</b></h3>
                                 <h3 if:false={isUnread} class="slds-truncate">{title}</h3>
                             </a>
@@ -126,6 +126,26 @@
                                 ></lightning-button-icon>
                             </template>
                         </div>
+                        <div if:true={attachment} class="slds-no-flex">
+                            <lightning-icon
+                                icon-name="utility:attach"
+                                alternative-text="Attachment"
+                                size="xx-small"
+                                class="slds-p-left_x-small">
+                            </lightning-icon>
+                        </div>
+                        <div if:true={isBounced} class="slds-p-left_xx-large">
+                            <span title={bouncedmessage} class="slds-text-body_regular">
+                                <span class="slds-var-p-left_x-small slds-var-m-right_xx-small slds-icon_container slds-icon-utility-warning">
+                                    <span>
+                                        <svg class="slds-icon slds-icon-text-warning slds-icon_x-small" aria-hidden="true" data-key="warning">
+                                            <use href="/_slds/icons/utility-sprite/svg/symbols.svg?cache=9.40.4#warning"></use>
+                                        </svg>
+                                    </span>
+                                </span>
+                                Bounced
+                            </span>
+                        </div>
                     </div>
 
                     <div
@@ -139,7 +159,8 @@
                             class="slds-timeline__date"
                             data-element-id="avonni-formatted-date-time"
                         >
-                            {formattedDate}
+                            <div if:true={overdue} style="color:red"><b>{formattedDate}</b></div> 
+                            <div if:false={overdue}>{formattedDate}</div> 
                         </div>
                         <div slot="figure-inverse" if:true={actions.length}>
                             <lightning-button-menu

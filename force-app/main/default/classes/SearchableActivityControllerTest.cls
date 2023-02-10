@@ -34,6 +34,7 @@ public class SearchableActivityControllerTest {
         email.TextBody = 'Test Body';
         email.RelatedToId = claim.Id;
         email.isUnread__c = true;
+        email.MessageDate = System.today();
         
         insert email;
         
@@ -44,6 +45,8 @@ public class SearchableActivityControllerTest {
         emailNonUser.TextBody = 'Test Body';
         emailNonUser.RelatedToId = claim.Id;
        	emailNonUser.isUnread__c = false;
+        emailNonUser.IsBounced = true;
+        emailNonUser.MessageDate = System.today();
         
         insert emailNonUser;
         
@@ -54,6 +57,7 @@ public class SearchableActivityControllerTest {
         emailTwo.Subject = 'Test Subject';
         emailTwo.TextBody = 'Test Body';
         emailTwo.RelatedToId = claim.Id;
+        emailTwo.MessageDate = System.today();
         
         insert emailTwo;
         
@@ -64,6 +68,7 @@ public class SearchableActivityControllerTest {
         emailTwoNonUser.Subject = 'Test Subject';
         emailTwoNonUser.TextBody = 'Test Body';
         emailTwoNonUser.RelatedToId = claim.Id;
+        emailTwoNonUser.MessageDate = System.today();
         
         insert emailTwoNonUser;
         
@@ -78,6 +83,7 @@ public class SearchableActivityControllerTest {
         emailMany.Subject = 'Test Subject';
         emailMany.TextBody = 'Test Body';
         emailMany.RelatedToId = claim.Id;
+        emailMany.MessageDate = System.today();
         
         insert emailMany;
         
@@ -88,6 +94,7 @@ public class SearchableActivityControllerTest {
         emailManyNonUser.Subject = 'Test Subject';
         emailManyNonUser.TextBody = 'Test Body';
         emailManyNonUser.RelatedToId = claim.Id;
+        emailManyNonUser.MessageDate = System.today();
         
         insert emailManyNonUser;
         
@@ -162,7 +169,7 @@ public class SearchableActivityControllerTest {
         Id[] fsrIds = new Id[0];
         EmailMessage drEmailMessage;
         Task drTask;
-        drEmailMessage=new EmailMessage(FromAddress='test@riskonnect.com', ToAddress='test1@riskonnect.com', RelatedToId = claim.Id);
+        drEmailMessage=new EmailMessage(FromAddress='test@riskonnect.com', ToAddress='test1@riskonnect.com', RelatedToId = claim.Id, MessageDate = System.today());
         dsr=Database.insert(drEmailMessage,false);
         fsrIds.add(drEmailMessage.Id);
         drTask=new Task(Subject='test');
@@ -174,7 +181,7 @@ public class SearchableActivityControllerTest {
         Id[] fsrIds1 = new Id[0];
         EmailMessage drEmailMessage1;
         Task drTask1;
-        drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com', ToAddress='test@riskonnect.com', RelatedToId = claim.Id);
+        drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com', ToAddress='test@riskonnect.com', RelatedToId = claim.Id, IsBounced = true, MessageDate = System.today());
         dsr1=Database.insert(drEmailMessage1,false);
         fsrIds1.add(drEmailMessage1.Id);
         drTask1=new Task(Subject='Litigation', WhatId = claim.Id);
@@ -219,7 +226,7 @@ public class SearchableActivityControllerTest {
         Id[] fsrIds = new Id[0];
         EmailMessage drEmailMessage;
         Task drTask;
-        drEmailMessage=new EmailMessage(FromAddress='test@riskonnect.com', ToAddress='test1@riskonnect.com', RelatedToId = claim.Id);
+        drEmailMessage=new EmailMessage(FromAddress='test@riskonnect.com', ToAddress='test1@riskonnect.com', RelatedToId = claim.Id, IsBounced = true, MessageDate = System.today());
         dsr=Database.insert(drEmailMessage,false);
         fsrIds.add(drEmailMessage.Id);
         drTask=new Task(Subject='test');
@@ -231,7 +238,7 @@ public class SearchableActivityControllerTest {
         Id[] fsrIds1 = new Id[0];
         EmailMessage drEmailMessage1;
         Task drTask1;
-        drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com', ToAddress='test@riskonnect.com', RelatedToId = claim.Id);
+        drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com', ToAddress='test@riskonnect.com', RelatedToId = claim.Id, IsBounced = true, MessageDate = System.today());
         dsr1=Database.insert(drEmailMessage1,false);
         fsrIds1.add(drEmailMessage1.Id);
         drTask1=new Task(Subject='Litigation', WhatId = claim.Id);

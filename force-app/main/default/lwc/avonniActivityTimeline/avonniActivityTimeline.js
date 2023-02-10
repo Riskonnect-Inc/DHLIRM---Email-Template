@@ -714,7 +714,7 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
                     this._key = `${date.getFullYear()}`;
                 }
             } else {
-                this._key = 'Upcoming';
+                this._key = 'Upcoming And Overdue';
             }
 
             if (!prev[this._key]) {
@@ -807,7 +807,7 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
             const isPastYear = dateYear < currentYear;
             if (this._groupBy === 'month') {
                 if (
-                    (date.getMonth() > today.getMonth() && !isPastYear) ||
+                    (item.upcoming || item.overdue/*date > today && !isPastYear*/) ||
                     isUpcomingYear
                 ) {
                     this._upcomingDates.push(item);

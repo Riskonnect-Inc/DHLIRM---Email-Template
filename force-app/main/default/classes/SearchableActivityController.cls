@@ -11,6 +11,9 @@ public with sharing class SearchableActivityController {
         @AuraEnabled
         public List<Map<String,Object>> taskList {get; set;}
 
+        @AuraEnabled
+        public List<Map<String,Object>> upcomingOverdueTaskList {get; set;}
+
         // {email count}:{last email timestamp}:{task count}
         @AuraEnabled
         public String activityDigest;
@@ -47,9 +50,10 @@ public with sharing class SearchableActivityController {
         res.isSuccess = true;
         List<Map<String,Object>> emails = new List<Map<String,Object>>();
         List<Map<String,Object>> tasks = new List<Map<String,Object>>();
+        List<Map<String,Object>> upcomingOverdueTasks = new List<Map<String,Object>>();
         String taskText = 'Task';
         try {
-            String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, isUnread__c FROM EmailMessage WHERE RelatedToId =: claimId';
+            String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, BccAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, isUnread__c, HasAttachment FROM EmailMessage WHERE RelatedToId =: claimId';
             List<EmailMessage> emailList = Database.query(emailQuery);
             String taskQuery = 'SELECT Id, Subject, Description, ActivityDate, Status, Priority, Type, TaskSubType, Entry_Date__c, OwnerId, Owner.Name FROM Task WHERE WhatId =: claimId AND TaskSubType =\'' +taskText+ '\'';
             List<Task> taskList = Database.query(taskQuery);
@@ -62,13 +66,19 @@ public with sharing class SearchableActivityController {
                     Boolean sentBySelf = false;
                     List<String> toAddressList = new List<String>();
                     List<String> ccAddressList = new List<String>();
+                    List<String> bccAddressList = new List<String>();
                     if(e.ToAddress != null) {
                         toAddressList = e.ToAddress.split(';');
                     }
                     if(e.CcAddress != null) {
                         ccAddressList = e.CcAddress.split(';');
                     }
-
+                    if(e.BccAddress != null) {
+                        bccAddressList = e.BccAddress.split(';');
+                    }
+                    String[] addresses = toAddressList.clone();
+                    addresses.addAll(ccAddressList);
+                    addresses.addAll(bccAddressList);
                     String currentUserEmail = UserInfo.getUserEmail();
                     String[] recipients = toAddressList.clone();
                     recipients.addAll(ccAddressList);
@@ -113,6 +123,26 @@ public with sharing class SearchableActivityController {
                         emailElement.put('canMark', false);
                         emailElement.put('open', false);
                     }
+                    emailElement.put('bounced', e.IsBounced);
+                    emailElement.put('hasAttachment', e.HasAttachment);
+                    List<Contact> contactList = new List<Contact>();
+                    if(e.IsBounced) {     
+                        for(String ad : addresses) {
+                            List<Contact> person = [SELECT Name FROM Contact WHERE Email =: ad AND IsEmailBounced = true LIMIT 1];
+                            if(person.size() > 0) {
+                                contactList.add(person[0]);
+                            }
+                        } 
+                        String bouncedMessage = (contactList.size() == 0 
+                            ? 'We were unable to deliver the email.'
+                            : contactList[0].Name + (contactList.size() > 1 
+                                ? (' and ' + (contactList.size() - 1) + 'other email' + (contactList.size() > 2 
+                                    ? 's' 
+                                    : ''))
+                                : ' email'
+                            ) + ' bounced. Update the email address and try again.');       
+                        emailElement.put('bouncedMessage', bouncedMessage);           
+                    }
                     emailElement.put('description', descriptionText);
                     emailElement.put('datetimeValue', e.MessageDate);
                     emailElement.put('fromAddress', e.FromAddress);
@@ -147,7 +177,12 @@ public with sharing class SearchableActivityController {
                         taskElement.put('upcoming', false);
                         taskElement.put('overdue', true);
                     }
-                    tasks.add(taskElement);
+                    if(t.ActivityDate > System.today() || (t.ActivityDate < System.today() && t.Status != 'Completed')) {
+                        upcomingOverdueTasks.add(taskElement);
+                    } else {
+                        tasks.add(taskElement);
+                    }
+                    //tasks.add(taskElement);
                     taskCount++;
                     if (t.ActivityDate > lastTaskDate) {
                         lastTaskDate = t.ActivityDate;
@@ -156,6 +191,7 @@ public with sharing class SearchableActivityController {
             }
             res.emailList = emails;
             res.taskList = tasks;
+            res.upcomingOverdueTaskList = upcomingOverdueTasks;
             res.activityDigest = emailCount + ':' + lastEmailTime + ':' + taskCount + ':' + DateTime.newInstance(lastTaskDate, Time.newInstance(0, 0, 0, 0)).format('yyyy-MM-dd');
         } catch (Exception e) {
             res.isSuccess = false;
@@ -263,17 +299,25 @@ public with sharing class SearchableActivityController {
         Task [] taskList = ((List<Task>)searchList[1]);
         List<Map<String,Object>> emails = new List<Map<String,Object>>();
         List<Map<String,Object>> tasks = new List<Map<String,Object>>();
+        List<Map<String,Object>> upcomingOverdueTasks = new List<Map<String,Object>>();
         if(emailList.size() > 0) {
                 for(EmailMessage e : emailList) {
                     Boolean sentBySelf = false;
                     List<String> toAddressList = new List<String>();
                     List<String> ccAddressList = new List<String>();
+                    List<String> bccAddressList = new List<String>();
                     if(e.ToAddress != null) {
                         toAddressList = e.ToAddress.split(';');
                     }
                     if(e.CcAddress != null) {
                         ccAddressList = e.CcAddress.split(';');
                     }
+                    if(e.BccAddress != null) {
+                        bccAddressList = e.BccAddress.split(';');
+                    }
+                    String[] addresses = toAddressList.clone();
+                    addresses.addAll(ccAddressList);
+                    addresses.addAll(bccAddressList);
                     /*String descriptionText = '';
                     /*Integer toAddressCount = toAddressList.size() + ccAddressList.size() - 1;
                     String count = String.valueOf(toAddressCount);*/
@@ -311,7 +355,27 @@ public with sharing class SearchableActivityController {
                     } else {
                         emailElement.put('canMark', false);
                         emailElement.put('open', false);
-                    }         
+                    }      
+                    emailElement.put('bounced', e.IsBounced);
+                    emailElement.put('hasAttachment', e.HasAttachment);
+                    List<Contact> contactList = new List<Contact>();
+                    if(e.IsBounced) {     
+                        for(String ad : addresses) {
+                            List<Contact> person = [SELECT Name FROM Contact WHERE Email =: ad AND IsEmailBounced = true LIMIT 1];
+                            if(person.size() > 0) {
+                                contactList.add(person[0]);
+                            }
+                        } 
+                        String bouncedMessage = (contactList.size() == 0 
+                            ? 'We were unable to deliver the email.'
+                            : contactList[0].Name + (contactList.size() > 1 
+                                ? (' and ' + (contactList.size() - 1) + 'other email' + (contactList.size() > 2 
+                                    ? 's' 
+                                    : ''))
+                                : ' email'
+                            ) + ' bounced. Update the email address and try again.');       
+                        emailElement.put('bouncedMessage', bouncedMessage);           
+                    }   
                     emailElement.put('description', descriptionText);
                     emailElement.put('datetimeValue', e.MessageDate);
                     emailElement.put('fromAddress', e.FromAddress);
@@ -344,11 +408,17 @@ public with sharing class SearchableActivityController {
                         taskElement.put('upcoming', false);
                         taskElement.put('overdue', true);
                     }
-                    tasks.add(taskElement);
+                    if(t.ActivityDate > System.today() || (t.ActivityDate < System.today() && t.Status != 'Completed')) {
+                        upcomingOverdueTasks.add(taskElement);
+                    } else {
+                        tasks.add(taskElement);
+                    }
+                    //tasks.add(taskElement);
                 }
             }
         res.emailList = emails;
         res.taskList = tasks;
+        res.upcomingOverdueTaskList = upcomingOverdueTasks;
         return res;
     }
 
@@ -380,10 +450,11 @@ public with sharing class SearchableActivityController {
         res.isSuccess = true;
         List<Map<String,Object>> emails = new List<Map<String,Object>>();
         List<Map<String,Object>> tasks = new List<Map<String,Object>>();
+        List<Map<String,Object>> upcomingOverdueTasks = new List<Map<String,Object>>();
         String taskText = 'Task';
         String emailQuery;
         try {
-            emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, isUnread__c FROM EmailMessage WHERE RelatedToId =: recordId';
+            emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, BccAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, isUnread__c, HasAttachment FROM EmailMessage WHERE RelatedToId =: recordId';
             //List<EmailMessage> emailList = Database.query(emailQuery);
             //String taskQuery = 'SELECT Id, Subject, Description, ActivityDate, Status, Priority, Type, TaskSubType, Entry_Date__c, OwnerId, Owner.Name FROM Task WHERE WhatId =: recordId AND TaskSubType =\'' +taskText+ '\'';
             //List<Task> taskList = Database.query(taskQuery);
@@ -410,12 +481,19 @@ public with sharing class SearchableActivityController {
                     Boolean sentBySelf = false;
                     List<String> toAddressList = new List<String>();
                     List<String> ccAddressList = new List<String>();
+                    List<String> bccAddressList = new List<String>();
                     if(e.ToAddress != null) {
                         toAddressList = e.ToAddress.split(';');
                     }
                     if(e.CcAddress != null) {
                         ccAddressList = e.CcAddress.split(';');
                     }
+                    if(e.BccAddress != null) {
+                        bccAddressList = e.BccAddress.split(';');
+                    }
+                    String[] addresses = toAddressList.clone();
+                    addresses.addAll(ccAddressList);
+                    addresses.addAll(bccAddressList);
 
                     String currentUserEmail = UserInfo.getUserEmail();
                     String[] recipients = toAddressList.clone();
@@ -440,6 +518,26 @@ public with sharing class SearchableActivityController {
                                 emailElement.put('canMark', false);
                                 emailElement.put('open', false);
                             }
+                            emailElement.put('bounced', e.IsBounced);
+                            emailElement.put('hasAttachment', e.HasAttachment);
+                            List<Contact> contactList = new List<Contact>();
+                            if(e.IsBounced) {     
+                                for(String ad : addresses) {
+                                    List<Contact> person = [SELECT Name FROM Contact WHERE Email =: ad AND IsEmailBounced = true LIMIT 1];
+                                    if(person.size() > 0) {
+                                        contactList.add(person[0]);
+                                    }
+                                } 
+                                String bouncedMessage = (contactList.size() == 0 
+                                    ? 'We were unable to deliver the email.'
+                                    : contactList[0].Name + (contactList.size() > 1 
+                                        ? (' and ' + (contactList.size() - 1) + 'other email' + (contactList.size() > 2 
+                                            ? 's' 
+                                            : ''))
+                                        : ' email'
+                                    ) + ' bounced. Update the email address and try again.');       
+                                emailElement.put('bouncedMessage', bouncedMessage);           
+                            }   
                             emailElement.put('description', descriptionText);
                             emailElement.put('datetimeValue', e.MessageDate);
                             emailElement.put('fromAddress', e.FromAddress);
@@ -479,6 +577,12 @@ public with sharing class SearchableActivityController {
                             if (t.ActivityDate > lastTaskDate) {
                                 lastTaskDate = t.ActivityDate;
                             }
+                            if(t.ActivityDate > System.today() || (t.ActivityDate < System.today() && t.Status != 'Completed')) {
+                                upcomingOverdueTasks.add(taskElement);
+                            } else {
+                                tasks.add(taskElement);
+                            }
+                            //tasks.add(taskElement);
                         }
                     }*/
                     res.emailList = emails;
