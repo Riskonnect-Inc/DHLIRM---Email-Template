@@ -113,13 +113,15 @@
             </template>
             <!-- URL -->
             <template if:true={isUrl}>
-                <lightning-formatted-url
-                    value={value}
-                    tooltip={normalizedTypeAttributes.tooltip}
-                    target={normalizedTypeAttributes.target}
-                    label={normalizedTypeAttributes.label}
-                    data-element-id="lightning-formatted-url"
-                ></lightning-formatted-url>
+                <div class="slds-wrap wrapped-content">
+                    <lightning-formatted-url
+                        value={value}
+                        tooltip={normalizedTypeAttributes.tooltip}
+                        target={normalizedTypeAttributes.target}
+                        label={normalizedTypeAttributes.label}
+                        data-element-id="lightning-formatted-url"
+                    ></lightning-formatted-url>
+                </div>
             </template>
         </div>
     </div>

@@ -175,6 +175,16 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      */
     @api isActive;
     @api unread;
+    @api bounced;
+    @api overdue;
+    @api attachment;
+    /**
+     * The bounced message can include message while govering on bounced icon.
+     *
+     * @public
+     * @type {string}
+     */
+    @api bouncedmessage;
 
     _actions = [];
     _buttonDisabled = false;
@@ -195,6 +205,7 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
     _icons = [];
     _isReceived;
     _isUnread;
+    _isBounced;
     label;
 
     renderedCallback() {
@@ -750,5 +761,10 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
     get isUnread() {
         this._isUnread = (this.isEmail && this.isReceived && this.unread) ? true : false;
         return this._isUnread;
+    }
+
+    get isBounced() {
+        this._isBounced = (this.isEmail && this.bounced) ? true : false;
+        return this._isBounced;
     }
 }

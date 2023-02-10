@@ -85,7 +85,7 @@ class InterruptiblePoller {
 let i = 0;
 export default class SearchableActivityTimeline extends NavigationMixin(LightningElement) {
 
-    @track showSearchResult = false;
+    @track showSearchResult = false; empty = false; empty1 = false; emptyList = false;
     @track showLoadResult = true;
     @track showFilterResult = false;
     @track dateRange; emailToShow;activitiesToShow; sortActivities; activityType; order = 'asc';
@@ -96,11 +96,15 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     _received = [];
     _sent = [];
     items = [];
+    upcomingOverdueItems = [];
     emails = [];
     tasks = [];
+    upcomingOverdueTasks = [];
     items1 = [];
+    upcomingOverdueItems1 = [];
     emails1 = [];
     tasks1 = [];
+    upcomingOverdueTasks1 = [];
     items2 = [];
     emails2 = [];
     tasks2 = [];
@@ -133,6 +137,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             this.activityDigest = data.activityDigest;
             this.emails = data.emailList;
             this.tasks = data.taskList;
+            this.upcomingOverdueTasks = data.upcomingOverdueTaskList;
+            let upcomingOverdueListObj = [];
             let emailListObj = [];
             this.actionList = [
                 { label: "Link and Categorize Attachments", name: "link-attachments" }, 
@@ -158,6 +164,9 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                             alternativeText: (this.emails[i].canMark && this.emails[i].open) ? 'Mark as Unread' : 'Mark as Read'
                         }
                     ],
+                    bounced: this.emails[i].bounced,
+                    bouncedMessage: (this.emails[i].bounced) ? this.emails[i].bouncedMessage : '',
+                    hasAttachment: this.emails[i].hasAttachment,
                     fields: [
                         {
                             label: 'From Address',
@@ -247,7 +256,55 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                 };
                 emailListObj.push(taskObj);
             }
+            for(i = 0; i < this.upcomingOverdueTasks.length; i++) {
+                let upcomingOverdueTaskObj = {
+                    name: this.upcomingOverdueTasks[i].name,
+                    title: this.upcomingOverdueTasks[i].title,
+                    description: this.upcomingOverdueTasks[i].description,
+                    datetimeValue: this.upcomingOverdueTasks[i].datetimeValue,
+                    itemType: 'task',
+                    upcoming: this.upcomingOverdueTasks[i].upcoming,
+                    overdue: this.upcomingOverdueTasks[i].overdue,
+                    href: '/lightning/r/'+this.upcomingOverdueTasks[i].name+'/view',
+                    iconName: 'standard:task',
+                    closed: true,
+                    fields: [
+                        {
+                            label: 'Status',
+                            value: this.upcomingOverdueTasks[i].status,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.upcomingOverdueTasks[i].status
+                            }
+                        },
+                        {
+                            label: 'Priority',
+                            value: this.upcomingOverdueTasks[i].priority,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.upcomingOverdueTasks[i].priority
+                            }
+                        },
+                        {
+                            label: 'Assigned To',
+                            value: '/lightning/r/'+this.upcomingOverdueTasks[i].assignedId+'/view',
+                            type: 'url',
+                            typeAttributes: {
+                                label: this.upcomingOverdueTasks[i].assignedTo
+                            }
+                        },
+                        {
+                            label: 'Description',
+                            value: this.upcomingOverdueTasks[i].description,
+                            type: 'text'
+                        }
+                    ]
+                };
+                upcomingOverdueListObj.push(upcomingOverdueTaskObj);
+            }
             this.items = emailListObj;
+            this.upcomingOverdueItems = upcomingOverdueListObj;
+            this.emptyList = (this.items.length == 0 && this.upcomingOverdueItems.length == 0) ?  true: false;
             this.showSpinner = false;
         } 
     }
@@ -264,15 +321,19 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             this.showSearchResult = false;
             this.showLoadResult = true;
         }else{
+            //console.log('Search Text: [' + this.searchKeyword + ']');
             findItems({ searchText: this.searchKeyword, recordId: this.recordId })
 		.then(result => {
             this.showSpinner1 = true;
         //this.activitiesList = loadActivities;
         if (result.isSuccess) {
+            //console.log('Results: ' + result.emailList.length + ' emails ' + result.taskList.length + ' tasks');
             this.showLoadResult = false;
             this.showSearchResult = true;
             this.emails1 = result.emailList;
             this.tasks1 = result.taskList;
+            this.upcomingOverdueTasks1 = result.upcomingOverdueTaskList;
+            let upcomingOverdueListObj1 = [];
             let emailListObj1 = [];
             this.actionList = [
                 { label: "Link and Categorize Attachments", name: "link-attachments" }, 
@@ -298,6 +359,9 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                             alternativeText: (this.emails1[i].canMark && this.emails1[i].open) ? 'Mark as Unread' : 'Mark as Read'
                         }
                     ],
+                    bounced: this.emails1[i].bounced,
+                    bouncedMessage: (this.emails1[i].bounced) ? this.emails1[i].bouncedMessage : '',
+                    hasAttachment: this.emails1[i].hasAttachment,
                     fields: [
                         {
                             label: 'From Address',
@@ -387,13 +451,62 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                 };
                 emailListObj1.push(taskObj);
             }
+            for(i = 0; i < this.upcomingOverdueTasks1.length; i++) {
+                let upcomingOverdueTaskObj = {
+                    name: this.upcomingOverdueTasks1[i].name,
+                    title: this.upcomingOverdueTasks1[i].title,
+                    description: this.upcomingOverdueTasks1[i].description,
+                    datetimeValue: this.upcomingOverdueTasks1[i].datetimeValue,
+                    itemType: 'task',
+                    upcoming: this.upcomingOverdueTasks1[i].upcoming,
+                    overdue: this.upcomingOverdueTasks1[i].overdue,
+                    href: '/lightning/r/'+this.upcomingOverdueTasks1[i].name+'/view',
+                    iconName: 'standard:task',
+                    closed: true,
+                    fields: [
+                        {
+                            label: 'Status',
+                            value: this.upcomingOverdueTasks1[i].status,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.upcomingOverdueTasks1[i].status
+                            }
+                        },
+                        {
+                            label: 'Priority',
+                            value: this.upcomingOverdueTasks1[i].priority,
+                            type: 'text',
+                            typeAttributes: {
+                                label: this.upcomingOverdueTasks1[i].priority
+                            }
+                        },
+                        {
+                            label: 'Assigned To',
+                            value: '/lightning/r/'+this.upcomingOverdueTasks1[i].assignedId+'/view',
+                            type: 'url',
+                            typeAttributes: {
+                                label: this.upcomingOverdueTasks1[i].assignedTo
+                            }
+                        },
+                        {
+                            label: 'Description',
+                            value: this.upcomingOverdueTasks1[i].description,
+                            type: 'text'
+                        }
+                    ]
+                };
+                upcomingOverdueListObj1.push(upcomingOverdueTaskObj);
+            }
             this.items1 = emailListObj1;
+            this.upcomingOverdueItems1 = upcomingOverdueListObj1;
+            this.empty = (this.items1.length == 0 && this.upcomingOverdueItems1.length == 0) ?  true: false;
             this.showSpinner1 = false;
         }
 		})
 		.catch(error => {
+            //('Error: ' + JSON.stringify(error));
             this.showSearchResult = false;
-            debugger;
+            //debugger;
 			this.error = error;
 		})
         }
@@ -687,6 +800,9 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                             alternativeText: (this.emails2[i].canMark && this.emails2[i].open) ? 'Mark as Unread' : 'Mark as Read'
                         }
                     ],
+                    bounced: this.emails2[i].bounced,
+                    bouncedMessage: (this.emails2[i].bounced) ? this.emails2[i].bouncedMessage : '',
+                    hasAttachment: this.emails2[i].hasAttachment,
                     fields: [
                         {
                             label: 'From Address',
@@ -777,12 +893,13 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                 emailListObj2.push(taskObj);
             }*/
             this.items2 = emailListObj2;
+            this.empty1 = this.items2.length == 0 ?  true: false;
             this.showSpinner2 = false;
         }
 		})
 		.catch(error => {
             this.showSearchResult = false;
-            debugger;
+            //debugger;
 			this.error = error;
 		})
         
@@ -796,7 +913,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         this.showLoadResult = true;
         this.showFilterResult = false;
         this.showSearchResult = false;
-        debugger;
+        //debugger;
     }
     handleDateChange(event){
         var dateRange1 = event.target.value;

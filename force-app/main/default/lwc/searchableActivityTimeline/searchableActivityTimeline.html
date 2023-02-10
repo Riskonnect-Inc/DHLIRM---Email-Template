@@ -1,29 +1,29 @@
 <template> 
-    <div style="width:100%;height: 50px;">
-        <div style="width: 14%;margin-top: 10px;float: left;margin-left: 10px">
+    <!-- MDU: HACK! Cutting into top margin, to close the gap between this custom component and the standard timeline 
+        component that should be positioned directly above it -->
+    <div style="width: 100%; height: 50px; margin-top: -5em">
+        <!-- MDU: Hiding the New Task and New Email butttons for now, since we'll be 
+            leveraging them from the standard timeline on the same page -->
+        <div style="display: none; width: 14%;margin-top: 10px;float: left;margin-left: 10px">
             <lightning-button
                 label="New Email"
                 icon-name="utility:email"
                 onclick={newEmail}>
             </lightning-button>
         </div>
-        <div style="width: 14%;margin-top: 10px;float: left;margin-left: 10px">
+        <!-- MDU: Hiding the New Task and New Email butttons for now, since we'll be 
+            leveraging them from the standard timeline on the same page -->
+        <div style="display: none; width: 14%;margin-top: 10px;float: left;margin-left: 10px">
             <lightning-button
                 label="New Task"
                 icon-name="utility:task"
                 onclick={newTask}>
             </lightning-button>
         </div>
-        <!--<div >-->
-            <lightning-input
-                style="width: 28%;margin-top: 10px;float: left;margin-left: 32%"
-                variant="label-hidden"
-                type="search" 
-                value={searchValue}
-                placeholder="Search"
-                onchange={getEmailAndTask}>
-            </lightning-input>
-        <div style="width: 8%;margin-top: 10px;float: left;margin-left: 10px">
+        
+        <!-- MDU: Changing the search input and filter icon from float:left to float:right, and necessarily also changing
+            their markup order (i.e. so the filter icon gets right-most priority) -->
+        <div style="margin-top: 10px;float: right;margin-left: 10px">
             <lightning-button-menu alternative-text="Show menu" icon-name="utility:settings">
                 <div class="slds-panel slds-size_medium slds-p-around_x-small">
                     <lightning-button-icon 
@@ -150,51 +150,95 @@
                 </footer>      
             </lightning-button-menu>
         </div>
+
+        <lightning-input
+            style="width: 28%;margin-top: 10px;float: right;margin-left: 32%"
+            variant="label-hidden"
+            type="search" 
+            value={searchValue}
+            placeholder="Search"
+            onchange={getEmailAndTask}>
+        </lightning-input>
     </div>
     
     <template if:true={showSearchResult}>
+        <lightning-spinner
+            if:true={showSpinner}
+            alternative-text="loading"
+            size="large"
+            data-element-id="lightning-spinner">
+        </lightning-spinner>
+        <!-- Exclusively for Upcoming and Overdue Tasks -->
         <c-avonni-activity-timeline
-        actions={actionList}
-        group-by="month"
-        collapsible
-        item-date-format="T | dd-LLL yyyy"
-        item-icon-size="small"
-        items={items1}
-        ontimelinechange={timelineChangeSearch}
-        max-visible-items="3"
-        button-show-more-icon-name="utility:down"
-        button-show-less-icon-name="utility:up"
-        onemailactiontype={emailAction}>
-            <lightning-spinner
-                if:true={showSpinner1}
-                alternative-text="loading"
-                size="large"
-                data-element-id="lightning-spinner">
-            </lightning-spinner>
-    </c-avonni-activity-timeline>
+            actions={actionList}
+            group-by="month"
+            collapsible
+            item-date-format="T | dd-LLL yyyy"
+            item-icon-size="small"
+            items={upcomingOverdueItems1}
+            ontimelinechange={timelineChangeSearch}
+            max-visible-items="3"
+            button-show-more-icon-name="utility:down"
+            button-show-less-icon-name="utility:up"
+            onemailactiontype={emailAction}>
+        </c-avonni-activity-timeline>
+        <!-- Timeline Ends -->
+        <c-avonni-activity-timeline
+            actions={actionList}
+            group-by="month"
+            collapsible
+            item-date-format="T | dd-LLL yyyy"
+            item-icon-size="small"
+            items={items1}
+            ontimelinechange={timelineChangeSearch}
+            max-visible-items="3"
+            button-show-more-icon-name="utility:down"
+            button-show-less-icon-name="utility:up"
+            onemailactiontype={emailAction}>
+        </c-avonni-activity-timeline>
+        <template if:true={empty}>
+            <div class="slds-section slds-is-open">
+                <h3 class="slds-section__title slds-theme_shade">
+                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Upcoming and Overdue</span>
+                </h3>
+                <div aria-hidden="false" class="slds-section__content slds-align_absolute-center">
+                    <p>No activities to show. Get started by sending an email, scheduling a task and more.</p>
+                </div>
+            </div>
+        </template>
     </template>
 
     <template if:true={showFilterResult}>
+        <lightning-spinner
+            if:true={showSpinner1}
+            alternative-text="loading"
+            size="large"
+            data-element-id="lightning-spinner">
+        </lightning-spinner>
         <c-avonni-activity-timeline
-        actions={actionList}
-        group-by="month"
-        collapsible
-        item-date-format="T | dd-LLL yyyy"
-        item-icon-size="small"
-        items={items2}
-        ontimelinechange={timelineChangeFilter}
-        max-visible-items="3"
-        sorted-direction={order}
-        button-show-more-icon-name="utility:down"
-        button-show-less-icon-name="utility:up"
-        onemailactiontype={emailAction}>
-            <lightning-spinner
-                if:true={showSpinner1}
-                alternative-text="loading"
-                size="large"
-                data-element-id="lightning-spinner">
-            </lightning-spinner>
-    </c-avonni-activity-timeline>
+            actions={actionList}
+            group-by="month"
+            collapsible
+            item-date-format="T | dd-LLL yyyy"
+            item-icon-size="small"
+            items={items2}
+            ontimelinechange={timelineChangeFilter}
+            max-visible-items="3"
+            sorted-direction={order}
+            button-show-more-icon-name="utility:down"
+            button-show-less-icon-name="utility:up"
+            onemailactiontype={emailAction}>
+        </c-avonni-activity-timeline>
+        <template if:true={empty1}>
+            <div class="slds-section slds-is-open">
+                <h3 class="slds-section__title slds-theme_shade">
+                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Upcoming and Overdue</span>
+                </h3>
+                <div aria-hidden="false" class="slds-section__content slds-align_absolute-center">
+                    <p>No Results to show. Get started by sending an email, scheduling a task and more.</p>
+                </div>
+            </div>
+        </template>
     </template>
     
     <!--lightning-tabset variant="scoped">
@@ -202,6 +246,27 @@
             
     <!-- Adding avonni component-->
     <template if:true={showLoadResult}>
+        <lightning-spinner
+            if:true={showSpinner}
+            alternative-text="loading"
+            size="large"
+            data-element-id="lightning-spinner">
+        </lightning-spinner>
+        <!-- Exclusively for Upcoming and Overdue Tasks -->
+        <c-avonni-activity-timeline
+            actions={actionList}
+            group-by="month"
+            collapsible
+            item-date-format="T | dd-LLL yyyy"
+            item-icon-size="small"
+            items={upcomingOverdueItems}
+            ontimelinechange={timelineChange}
+            max-visible-items="3"
+            button-show-more-icon-name="utility:down"
+            button-show-less-icon-name="utility:up"
+            onemailactiontype={emailAction}>
+        </c-avonni-activity-timeline>
+        <!-- Timeline Ends -->
         <c-avonni-activity-timeline
             actions={actionList}
             group-by="month"
@@ -214,12 +279,16 @@
             button-show-more-icon-name="utility:down"
             button-show-less-icon-name="utility:up"
             onemailactiontype={emailAction}>
-                <lightning-spinner
-                    if:true={showSpinner}
-                    alternative-text="loading"
-                    size="large"
-                    data-element-id="lightning-spinner">
-                </lightning-spinner>
         </c-avonni-activity-timeline>
+        <template if:true={emptyList}>
+            <div class="slds-section slds-is-open">
+                <h3 class="slds-section__title slds-theme_shade">
+                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Upcoming and Overdue</span>
+                </h3>
+                <div aria-hidden="false" class="slds-section__content slds-align_absolute-center">
+                    <p>No Results to show. Get started by sending an email, scheduling a task and more.</p>
+                </div>
+            </div>
+        </template>
     </template>
 </template>

@@ -11,7 +11,7 @@
 	*/
 	
 	handleReplyForwardEvent : function(component, event, helper) {
-
+		component.set('v.spinner', true);
 		//let recId = event.getParam('Id');
 		let recId = component.get('v.recordId');
 		let toAddress = event.getParam('toAddress');
@@ -56,6 +56,7 @@
         }).catch(error => {
             console.log('error:',JSON.parse(JSON.stringify(error)));
         });
+		component.set('v.spinner', false);
 
 		// =============================================================================================================
 		// =============================================================================================================
