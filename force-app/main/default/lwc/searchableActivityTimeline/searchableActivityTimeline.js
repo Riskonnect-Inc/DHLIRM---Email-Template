@@ -894,7 +894,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             }*/
             this.items2 = emailListObj2;
             this.empty1 = this.items2.length == 0 ?  true: false;
-            this.showSpinner2 = false;
+            this.showSpinner1 = false;
         }
 		})
 		.catch(error => {
