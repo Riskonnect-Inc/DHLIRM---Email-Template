@@ -247,6 +247,7 @@ public class SearchableActivityControllerTest {
         Test.setFixedSearchResults(fsrIds1);
         Test.startTest();
         SearchableActivityController.filterLoadResult(claim.Id, 'allTime', 'allEmails', 'read', null);
+        SearchableActivityController.filterLoadResult(claim.Id, null, null, null, null);
         Test.stopTest();
     }
 }
