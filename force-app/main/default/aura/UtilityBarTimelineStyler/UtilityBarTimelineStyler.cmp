@@ -1,0 +1,5 @@
+<aura:component description="Aura container for lwc component - intended to modify the display of standard activities timeline and EmailMessage detail pages when associated with claims" 
+        implements="force:hasRecordId,force:lightningQuickAction,lightning:utilityItem" access="global">
+    <!-- Tried to implement force:hasSObjectName and pass through value v.sObjectName, but this value is not available in Utility Bar contexts :( -->
+    <c:utilityBarTimelineStylerInner recordId="{!v.recordId}"  />  
+</aura:component>
