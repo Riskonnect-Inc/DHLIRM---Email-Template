@@ -1,0 +1,8 @@
+.skip-timeline-wrapper {
+    display: none;
+}
+
+.emailuiEmailBaseReplyActions,
+.reply-actions-container {
+    display: none;
+}
