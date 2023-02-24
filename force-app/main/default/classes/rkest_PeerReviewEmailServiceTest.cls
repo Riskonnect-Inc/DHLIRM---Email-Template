@@ -1,1 +1,0 @@
-@isTest private class rkest_PeerReviewEmailServiceTest { static testMethod void test_EmailService() { Messaging.InboundEmail email = new Messaging.InboundEmail(); Messaging.InboundEnvelope envelope = new Messaging.InboundEnvelope(); Messaging.InboundEmailResult res = new rkes_PeerReviewEmailService().handleInboundEmail(email, envelope); } }

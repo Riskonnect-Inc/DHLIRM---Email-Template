@@ -1,9 +1,0 @@
-<!---- ****************************************************************
-                        Added to RK base RMIS product as 05/05/2014
-           ******************************************************************* -->
-<apex:page sidebar="false" showHeader="false" showChat="false">
-    <script type="text/javascript">
-        var currentSessionID = "{!GETSESSIONID()}";
-        parent.postMessage("SESSIONID:" + currentSessionID, "*");
-    </script>
-</apex:page>

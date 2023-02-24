@@ -1,7 +1,0 @@
-<!---- *******************************************************************
-                        Added to RK base RMIS product as 8/5/2013
-                        Updated for rka 1.115 and greater 3/9/18
-       ******************************************************************* -->
-<apex:page standardController="Property__c"  showHeader="false" sidebar="false" extensions="PropertiesWorldMap_Controller" action="{!onLoad}">
-
-</apex:page>

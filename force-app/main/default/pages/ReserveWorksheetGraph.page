@@ -1,6 +1,0 @@
-<!---- ****************************************************************
-                        Added to RK base RMIS product as 11/13/2014
-           ******************************************************************* -->
-<apex:page standardController="Res_Worksheet__c">
-    <c:ReserveWorksheetComponent myObject="{!Res_Worksheet__c}"/>
-</apex:page>

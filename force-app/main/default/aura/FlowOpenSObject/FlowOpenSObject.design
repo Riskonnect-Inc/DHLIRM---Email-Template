@@ -1,5 +1,0 @@
-<design:component label="Navigate to SObject Record">
-	<design:attribute
-		name="SObjectId"
-		label="Record ID to Navigate"/>
-</design:component>

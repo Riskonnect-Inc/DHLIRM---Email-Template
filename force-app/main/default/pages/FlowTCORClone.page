@@ -1,8 +1,0 @@
-<!---- ****************************************************************
-                        Added to RK base RMIS product as 11/11/2014
-           ******************************************************************* -->
-<apex:page controller="TCORFlowController"  tabStyle="TCOR__c" >
-    <flow:interview name="Clone_TCOR" finishLocation="{!FinishPage}"  interview="{!myflow}">
-      <apex:param name="oldtcorid" assignTo="{!oldtcorid}" value="{!$CurrentPage.parameters.Id}"/>       
-    </flow:interview>
-</apex:page>

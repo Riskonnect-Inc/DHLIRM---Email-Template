@@ -1,6 +1,0 @@
-<!-- Mike Ulveling -->
-<!---- ****************************************************************
-                        Added to RK base RMIS product as 04/05/2016
-           ******************************************************************* -->
-<apex:page standardController="Scheduled_Payments__c" extensions="scpAdminActionsController" action="{!onPageLoad}">
-</apex:page>

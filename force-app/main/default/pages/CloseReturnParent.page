@@ -1,9 +1,0 @@
-<!---- ****************************************************************
-                        Added to RK base RMIS product as   02/24/2015
-           ******************************************************************* -->
-<apex:page >
-<script>
-window.opener.top.location='/{!$CurrentPage.parameters.rid}'; 
-window.close();
-</script>
-</apex:page>

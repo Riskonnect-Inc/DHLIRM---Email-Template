@@ -1,7 +1,0 @@
-<!---- ****************************************************************
-                        Added to RK base RMIS product as 09/24/2013
-           ******************************************************************* -->
-<apex:page standardController="Claim__c"     >
-  <chatter:feedWithFollowers entityId="{!Claim__c.id}"/>
-  <apex:detail inlineEdit="true"/>
-</apex:page>

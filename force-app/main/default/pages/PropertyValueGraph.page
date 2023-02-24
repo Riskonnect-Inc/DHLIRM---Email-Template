@@ -1,6 +1,0 @@
-<!---- ****************************************************************
-                        Added to RK base RMIS product as 08/01/2013
-           ******************************************************************* -->
-<apex:page standardController="Property__c">
-    <c:PropertyValueComponent myObject="{!Property__c}"/>
-</apex:page>

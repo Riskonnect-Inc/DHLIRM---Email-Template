@@ -1,4 +1,0 @@
-trigger FieldUpdatePeerReviewTrigger on Peer_Review__c (before insert, before update) {
-
-	rkl.CopyLookupFieldsByTrigger main = new rkl.CopyLookupFieldsByTrigger(Trigger.new, new Set<String>{'Patient_Visit__c'}, 'Peer_Review__c');
-}

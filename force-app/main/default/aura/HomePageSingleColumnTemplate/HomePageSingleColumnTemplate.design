@@ -1,8 +1,0 @@
-<design:component>
-	<flexipage:template>
-		<flexipage:region
-			name="main"
-			defaultWidth="Large">
-        </flexipage:region>
-	</flexipage:template>
-</design:component>

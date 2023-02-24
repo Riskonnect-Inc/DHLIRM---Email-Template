@@ -1,1 +1,0 @@
-@isTest private class rkest_PatientEventEmailServiceTest { static testMethod void test_EmailService() { Messaging.InboundEmail email = new Messaging.InboundEmail(); Messaging.InboundEnvelope envelope = new Messaging.InboundEnvelope(); Messaging.InboundEmailResult res = new rkes_PatientEventEmailService().handleInboundEmail(email, envelope); } }
