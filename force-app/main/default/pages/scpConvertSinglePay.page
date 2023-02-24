@@ -1,6 +1,0 @@
-<!-- Mike Ulveling -->
-<!---- ****************************************************************
-                        Added to RK base RMIS product as 04/05/2016
-           ******************************************************************* -->
-<apex:page standardController="Pending_Payments_Queue__c"  extensions="scpConvertSinglePayController" action="{!onPageLoad}">
-</apex:page>

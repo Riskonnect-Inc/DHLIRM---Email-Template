@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<AuraDefinitionBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>42.0</apiVersion>
-    <description>If you are overriding a tab in Classic, but want the standard Experience in Lightning, use this component to redirect the Custom Object Tab to the standard Recently Viewed List</description>
-</AuraDefinitionBundle>

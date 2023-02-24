@@ -1,6 +1,0 @@
-<!---- ****************************************************************
-                        Added to RK base RMIS product as 05/29/2013
-           ******************************************************************* -->
-<apex:page standardController="rkl__RK_Hierarchy_Node__c">
-    <c:lzLoadingTree objectPluralLabel="Herarchy Nodes" objectType="rkl__RK_Hierarchy_Node__c" parentObjectName="{!rkl__RK_Hierarchy_Node__c.Name}" fieldToQuery="rkl_Parent_Node__c" parentId="{!rkl__RK_Hierarchy_Node__c.Id}" />
-</apex:page>
