@@ -4,14 +4,15 @@ import { encodeDefaultFieldValues } from 'lightning/pageReferenceUtils';
 import { refreshApex } from '@salesforce/apex';
 import { getRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 
-import { loadStyle } from 'lightning/platformResourceLoader';
+//import { loadStyle } from 'lightning/platformResourceLoader';
 import customStyles from '@salesforce/resourceUrl/searchableActivity_styleHacks';
 
-import findItems from "@salesforce/apex/SearchableActivityController.findItems";
+//import findItems from "@salesforce/apex/SearchableActivityController.findItems";
 import loadItems from "@salesforce/apex/SearchableActivityController.loadItems";
 import filterLoadResult from "@salesforce/apex/SearchableActivityController.filterLoadResult";
 import loadEmailDetails from "@salesforce/apex/SearchableActivityController.loadEmailDetails";
 import getActivityDigest from "@salesforce/apex/SearchableActivityController.getActivityDigest";
+//import { containsScrollingElement } from '../positionLibrary/util';
 
 class InterruptiblePoller {
     context;
@@ -84,11 +85,11 @@ class InterruptiblePoller {
 
 let i = 0;
 export default class SearchableActivityTimeline extends NavigationMixin(LightningElement) {
-
-    @track showSearchResult = false; empty = false; empty1 = false; emptyList = false;
+    @track showSearchResult = false; empty = false; empty1 = false; emptyList = false; isLinked = false; isFilterOpen = false; emptyUpcomingList = false;
     @track showLoadResult = true;
     @track showFilterResult = false;
-    @track dateRange; emailToShow;activitiesToShow; sortActivities; activityType; order = 'asc';
+    @track dateRange = ''; emailsToShow = '';activitiesToShow = ''; sortActivities = ''; activityType = ''; order = 'desc'; maxItems = '3';
+    @track loadType = 'load'; //There are 3 types: Load, Search and Filter. By default it is load
     @api recordId;
     actionList = [];
     searchValue;
@@ -106,8 +107,10 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     tasks1 = [];
     upcomingOverdueTasks1 = [];
     items2 = [];
+    upcomingOverdueItems2 = [];
     emails2 = [];
     tasks2 = [];
+    upcomingOverdueTasks2 = [];
     showSpinner2 = false;
     showSpinner1 = false;
     showSpinner = false;
@@ -115,25 +118,82 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     emailId;
     emailType;
 
-    @track searchKeyword;
+    @track isEmailChecked = true;
+    @track isTaskChecked = true;
+    @track isCheckboxEmpty = false;
+    @track isApplyDisabled = false
+    filters = false;
+    buttonClick = false;
+    @track showActivityButton = false;
+    @track toggle;
+
+    @track searchKeyword = '';
     //Radio button values
-    dateRangeValue = '';
+    dateRangeValue = 'allTime';
     activityGroupValue  = '';
     emailGroupValue = '';
     activitySortValue = '';
-    activityTypeValue = '';
+    activityTypeValue = ['emails', 'tasks'];
 
     poller;
     activityDigest;
 
+    loadError;
+    loadErrorMessage;
+    hasActivitiesData;
+
+    filtersDigest;
+    get hasFiltersDigest() {
+        return !!this.filtersDigest;
+    }
+
+    get notEmptyList() {
+        return !this.emptyList;
+    }
+
+    get noUpcomingOrOverdue() {
+        return this.emptyUpcomingList;
+    }
+
+    //Raghil: A huge testing workaround to see if we can use 1 wire method for Load, Search and Filter
     @wire(loadItems, {
-        claimId: '$recordId'
+        claimId: '$recordId',
+        type: '$loadType',
+        searchText: '$searchKeyword',
+        dateRange: '$dateRange', 
+        emailsToShow: '$emailsToShow', 
+        emailStatus: '$activitiesToShow', 
+        sortActivites: '$sortActivities',
+        isEmailChecked: '$isEmailChecked',
+        isTaskChecked: '$isTaskChecked'
     })
     wiredRecs(loadActivities) {
         this.showSpinner = true;
         this.activitiesList = loadActivities;
         const {error, data} = loadActivities;
-        if (data) {
+        if (error) {
+            //console.log('Error:');
+            //console.log(error);
+            this.items = [];
+            this.upcomingOverdueItems = [];
+            this.loadError = true;
+            this.loadErrorMessage = 'Unexpected error while loading activities: ' + error.body.message;
+            this.emptyList = false;
+            this.emptyUpcomingList = false;
+            this.showSpinner = false;
+            this.hasActivitiesData = false;
+            this.filtersDigest = null;
+        } else if (data) {
+            this.filtersDigest = data.filtersDigest;
+            if (data.searchTextError != null) {
+                //console.log('Search error: ' + data.searchTextError);
+                this.loadError = true;
+                this.loadErrorMessage = data.searchTextError;
+            } else {
+                //console.log('No search error');
+                this.loadError = false;
+                this.loadErrorMessage = null;
+            }            
             this.activityDigest = data.activityDigest;
             this.emails = data.emailList;
             this.tasks = data.taskList;
@@ -141,389 +201,210 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             let upcomingOverdueListObj = [];
             let emailListObj = [];
             this.actionList = [
-                { label: "Link and Categorize Attachments", name: "link-attachments" }, 
-                { label: "Delete", name: "delete-item" }
+                { label: "Delete", name: "delete-item" },
+                { label: "Link and Categorize Attachments", name: "link-attachments" },              
             ];
-            for(i = 0; i< this.emails.length; i++) {  
-                let emailObj = 
-                {
-                    name: this.emails[i].name,
-                    title: this.emails[i].title,
-                    description: this.emails[i].description,
-                    received: this.emails[i].received,
-                    itemType: 'email',
-                    canMark: this.emails[i].canMark,
-                    isUnread: (this.emails[i].canMark && !this.emails[i].open) ? true : false,
-                    datetimeValue: this.emails[i].datetimeValue,
-                    href: '/lightning/r/'+this.emails[i].name+'/view',
-                    iconName: 'standard:email',
-                    closed: true,
-                    icons: [
-                        {
-                            iconName: (this.emails[i].canMark && this.emails[i].open) ? 'utility:email_open' : 'utility:email',
-                            alternativeText: (this.emails[i].canMark && this.emails[i].open) ? 'Mark as Unread' : 'Mark as Read'
-                        }
-                    ],
-                    bounced: this.emails[i].bounced,
-                    bouncedMessage: (this.emails[i].bounced) ? this.emails[i].bouncedMessage : '',
-                    hasAttachment: this.emails[i].hasAttachment,
-                    fields: [
-                        {
-                            label: 'From Address',
-                            value: this.emails[i].fromAddress,
-                            type: 'url',
-                            typeAttributes: {
-                                label: this.emails[i].fromAddress
-                            },           
-                        },
-                        {
-                            label: 'To Address',
-                            value: this.emails[i].toAddress,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.emails[i].toAddress
+            if(this.emails != null || this.emails != undefined) {
+                for(i = 0; i< this.emails.length; i++) {  
+                    let emailObj = 
+                    {
+                        name: this.emails[i].name,
+                        title: this.emails[i].title,
+                        description: this.emails[i].description,
+                        received: this.emails[i].received,
+                        itemType: 'email',
+                        canMark: this.emails[i].canMark,
+                        isUnread: (this.emails[i].canMark && !this.emails[i].open) ? true : false,
+                        datetimeValue: this.emails[i].datetimeValue,
+                        href: '/lightning/r/'+this.emails[i].name+'/view',
+                        iconName: 'standard:email',
+                        closed: true,
+                        icons: [
+                            {
+                                iconName: (this.emails[i].canMark && this.emails[i].open) ? 'utility:email_open' : 'utility:email',
+                                alternativeText: (this.emails[i].canMark && this.emails[i].open) ? 'Mark as Unread' : 'Mark as Read'
                             }
-                        },
-                        {
-                            label: 'Text Body',
-                            value: this.emails[i].textBody,
-                            type: 'text'
-                        }
-                    ],
-                    buttons: [
-                        {
-                            buttonLabel: "Reply",
-                            buttonName: "reply", 
-                            iconName: "utility:reply"
-                        },
-                        {
-                            buttonLabel: 'Reply All', 
-                            buttonName: 'reply-all', 
-                            iconName: 'utility:reply_all'
-                        },
-                        {
-                            buttonLabel: "Forward", 
-                            buttonName: "reply-all", 
-                            iconName: "utility:forward"
-                        }
-                    ]
-                };
-                emailListObj.push(emailObj);
+                        ],
+                        bounced: this.emails[i].bounced,
+                        bouncedMessage: (this.emails[i].bounced) ? this.emails[i].bouncedMessage : '',
+                        hasAttachment: this.emails[i].hasAttachment,
+                        fields: [
+                            {
+                                label: 'From Address',
+                                value: this.emails[i].fromAddress,
+                                type: 'url',
+                                typeAttributes: {
+                                    label: this.emails[i].fromAddress
+                                },           
+                            },
+                            {
+                                label: 'To Address',
+                                value: this.emails[i].toAddress,
+                                type: 'text',
+                                typeAttributes: {
+                                    label: this.emails[i].toAddress
+                                }
+                            },
+                            {
+                                label: 'Text Body',
+                                value: this.emails[i].textBody,
+                                type: 'text'
+                            }
+                        ],
+                        buttons: [
+                            {
+                                buttonLabel: "Reply",
+                                buttonName: "reply", 
+                                iconName: "utility:reply"
+                            },
+                            {
+                                buttonLabel: 'Reply All', 
+                                buttonName: 'reply-all', 
+                                iconName: 'utility:reply_all'
+                            },
+                            {
+                                buttonLabel: "Forward", 
+                                buttonName: "reply-all", 
+                                iconName: "utility:forward"
+                            }
+                        ]
+                    };
+                    emailListObj.push(emailObj);
+                }
             }
-            for(i = 0; i < this.tasks.length; i++) {
-                let taskObj = {
-                    name: this.tasks[i].name,
-                    title: this.tasks[i].title,
-                    description: this.tasks[i].description,
-                    datetimeValue: this.tasks[i].datetimeValue,
-                    itemType: 'task',
-                    upcoming: this.tasks[i].upcoming,
-                    overdue: this.tasks[i].overdue,
-                    href: '/lightning/r/'+this.tasks[i].name+'/view',
-                    iconName: 'standard:task',
-                    closed: true,
-                    fields: [
-                        {
-                            label: 'Status',
-                            value: this.tasks[i].status,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.tasks[i].status
+            
+            if(this.tasks != null || this.tasks != undefined) {
+                for(i = 0; i < this.tasks.length; i++) {
+                    let taskObj = {
+                        name: this.tasks[i].name,
+                        title: this.tasks[i].title,
+                        description: this.tasks[i].description,
+                        datetimeValue: this.tasks[i].datetimeValue,
+                        itemType: 'task',
+                        upcoming: this.tasks[i].upcoming,
+                        overdue: this.tasks[i].overdue,
+                        href: '/lightning/r/'+this.tasks[i].name+'/view',
+                        iconName: 'standard:task',
+                        closed: true,
+                        fields: [
+                            {
+                                label: 'Status',
+                                value: this.tasks[i].status,
+                                type: 'text',
+                                typeAttributes: {
+                                    label: this.tasks[i].status
+                                }
+                            },
+                            {
+                                label: 'Priority',
+                                value: this.tasks[i].priority,
+                                type: 'text',
+                                typeAttributes: {
+                                    label: this.tasks[i].priority
+                                }
+                            },
+                            {
+                                label: 'Assigned To',
+                                value: '/lightning/r/'+this.tasks[i].assignedId+'/view',
+                                type: 'url',
+                                typeAttributes: {
+                                    label: this.tasks[i].assignedTo
+                                }
+                            },
+                            {
+                                label: 'Description',
+                                value: this.tasks[i].description,
+                                type: 'text'
                             }
-                        },
-                        {
-                            label: 'Priority',
-                            value: this.tasks[i].priority,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.tasks[i].priority
-                            }
-                        },
-                        {
-                            label: 'Assigned To',
-                            value: '/lightning/r/'+this.tasks[i].assignedId+'/view',
-                            type: 'url',
-                            typeAttributes: {
-                                label: this.tasks[i].assignedTo
-                            }
-                        },
-                        {
-                            label: 'Description',
-                            value: this.tasks[i].description,
-                            type: 'text'
-                        }
-                    ]
-                };
-                emailListObj.push(taskObj);
+                        ]
+                    };
+                    emailListObj.push(taskObj);
+                }
             }
-            for(i = 0; i < this.upcomingOverdueTasks.length; i++) {
-                let upcomingOverdueTaskObj = {
-                    name: this.upcomingOverdueTasks[i].name,
-                    title: this.upcomingOverdueTasks[i].title,
-                    description: this.upcomingOverdueTasks[i].description,
-                    datetimeValue: this.upcomingOverdueTasks[i].datetimeValue,
-                    itemType: 'task',
-                    upcoming: this.upcomingOverdueTasks[i].upcoming,
-                    overdue: this.upcomingOverdueTasks[i].overdue,
-                    href: '/lightning/r/'+this.upcomingOverdueTasks[i].name+'/view',
-                    iconName: 'standard:task',
-                    closed: true,
-                    fields: [
-                        {
-                            label: 'Status',
-                            value: this.upcomingOverdueTasks[i].status,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.upcomingOverdueTasks[i].status
+            
+            if(this.upcomingOverdueTasks != null || this.upcomingOverdueTasks != undefined) {
+                for(i = 0; i < this.upcomingOverdueTasks.length; i++) {
+                    let upcomingOverdueTaskObj = {
+                        name: this.upcomingOverdueTasks[i].name,
+                        title: this.upcomingOverdueTasks[i].title,
+                        description: this.upcomingOverdueTasks[i].description,
+                        datetimeValue: this.upcomingOverdueTasks[i].datetimeValue,
+                        itemType: 'task',
+                        upcoming: this.upcomingOverdueTasks[i].upcoming,
+                        overdue: this.upcomingOverdueTasks[i].overdue,
+                        href: '/lightning/r/'+this.upcomingOverdueTasks[i].name+'/view',
+                        iconName: 'standard:task',
+                        closed: true,
+                        fields: [
+                            {
+                                label: 'Status',
+                                value: this.upcomingOverdueTasks[i].status,
+                                type: 'text',
+                                typeAttributes: {
+                                    label: this.upcomingOverdueTasks[i].status
+                                }
+                            },
+                            {
+                                label: 'Priority',
+                                value: this.upcomingOverdueTasks[i].priority,
+                                type: 'text',
+                                typeAttributes: {
+                                    label: this.upcomingOverdueTasks[i].priority
+                                }
+                            },
+                            {
+                                label: 'Assigned To',
+                                value: '/lightning/r/'+this.upcomingOverdueTasks[i].assignedId+'/view',
+                                type: 'url',
+                                typeAttributes: {
+                                    label: this.upcomingOverdueTasks[i].assignedTo
+                                }
+                            },
+                            {
+                                label: 'Description',
+                                value: this.upcomingOverdueTasks[i].description,
+                                type: 'text'
                             }
-                        },
-                        {
-                            label: 'Priority',
-                            value: this.upcomingOverdueTasks[i].priority,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.upcomingOverdueTasks[i].priority
-                            }
-                        },
-                        {
-                            label: 'Assigned To',
-                            value: '/lightning/r/'+this.upcomingOverdueTasks[i].assignedId+'/view',
-                            type: 'url',
-                            typeAttributes: {
-                                label: this.upcomingOverdueTasks[i].assignedTo
-                            }
-                        },
-                        {
-                            label: 'Description',
-                            value: this.upcomingOverdueTasks[i].description,
-                            type: 'text'
-                        }
-                    ]
-                };
-                upcomingOverdueListObj.push(upcomingOverdueTaskObj);
+                        ]
+                    };
+                    upcomingOverdueListObj.push(upcomingOverdueTaskObj);
+                }
             }
+            
             this.items = emailListObj;
             this.upcomingOverdueItems = upcomingOverdueListObj;
             this.emptyList = (this.items.length == 0 && this.upcomingOverdueItems.length == 0) ?  true: false;
+            this.emptyUpcomingList = (this.upcomingOverdueItems.length == 0) ? true : false;
+            this.hasActivitiesData = !this.emptyList;
             this.showSpinner = false;
         } 
     }
 
     connectedCallback() {
-        loadStyle(this, customStyles);
+        //if(!this.filters) {
+        //    this.resetFilterValues();
+        //} 
+        if (typeof this.toggle === 'undefined') this.toggle = true;
+        this.filters = {};
+        this.resetFilterValues();
         this.poller = new InterruptiblePoller(this, 5000, 1000);
         this.poller.start();
     }
 
     getEmailAndTask(event){
 		this.searchKeyword = event.target.value;
+        // MDU: DON'T reset the filter values:
+        //this.resetFilterValues();
+        this.loadType = 'Search';
+        //this.activityTypeValue = ['emails', 'tasks'];
         if(this.searchKeyword.length == 0){
-            this.showSearchResult = false;
-            this.showLoadResult = true;
-        }else{
-            //console.log('Search Text: [' + this.searchKeyword + ']');
-            findItems({ searchText: this.searchKeyword, recordId: this.recordId })
-		.then(result => {
-            this.showSpinner1 = true;
-        //this.activitiesList = loadActivities;
-        if (result.isSuccess) {
-            //console.log('Results: ' + result.emailList.length + ' emails ' + result.taskList.length + ' tasks');
-            this.showLoadResult = false;
-            this.showSearchResult = true;
-            this.emails1 = result.emailList;
-            this.tasks1 = result.taskList;
-            this.upcomingOverdueTasks1 = result.upcomingOverdueTaskList;
-            let upcomingOverdueListObj1 = [];
-            let emailListObj1 = [];
-            this.actionList = [
-                { label: "Link and Categorize Attachments", name: "link-attachments" }, 
-                { label: "Delete", name: "delete-item" }
-            ];
-            for(i = 0; i< this.emails1.length; i++) { 
-                let emailObj = 
-                {
-                    name: this.emails1[i].name,
-                    title: this.emails1[i].title,
-                    description: this.emails1[i].description,
-                    received: this.emails1[i].received,
-                    itemType: 'email',
-                    datetimeValue: this.emails1[i].datetimeValue,
-                    href: '/lightning/r/'+this.emails1[i].name+'/view',
-                    iconName: 'standard:email',
-                    closed: true,
-                    canMark: this.emails1[i].canMark,
-                    isUnread: (this.emails1[i].canMark && !this.emails1[i].open) ? true : false,
-                    icons: [
-                        {
-                            iconName: (this.emails1[i].canMark && this.emails1[i].open) ? 'utility:email_open' : 'utility:email',
-                            alternativeText: (this.emails1[i].canMark && this.emails1[i].open) ? 'Mark as Unread' : 'Mark as Read'
-                        }
-                    ],
-                    bounced: this.emails1[i].bounced,
-                    bouncedMessage: (this.emails1[i].bounced) ? this.emails1[i].bouncedMessage : '',
-                    hasAttachment: this.emails1[i].hasAttachment,
-                    fields: [
-                        {
-                            label: 'From Address',
-                            value: this.emails1[i].fromAddress,
-                            type: 'url',
-                            typeAttributes: {
-                                label: this.emails1[i].fromAddress
-                            },           
-                        },
-                        {
-                            label: 'To Address',
-                            value: this.emails1[i].toAddress,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.emails1[i].toAddress
-                            }
-                        },
-                        {
-                            label: 'Text Body',
-                            value: this.emails1[i].textBody,
-                            type: 'text'
-                        }
-                    ],
-                    buttons: [
-                        {
-                            buttonLabel: "Reply",
-                            buttonName: "reply", 
-                            iconName: "utility:reply"
-                        },
-                        {
-                            buttonLabel: 'Reply All', 
-                            buttonName: 'reply-all', 
-                            iconName: 'utility:reply_all'
-                        },
-                        {
-                            buttonLabel: "Forward", 
-                            buttonName: "reply-all", 
-                            iconName: "utility:forward"
-                        }
-                    ]
-                };
-                emailListObj1.push(emailObj);
-            }
-            for(i = 0; i < this.tasks1.length; i++) {
-                let taskObj = {
-                    name: this.tasks1[i].name,
-                    title: this.tasks1[i].title,
-                    description: this.tasks1[i].description,
-                    datetimeValue: this.tasks1[i].datetimeValue,
-                    itemType: 'task',
-                    href: '/lightning/r/'+this.tasks1[i].name+'/view',
-                    iconName: 'standard:task',
-                    closed: true,
-                    upcoming: this.tasks1[i].upcoming,
-                    overdue: this.tasks1[i].overdue,
-                    fields: [
-                        {
-                            label: 'Status',
-                            value: this.tasks1[i].status,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.tasks1[i].status
-                            }
-                        },
-                        {
-                            label: 'Priority',
-                            value: this.tasks1[i].priority,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.tasks1[i].priority
-                            }
-                        },
-                        {
-                            label: 'Assigned To',
-                            value: '/lightning/r/'+this.tasks1[i].assignedId+'/view',
-                            type: 'url',
-                            typeAttributes: {
-                                label: this.tasks1[i].assignedTo
-                            }
-                        },
-                        {
-                            label: 'Description',
-                            value: this.tasks1[i].description,
-                            type: 'text'
-                        }
-                    ]
-                };
-                emailListObj1.push(taskObj);
-            }
-            for(i = 0; i < this.upcomingOverdueTasks1.length; i++) {
-                let upcomingOverdueTaskObj = {
-                    name: this.upcomingOverdueTasks1[i].name,
-                    title: this.upcomingOverdueTasks1[i].title,
-                    description: this.upcomingOverdueTasks1[i].description,
-                    datetimeValue: this.upcomingOverdueTasks1[i].datetimeValue,
-                    itemType: 'task',
-                    upcoming: this.upcomingOverdueTasks1[i].upcoming,
-                    overdue: this.upcomingOverdueTasks1[i].overdue,
-                    href: '/lightning/r/'+this.upcomingOverdueTasks1[i].name+'/view',
-                    iconName: 'standard:task',
-                    closed: true,
-                    fields: [
-                        {
-                            label: 'Status',
-                            value: this.upcomingOverdueTasks1[i].status,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.upcomingOverdueTasks1[i].status
-                            }
-                        },
-                        {
-                            label: 'Priority',
-                            value: this.upcomingOverdueTasks1[i].priority,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.upcomingOverdueTasks1[i].priority
-                            }
-                        },
-                        {
-                            label: 'Assigned To',
-                            value: '/lightning/r/'+this.upcomingOverdueTasks1[i].assignedId+'/view',
-                            type: 'url',
-                            typeAttributes: {
-                                label: this.upcomingOverdueTasks1[i].assignedTo
-                            }
-                        },
-                        {
-                            label: 'Description',
-                            value: this.upcomingOverdueTasks1[i].description,
-                            type: 'text'
-                        }
-                    ]
-                };
-                upcomingOverdueListObj1.push(upcomingOverdueTaskObj);
-            }
-            this.items1 = emailListObj1;
-            this.upcomingOverdueItems1 = upcomingOverdueListObj1;
-            this.empty = (this.items1.length == 0 && this.upcomingOverdueItems1.length == 0) ?  true: false;
-            this.showSpinner1 = false;
+            this.loadType = 'Load';
         }
-		})
-		.catch(error => {
-            //('Error: ' + JSON.stringify(error));
-            this.showSearchResult = false;
-            //debugger;
-			this.error = error;
-		})
-        }
-		
+        refreshApex(this.activitiesList);
 	} 
 
     timelineChange() {
         refreshApex(this.activitiesList);
-    }
-
-    timelineChangeFilter(){
-        this.handleSuccess();
-    }
-
-    timelineChangeSearch(){
-
-    
     }
 
     newEmail() {
@@ -542,23 +423,6 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             },
         };
         this[NavigationMixin.Navigate](pageRef);
-        // Start a new interruptable poller with an interval of 5 seconds and a max of 10 worker call fires:
-//        let pol = new InterruptiblePoller(5000, 10);
-//        pol.start();
-        // Schedule an "interrupt" fire in 6 seconds, regardless of where the poller currently stands (it will 
-        // have fired once so far, and was ~ 1 second into the next 5-second wait). Note the next worker call 
-        // after this interrupt call will resume exactly 5 seconds later - i.e. this very simple poller dynamically 
-        // regulates itself!
-//        setTimeout(() => { pol.fireNow() }, 6000);
-        /*let emailCount = this.activitiesList.data.emailList.length;
-        let intervalComponent1 = setInterval(() => {
-            console.log(emailCount);
-            console.log(this.activitiesList.data.emailList.length); 
-            refreshApex(this.activitiesList);
-            if(emailCount != this.activitiesList.data.emailList.length) {
-                clearInterval(intervalComponent1);
-            }                   
-        }, 5000);*/
     }
 
     newTask() {
@@ -606,6 +470,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         return [
             { label: 'All Time', value: 'allTime' },
             { label: 'Last 7 days', value: 'lastSeven' },
+            { label: 'Next 7 days', value: 'nextSeven' },
+            { label: 'Last 30 days', value: 'lastThirty' },
         ];
     }
 
@@ -618,7 +484,9 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
 
     get activityGroupOptions1() {
         return [
-            { label: 'Read', value: 'read' }
+            { label: 'All Statuses', value: 'all' },
+            { label: 'Read', value: 'read' },
+            { label: 'Unread', value: 'unread' }
         ];
     }
     get activityGroupOptions2() {
@@ -631,6 +499,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         return [
             { label: 'All Emails', value: 'allEmails' },
             { label: 'Sent Emails', value: 'sentEmails' },
+            { label: 'Received Emails', value: 'receivedEmails' },
         ];
     }
     get emailGroupOptions2() {
@@ -641,6 +510,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     get activitySortOptions1() {
         return [
             { label: 'Oldest dates first', value: 'oldDate' },
+            { label: 'Newest dates first', value: 'newDate' },
         ]
     }
     get activitySortOptions2() {
@@ -650,23 +520,38 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
     }
     get activityTypeOptions1() {
         return [
-            { label: 'All Types', value: 'allTypes' },
-            { label: 'List Email', value: 'listEmail' },
-            { label: 'Email', value: 'emails' },
+            /*{ label: 'All Types', value: 'allTypes' }
+            { label: 'List Email', value: 'listEmail' },*/
+            { label: 'Emails', value: 'emails' },
         ]
     }
     get activityTypeOptions2() {
         return [
-            { label: 'Logged Calls', value: 'loggedCalls' },
-            { label: 'Events', value: 'events' },
-            { label: 'Tasks', value: 'tasks' },
+            /*{ label: 'Logged Calls', value: 'loggedCalls' },
+            { label: 'Events', value: 'events' },*/
+            { label: 'Tasks', value: 'tasks' }
         ]
     }
 
     emailAction(event) {
         this.emailId = event.detail.name;
-        this.emailType = event.detail.buttonName
+        this.emailType = event.detail.buttonName;
         this.replyOrForwardEmail(this.emailId, this.emailType);
+    }
+
+    attachLinkAction(event) {
+        this.isLinked = true;
+        this.emailId = event.detail.name;
+    }
+
+    get inputVariables() {
+        return [
+            {
+                name: 'debuggingOnly_RecordId',
+                type: 'String',
+                value: this.emailId
+            }
+        ];
     }
 
     async replyOrForwardEmail(id, type) {
@@ -698,64 +583,19 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
                     });
                     this.dispatchEvent(replyOrForwardEvent);
                 } else {
-                    var pageRef = {
-                        type: "standard__quickAction",
-                        attributes: {
-                            apiName: "Global.SendEmail"
+                    const replyOrForwardEvent = new CustomEvent('replyforwardevent', {
+                        detail: { 
+                            Id: recId,
+                            toAddress: toAddress, 
+                            ccAddress: ccAddress,
+                            bccAddress: bccAddress,
+                            htmlBody: htmlBody,
+                            subject: subject,
+                            //attachmentIds: attachmentIds /*isSuccess: response.isSuccess, name: response.emailList[0].toAddress*/ 
                         },
-                        state: {
-                            recordId: this.recordId,
-                            defaultFieldValues: 
-                            encodeDefaultFieldValues({
-                                ToAddress : response.emailList[0].toAddress,
-                                CcAddress : response.emailList[0].ccAddress,
-                                BccAddress : response.emailList[0].bccAddress,
-                                HtmlBody : response.emailList[0].body, 
-                                Subject : response.emailList[0].subject,
-                                //ContentDocumentIds : '0697Z000002doqDQAQ'
-                            }),
-                        },
-                    };
-                    this[NavigationMixin.Navigate](pageRef);
-//                    let pol = new InterruptiblePoller(5000, 10);
-//                    pol.start();
-                    // Schedule an "interrupt" fire in 6 seconds, regardless of where the poller currently stands (it will 
-                    // have fired once so far, and was ~ 1 second into the next 5-second wait). Note the next worker call 
-                    // after this interrupt call will resume exactly 5 seconds later - i.e. this very simple poller dynamically 
-                    // regulates itself!
-//                    setTimeout(() => { pol.fireNow() }, 6000);
+                    });
+                    this.dispatchEvent(replyOrForwardEvent);
                 }
-                
-                //attachmentIds.push(response.emailList[0].attachments)
-                /*console.log(JSON.parse(JSON.stringify(attachmentIds)));
-                var pageRef = {
-                    type: "standard__quickAction",
-                    attributes: {
-                        apiName: "Global.SendEmail"
-                    },
-                    state: {
-                        recordId: this.recordId,
-                        
-                        defaultFieldValues: 
-                        encodeDefaultFieldValues({
-                            ToAddress : response.emailList[0].toAddress,
-                            CcAddress : response.emailList[0].ccAddress,
-                            BccAddress : response.emailList[0].bccAddress,
-                            HtmlBody : response.emailList[0].body, 
-                            Subject : response.emailList[0].subject,
-                            //ContentDocumentIds : '0697Z000002doqDQAQ'
-                        }),
-                        
-                    },
-                };
-                this[NavigationMixin.Navigate](pageRef);
-                let pol = new InterruptiblePoller(5000, 10);
-                pol.start();
-                // Schedule an "interrupt" fire in 6 seconds, regardless of where the poller currently stands (it will 
-                // have fired once so far, and was ~ 1 second into the next 5-second wait). Note the next worker call 
-                // after this interrupt call will resume exactly 5 seconds later - i.e. this very simple poller dynamically 
-                // regulates itself!
-                setTimeout(() => { pol.fireNow() }, 6000);*/
             }
         } catch (e) {
             console.log(e);
@@ -764,176 +604,164 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         }     
     }
 
-    handleSuccess(){
-        filterLoadResult({ recordId: this.recordId , dateRange: this.dateRange, emailsToShow: this.emailToShow, activitiesToShow: this.activitiesToShow, sortActivites: this.sortActivities})
-		.then(result => {
-            this.showSpinner1 = true;
-        //this.activitiesList = loadActivities;
-        if (result.isSuccess) {
-            this.showLoadResult = false;
-            this.showSearchResult = false;
-            this.showFilterResult = true;
-            this.emails2 = result.emailList;
-            //this.tasks2 = result.taskList;
-            let emailListObj2 = [];
-            this.actionList = [
-                { label: "Link and Categorize Attachments", name: "link-attachments" }, 
-                { label: "Delete", name: "delete-item" }
-            ];
-            for(i = 0; i< this.emails2.length; i++) { 
-                let emailObj = 
-                {
-                    name: this.emails2[i].name,
-                    title: this.emails2[i].title,
-                    description: this.emails2[i].description,
-                    received: this.emails2[i].received,
-                    itemType: 'email',
-                    datetimeValue: this.emails2[i].datetimeValue,
-                    href: '/lightning/r/'+this.emails2[i].name+'/view',
-                    iconName: 'standard:email',
-                    closed: true,
-                    canMark: this.emails2[i].canMark,
-                    isUnread: (this.emails2[i].canMark && !this.emails2[i].open) ? true : false,
-                    icons: [
-                        {
-                            iconName: (this.emails2[i].canMark && this.emails2[i].open) ? 'utility:email_open' : 'utility:email',
-                            alternativeText: (this.emails2[i].canMark && this.emails2[i].open) ? 'Mark as Unread' : 'Mark as Read'
-                        }
-                    ],
-                    bounced: this.emails2[i].bounced,
-                    bouncedMessage: (this.emails2[i].bounced) ? this.emails2[i].bouncedMessage : '',
-                    hasAttachment: this.emails2[i].hasAttachment,
-                    fields: [
-                        {
-                            label: 'From Address',
-                            value: this.emails2[i].fromAddress,
-                            type: 'url',
-                            typeAttributes: {
-                                label: this.emails2[i].fromAddress
-                            },           
-                        },
-                        {
-                            label: 'To Address',
-                            value: this.emails2[i].toAddress,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.emails2[i].toAddress
-                            }
-                        },
-                        {
-                            label: 'Text Body',
-                            value: this.emails2[i].textBody,
-                            type: 'text'
-                        }
-                    ],
-                    buttons: [
-                        {
-                            buttonLabel: "Reply",
-                            buttonName: "reply", 
-                            iconName: "utility:reply"
-                        },
-                        {
-                            buttonLabel: 'Reply All', 
-                            buttonName: 'reply-all', 
-                            iconName: 'utility:reply_all'
-                        },
-                        {
-                            buttonLabel: "Forward", 
-                            buttonName: "reply-all", 
-                            iconName: "utility:forward"
-                        }
-                    ]
-                };
-                emailListObj2.push(emailObj);
-            }
-            /*for(i = 0; i < this.tasks2.length; i++) {
-                let taskObj = {
-                    name: this.tasks2[i].name,
-                    title: this.tasks2[i].title,
-                    description: this.tasks2[i].description,
-                    datetimeValue: this.tasks2[i].datetimeValue,
-                    itemType: 'task',
-                    href: '/lightning/r/'+this.tasks2[i].name+'/view',
-                    iconName: 'standard:task',
-                    closed: true,
-                    upcoming: this.tasks2[i].upcoming,
-                    overdue: this.tasks2[i].overdue,
-                    fields: [
-                        {
-                            label: 'Status',
-                            value: this.tasks2[i].status,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.tasks2[i].status
-                            }
-                        },
-                        {
-                            label: 'Priority',
-                            value: this.tasks2[i].priority,
-                            type: 'text',
-                            typeAttributes: {
-                                label: this.tasks2[i].priority
-                            }
-                        },
-                        {
-                            label: 'Assigned To',
-                            value: '/lightning/r/'+this.tasks2[i].assignedId+'/view',
-                            type: 'url',
-                            typeAttributes: {
-                                label: this.tasks2[i].assignedTo
-                            }
-                        },
-                        {
-                            label: 'Description',
-                            value: this.tasks2[i].description,
-                            type: 'text'
-                        }
-                    ]
-                };
-                emailListObj2.push(taskObj);
-            }*/
-            this.items2 = emailListObj2;
-            this.empty1 = this.items2.length == 0 ?  true: false;
-            this.showSpinner1 = false;
-        }
-		})
-		.catch(error => {
-            this.showSearchResult = false;
-            //debugger;
-			this.error = error;
-		})
-        
+    handleSuccess() {
+        this.loadType = 'Filter';
+        this.assignFilterValues();
+        this.order = (this.sortActivities == 'oldDate') ? 'asc' : 'desc';
+        // MDU: Hack to close the filter pop-up when "Apply" is clicked:
+        let filterElmt = this.template.querySelector('div[data-id="filterSettings"] lightning-button-menu');
+        window.setTimeout(function() {
+            filterElmt.click();
+            //filterElmt && filterElmt.classList.remove('slds-is-open');
+        }, 0);
+
+        //console.log(this.sortActivities)
+        if(!this.filters['isTaskChecked'] && !this.filters['isEmailChecked']) {
+            this.isCheckboxEmpty = true;
+        } else {
+            this.isCheckboxEmpty = false;
+            refreshApex(this.activitiesList);
+            //console.log('Clover: Dispatching Event');
+            //document.querySelector('div').click();
+            //this.dispatchEvent(new Event('mouseleave'));
+            //console.log('Ending Event');
+            //console.log(document.querySelector('div'));
+            //console.log(this.template);
+            //console.log(this.template.querySelector('div[clover-customs="clover"]'));
+        }      
     }
 
     handleRestoreDefault(){
-        this.dateRangeValue = undefined;
-        this.emailGroupValue = undefined;
-        this.activityGroupValue = undefined;
-        this.activitySortValue = undefined;
+        this.resetFilterValues();
         this.showLoadResult = true;
-        this.showFilterResult = false;
-        this.showSearchResult = false;
-        //debugger;
+        this.isCheckboxEmpty = false;
+        this.isApplyDisabled = false;
+        this.loadType = 'Filter';
+        this.order = 'desc';
+        this.activityTypeValue = ['emails', 'tasks'];
+        refreshApex(this.activitiesList);
     }
     handleDateChange(event){
         var dateRange1 = event.target.value;
-        this.dateRange = dateRange1;
+        this.filters['dateRange'] = dateRange1;
+        this.syncFilter();
+        //console.log(this.filters);
     }
     //@track dateRange; emailToShow;activitiesToShow; sortActivities; activityType;
     handleEmailChange(event){
         var emailChange1 = event.target.value;
-        this.emailToShow = emailChange1;
+        this.filters['emailsToShow'] = emailChange1;
+        this.syncFilter();
+        //console.log(this.filters);
     }
     handleActivityChange(event){
         var activityChange1 = event.target.value;
-        this.activitiesToShow = activityChange1;
+        this.filters['activitiesToShow'] = activityChange1;
+        this.syncFilter();
+        //console.log(this.filters);
     }
     handleSortActivityChange(event){
         var sortActivityChange1 = event.target.value;
-        this.sortActivities = sortActivityChange1;
+        this.filters['sortActivities'] = sortActivityChange1;
+        this.syncFilter();
+        //console.log(this.filters);
     }
-    handleActivityTypeChange(event){
-        var activityType1 = event.target.value;
-        this.activityType = activityType1;
+    handleActivityTypeChange1(event){
+        var activityType1 = event.detail.value;
+        if(activityType1 == 'emails') {
+            this.filters['isEmailChecked'] = true;
+        } else {
+            this.filters['isEmailChecked'] = false;
+        }
+        if(!this.filters['isEmailChecked'] && !this.filters['isTaskChecked']) {
+            this.isCheckboxEmpty = true;
+            this.isApplyDisabled = true;
+        } else {
+            this.isCheckboxEmpty = false;
+            this.isApplyDisabled = false;
+        }
+        console.log(this.filters);
+    }
+    handleActivityTypeChange2(event){
+        var activityType2 = event.detail.value;
+        if(activityType2 == 'tasks') {
+            this.filters['isTaskChecked'] = true;
+        } else {
+            this.filters['isTaskChecked'] = false;
+        }
+        if(!this.filters['isEmailChecked'] && !this.filters['isTaskChecked']) {
+            this.isCheckboxEmpty = true;
+            this.isApplyDisabled = true;
+        } else {
+            this.isCheckboxEmpty = false;
+            this.isApplyDisabled = false;
+        }
+        console.log(this.filters);
+    }
+    //Clover Willis - RKDEV-44215 - Override mouseleave event
+    handleFilterMouseLeave(event){
+        event.stopPropagation();
+    }
+    handleUnbindMouseLeave(event){
+        console.log('Clover test');
+        let domElement2 = this.template.querySelector('#clovercustoms');
+        console.log(domElement2);
+        console.log(this.template);
+    }
+    //END RKDEV-44215
+
+    closeModal() {
+        this.isLinked = false;
+    }
+
+    syncFilter() {
+        this.dateRangeValue = this.filters['dateRange'];
+        this.emailGroupValue = this.filters['emailsToShow'];
+        this.activityGroupValue = this.filters['activitiesToShow'];
+        this.activitySortValue = this.filters['sortActivities'];
+        this.isEmailChecked = this.filters['isEmailChecked'];
+        this.isTaskChecked = this.filters['isTaskChecked'];
+    }
+
+    assignFilterValues() {
+        this.toggle = true;
+        this.dateRange = this.dateRangeValue = this.filters['dateRange'];
+        this.emailsToShow = this.emailGroupValue = this.filters['emailsToShow'];
+        this.activitiesToShow = this.activityGroupValue = this.filters['activitiesToShow'];
+        this.sortActivities = this.activitySortValue = this.filters['sortActivities'];
+        this.isEmailChecked = this.filters['isEmailChecked'];
+        this.isTaskChecked = this.filters['isTaskChecked'];
+        if(this.dateRange == 'allTime' && this.emailsToShow == 'allEmails' && this.activitiesToShow == 'all' && this.sortActivities == 'newDate' && this.isEmailChecked && this.isTaskChecked) {
+            this.showActivityButton = false;
+        } else {
+            this.showActivityButton = true;
+        }
+    }
+
+    resetFilterValues() {
+        this.toggle = true;
+        let filterUpdate = !!this.filters
+        this.filters = {
+            dateRange: 'allTime',
+            emailsToShow: 'allEmails', //'',
+            activitiesToShow: 'all', //'',
+            sortActivities: 'newDate', //'',
+            isEmailChecked: true,
+            isTaskChecked: true
+        };
+        console.log(this.filters);
+        this.showActivityButton = false;
+        if(filterUpdate) {
+            console.log('Inside if');
+            this.assignFilterValues();
+        }
+    }
+
+    get sectionClass() {
+        return this.toggle ? 'slds-section slds-is-open' : 'slds-section';
+    }
+
+    toggleIcon() {
+        this.toggle = !this.toggle;
     }
 }

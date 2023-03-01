@@ -19,7 +19,6 @@
 		let bccAddress = event.getParam('bccAddress');
 		let subject = event.getParam('subject');
 		let htmlBody = event.getParam('htmlBody');
-		let attachmentIds = event.getParam('attachmentIds');
 
 		let actionAPI = component.find("quickActionAPI");
 		let targetFields = {
@@ -40,11 +39,40 @@
 			}, 
 			HtmlBody:{
 				value: htmlBody
-			},
-			ContentDocumentIds:{
-				value: attachmentIds //attachmentIds.split(',')
 			}
 		};
+		let attParam = event.getParam('attachmentIds');
+		//console.log(attParam);
+		// MDU: Added LOTS of flexibility for parsing out the passed attachment IDs. They could be sent as an 
+		// array of strings, a comma-delimited string, an array of comma-delimited strings, or even an array of 
+		// arrays of strings!
+		let attIds = [];
+		if (attParam) {
+			let attElmts = [];
+			if (typeof attParam === 'string') {
+				attElmts.add(attParam);
+			} else if (typeof attParam === 'object' && attParam.length) {
+				attElmts = [].slice.call(attParam, 0);
+			}
+			attElmts.forEach(elmt => {
+				if (elmt) {
+					attIds = attIds.concat(String(elmt).split(new RegExp('[\s,]+')));
+				}
+			});
+			//console.log(attIds.length);
+			//Raghil: Added an else statement as well because on clicking forward an email with attachments
+			//and then clicking forward an email with no attachments leads to the previous email attachments
+			//being displayed in the email template
+			if (attIds.length) {
+				targetFields.ContentDocumentIds = {
+					value: attIds
+				};
+			} else {
+				targetFields.ContentDocumentIds = {
+					value: ''
+				};
+			}
+		}
 		
 		actionAPI.setActionFieldValues({
             actionName : 'SendEmail',

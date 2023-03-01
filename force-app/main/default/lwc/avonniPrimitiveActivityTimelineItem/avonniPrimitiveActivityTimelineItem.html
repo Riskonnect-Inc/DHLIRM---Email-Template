@@ -228,6 +228,24 @@
                                     slds-p-around_medium
                                 "
                             >
+                            <template if:true={hasButtons}>
+                                <div class="slds-m-top_x-small">
+                                    <lightning-button-group>
+                                        <template for:each={buttons} for:item="button" for:index="index">
+                                            <lightning-button
+                                                key={button.buttonName}
+                                                label={button.buttonLabel}
+                                                variant={button.buttonVariant}
+                                                name={button.buttonName}
+                                                icon-name={button.iconName}
+                                                icon-position={button.buttonIconPosition}
+                                                disabled={button.buttonDisabled}
+                                                onclick={emailActionButtonClick}
+                                            ></lightning-button>
+                                        </template>  
+                                    </lightning-button-group>
+                                </div>
+                            </template>
                                 <lightning-layout
                                     horizontal-align="spread"
                                     multiple-rows="true"

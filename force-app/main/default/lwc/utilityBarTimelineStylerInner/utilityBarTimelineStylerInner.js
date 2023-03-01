@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import getRecordInfo from "@salesforce/apex/UtilityStyleHackController.getRecordInfo";
+import getRecordInfo from "@salesforce/apex/SearchableActivityController.getRecordInfo";
 
 import { loadStyle } from 'lightning/platformResourceLoader';
 import claimStylesOn from '@salesforce/resourceUrl/claimStylesOn';

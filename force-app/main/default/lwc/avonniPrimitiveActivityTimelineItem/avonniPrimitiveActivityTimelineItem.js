@@ -225,6 +225,9 @@ export default class AvonniPrimitiveActivityTimelineItem extends LightningElemen
      */
     @api
     get actions() {
+        if(!this._isEmail) {
+            this._actions.splice(1,1);
+        }
         return this._actions;
     }
     set actions(value) {

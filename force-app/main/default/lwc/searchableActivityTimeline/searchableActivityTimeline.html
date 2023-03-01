@@ -23,17 +23,19 @@
         
         <!-- MDU: Changing the search input and filter icon from float:left to float:right, and necessarily also changing
             their markup order (i.e. so the filter icon gets right-most priority) -->
-        <div style="margin-top: 10px;float: right;margin-left: 10px">
+            
+        <div id="filterSettings" data-id="filterSettings" style="margin-top: 10px;float: right;margin-left: 10px">
             <lightning-button-menu alternative-text="Show menu" icon-name="utility:settings">
-                <div class="slds-panel slds-size_medium slds-p-around_x-small">
-                    <lightning-button-icon 
+                <lightning-menu-item value="filters" label="" style="height: 0px; width: 0px; background-color: #ffffff !important; cursor: default !important"></lightning-menu-item> 
+                <div class="slds-panel slds-size_medium slds-p-around_x-small slds-dropdown__item" role="presentation">
+                    <!--lightning-button-icon 
                         size="small"
                         title="Close"
                         class="slds-p-left_x-small slds-float_right"
                         variant="bare"
                         icon-name="utility:close"
                         onclick={closeMenu}> 
-                    </lightning-button-icon>
+                    </lightning-button-icon-->
 
                     <div class="slds-grid slds-wrap slds-p-bottom_large">
                         <div class="slds-col slds-size_6-of-12">
@@ -45,7 +47,7 @@
                                 onchange={handleDateChange}>
                             </lightning-radio-group>
                         </div>
-                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                        <!--div class="slds-col slds-size_6-of-12 slds-p-top_large">
                             <lightning-radio-group name="dateGroup"
                                 label="Date Range"
                                 options={dateRangeOptions2}
@@ -54,7 +56,7 @@
                                 variant="label-hidden"
                                 onchange={handleDateChange}>
                             </lightning-radio-group>
-                        </div>
+                        </div-->
                         
                         <div class="slds-col slds-size_6-of-12">
                             <lightning-radio-group name="emailGroup"
@@ -62,19 +64,21 @@
                                 options={emailGroupOptions1}
                                 value={emailGroupValue}
                                 type="radio"
-                                onchange={handleEmailChange}>
+                                onchange={handleEmailChange}
+                                data-name="reset">
                             </lightning-radio-group>
                         </div>
-                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                        <!--div class="slds-col slds-size_6-of-12 slds-p-top_large">
                             <lightning-radio-group name="emailGroup"
                                 label="Emails To Show"
                                 options={emailGroupOptions2}
                                 value={emailGroupValue}
                                 type="radio"
                                 variant="label-hidden"
-                                onchange={handleEmailChange}>
+                                onchange={handleEmailChange}
+                                data-name="reset">
                             </lightning-radio-group>
-                        </div>
+                        </div-->
 
                         <div class="slds-col slds-size_6-of-12">
                             <lightning-radio-group name="activityGroup"
@@ -82,19 +86,21 @@
                                 options={activityGroupOptions1}
                                 value={activityGroupValue}
                                 type="radio"
-                                onchange={handleActivityChange}>
+                                onchange={handleActivityChange}
+                                data-name="reset">
                             </lightning-radio-group>
                         </div>
-                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                        <!--div class="slds-col slds-size_6-of-12 slds-p-top_large">
                             <lightning-radio-group name="activityGroup"
                                 label="Email Status"
                                 options={activityGroupOptions2}
                                 value={activityGroupValue}
                                 type="radio"
                                 variant="label-hidden"
-                                onchange={handleActivityChange}>
+                                onchange={handleActivityChange}
+                                data-name="reset">
                             </lightning-radio-group>
-                        </div>
+                        </div-->
 
                         <div class="slds-col slds-size_6-of-12">
                             <lightning-radio-group name="activitySort"
@@ -102,26 +108,28 @@
                                 options={activitySortOptions1}
                                 value={activitySortValue}
                                 type="radio"
-                                onchange={handleSortActivityChange}>
+                                onchange={handleSortActivityChange}
+                                data-name="reset">
                             </lightning-radio-group>
                         </div>
-                        <div class="slds-col slds-size_6-of-12 slds-p-top_large">
+                        <!--div class="slds-col slds-size_6-of-12 slds-p-top_large">
                             <lightning-radio-group name="activitySort"
                                 label="Sort Activities"
                                 options={activitySortOptions2}
                                 value={activitySortValue}
                                 type="radio"
                                 variant="label-hidden"
-                                onchange={handleSortActivityChange}>
+                                onchange={handleSortActivityChange}
+                                data-name="reset">
                             </lightning-radio-group>
-                        </div>
+                        </div-->
 
-                        <!--<div class="slds-col slds-size_6-of-12">
+                        <div class="slds-col slds-size_6-of-12">
                             <lightning-checkbox-group name="activityType"
                                 label="Activity Type"
                                 options={activityTypeOptions1}
                                 value={activityTypeValue}
-                                onchange={handleActivityTypeChange}>
+                                onchange={handleActivityTypeChange1}>
                             </lightning-checkbox-group>
                         </div>
                         <div class="slds-col slds-size_6-of-12 slds-p-top_large">
@@ -129,10 +137,13 @@
                                 label="Activity Type"
                                 options={activityTypeOptions2}
                                 value={activityTypeValue}
-                                onchange={handleActivityTypeChange}
+                                onchange={handleActivityTypeChange2}
                                 variant="label-hidden">
                             </lightning-checkbox-group>
-                        </div>-->
+                        </div>
+                        <div if:true={isCheckboxEmpty} class="slds-col slds-size_12-of-12 slds-p-top_x-small" style="color:red">
+                            Select at least one activity type.
+                        </div>
 
                         <!--div class="slds-col slds-size_12-of-12">
                             <lightning-input
@@ -141,105 +152,57 @@
                                 placeholder="Search">
                             </lightning-input>
                         </div-->
-                    </div>
-                    
-                </div>   
+                    </div> 
                 <footer class=" slds-modal__footer slds-align_absolute-center slds-docked-form-footer slds-p-around_x-small">
                     <lightning-button label='Restore Defaults' class='slds-m-left_x-small' onclick={handleRestoreDefault}></lightning-button>
-                    <lightning-button variant="brand" type="save" class='slds-m-left_x-small' label="Apply" onclick={handleSuccess}> </lightning-button>
-                </footer>      
+                    <lightning-button variant="brand" type="save" class='slds-m-left_x-small' label="Apply" onclick={handleSuccess} disabled={isApplyDisabled}> </lightning-button>
+                </footer>
+            </div>    
             </lightning-button-menu>
+        <!-- CLOVER - RKDEV-44215 - Rebuild Filter UI-->
+        <!--
+        <lightning-button alternative-text="Show menu" icon-name="utility:settings" onclick={handleUnbindMouseLeave}></lightning-button>
+        <section id="clovercustoms" aria-describedby="dialog-body-id-112" aria-labelledby="dialog-heading-id-117" class="slds-popover slds-nubbin_top-right" role="dialog" style="margin-top: 10px;display: block;z-index: 7005;position: absolute;right: 5px">
+            <button class="slds-button slds-button_icon slds-button_icon-small slds-float_right slds-popover__close" title="Close dialog">
+            <svg class="slds-button__icon" aria-hidden="true">
+                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+            </svg>
+            <span class="slds-assistive-text">Close dialog</span>
+            </button>
+            <div class="slds-popover__body" id="dialog-body-id-112">
+            <div class="slds-media">
+                <div class="slds-media__body">
+                <header class="slds-popover__header">
+                    <h2 class="slds-text-heading_small" id="dialog-heading-id-117">Header title</h2>
+                </header>
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                </div>
+            </div>
+            </div>
+            <footer class="slds-popover__footer">
+                <div class="slds-grid slds-grid_vertical-align-center">
+                  <button class="slds-button slds-button_neutral slds-col_bump-left">Learn More</button>
+                </div>
+              </footer>
+        </section>
+        -->
+        <!-- END RKDEV-44215-->
         </div>
 
         <lightning-input
-            style="width: 28%;margin-top: 10px;float: right;margin-left: 32%"
+            style="width: 28%;margin-top: 10px;float: right;"
             variant="label-hidden"
             type="search" 
             value={searchValue}
             placeholder="Search"
             onchange={getEmailAndTask}>
         </lightning-input>
+        <template if:true={hasFiltersDigest}>
+            <div style="margin-top: 15px; float: left; margin-left: 10px">
+                <span style="font-weight: bold;">Filters: </span><span class="slds-truncate">{filtersDigest}</span>
+            </div>
+        </template>
     </div>
-    
-    <template if:true={showSearchResult}>
-        <lightning-spinner
-            if:true={showSpinner}
-            alternative-text="loading"
-            size="large"
-            data-element-id="lightning-spinner">
-        </lightning-spinner>
-        <!-- Exclusively for Upcoming and Overdue Tasks -->
-        <c-avonni-activity-timeline
-            actions={actionList}
-            group-by="month"
-            collapsible
-            item-date-format="T | dd-LLL yyyy"
-            item-icon-size="small"
-            items={upcomingOverdueItems1}
-            ontimelinechange={timelineChangeSearch}
-            max-visible-items="3"
-            button-show-more-icon-name="utility:down"
-            button-show-less-icon-name="utility:up"
-            onemailactiontype={emailAction}>
-        </c-avonni-activity-timeline>
-        <!-- Timeline Ends -->
-        <c-avonni-activity-timeline
-            actions={actionList}
-            group-by="month"
-            collapsible
-            item-date-format="T | dd-LLL yyyy"
-            item-icon-size="small"
-            items={items1}
-            ontimelinechange={timelineChangeSearch}
-            max-visible-items="3"
-            button-show-more-icon-name="utility:down"
-            button-show-less-icon-name="utility:up"
-            onemailactiontype={emailAction}>
-        </c-avonni-activity-timeline>
-        <template if:true={empty}>
-            <div class="slds-section slds-is-open">
-                <h3 class="slds-section__title slds-theme_shade">
-                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Upcoming and Overdue</span>
-                </h3>
-                <div aria-hidden="false" class="slds-section__content slds-align_absolute-center">
-                    <p>No activities to show. Get started by sending an email, scheduling a task and more.</p>
-                </div>
-            </div>
-        </template>
-    </template>
-
-    <template if:true={showFilterResult}>
-        <lightning-spinner
-            if:true={showSpinner1}
-            alternative-text="loading"
-            size="large"
-            data-element-id="lightning-spinner">
-        </lightning-spinner>
-        <c-avonni-activity-timeline
-            actions={actionList}
-            group-by="month"
-            collapsible
-            item-date-format="T | dd-LLL yyyy"
-            item-icon-size="small"
-            items={items2}
-            ontimelinechange={timelineChangeFilter}
-            max-visible-items="3"
-            sorted-direction={order}
-            button-show-more-icon-name="utility:down"
-            button-show-less-icon-name="utility:up"
-            onemailactiontype={emailAction}>
-        </c-avonni-activity-timeline>
-        <template if:true={empty1}>
-            <div class="slds-section slds-is-open">
-                <h3 class="slds-section__title slds-theme_shade">
-                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Upcoming and Overdue</span>
-                </h3>
-                <div aria-hidden="false" class="slds-section__content slds-align_absolute-center">
-                    <p>No Results to show. Get started by sending an email, scheduling a task and more.</p>
-                </div>
-            </div>
-        </template>
-    </template>
     
     <!--lightning-tabset variant="scoped">
         <lightning-tab label="Activity Timeline"-->
@@ -253,42 +216,127 @@
             data-element-id="lightning-spinner">
         </lightning-spinner>
         <!-- Exclusively for Upcoming and Overdue Tasks -->
-        <c-avonni-activity-timeline
-            actions={actionList}
-            group-by="month"
-            collapsible
-            item-date-format="T | dd-LLL yyyy"
-            item-icon-size="small"
-            items={upcomingOverdueItems}
-            ontimelinechange={timelineChange}
-            max-visible-items="3"
-            button-show-more-icon-name="utility:down"
-            button-show-less-icon-name="utility:up"
-            onemailactiontype={emailAction}>
-        </c-avonni-activity-timeline>
-        <!-- Timeline Ends -->
-        <c-avonni-activity-timeline
-            actions={actionList}
-            group-by="month"
-            collapsible
-            item-date-format="T | dd-LLL yyyy"
-            item-icon-size="small"
-            items={items}
-            ontimelinechange={timelineChange}
-            max-visible-items="3"
-            button-show-more-icon-name="utility:down"
-            button-show-less-icon-name="utility:up"
-            onemailactiontype={emailAction}>
-        </c-avonni-activity-timeline>
+        <template if:true={loadError}>
+            <!--
+            <div style="margin-top: 10px; float: right; margin-left: 10px">
+                <span class="slds-truncate">{loadErrorMessage}</span>
+            </div>
+            -->
+            <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
+                <span class="slds-assistive-text">error</span>
+                <span class="slds-icon_container slds-icon-utility-error slds-m-right_x-small" title="error">
+                  <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
+                  </svg>
+                </span>
+                <h2>{loadErrorMessage}</h2>
+            </div>
+        </template>
+        <template if:true={notEmptyList}>
+            <c-avonni-activity-timeline
+                actions={actionList}
+                group-by="month"
+                collapsible
+                item-date-format="T | dd-LLL yyyy"
+                item-icon-size="small"
+                items={upcomingOverdueItems}
+                ontimelinechange={timelineChange}
+                max-visible-items="3"
+                sorted-direction={order}
+                button-show-more-icon-name="utility:down"
+                button-show-less-icon-name="utility:up"
+                onemailactiontype={emailAction}>
+            </c-avonni-activity-timeline>
+            <template if:true={noUpcomingOrOverdue}>
+                <div class={sectionClass}>
+                    <h3 class="slds-section__title slds-theme_shade">
+                        <button class="slds-button slds-section__title-action" onclick={toggleIcon}>
+                            <lightning-icon
+                                icon-name="utility:switch"
+                                class="slds-button__icon slds-button__icon_left slds-section__title-action-icon"
+                                size="x-small"
+                            ></lightning-icon>
+                            <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Upcoming and Overdue</span>
+                        </button>
+                    </h3>
+                    <div aria-hidden="false" class="slds-section__content slds-align_absolute-center">
+                        <p>No activities to show. Get started by sending an email, scheduling a task and more.</p>
+                    </div>
+                </div>
+            </template>
+            <!-- Timeline Ends -->
+            <c-avonni-activity-timeline
+                actions={actionList}
+                group-by="month"
+                collapsible
+                item-date-format="T | dd-LLL yyyy"
+                item-icon-size="small"
+                items={items}
+                ontimelinechange={timelineChange}
+                max-visible-items={maxItems}
+                sorted-direction={order}
+                button-show-more-icon-name="utility:down"
+                button-show-less-icon-name="utility:up"
+                onemailactiontype={emailAction}
+                onlinkattachment={attachLinkAction}>
+            </c-avonni-activity-timeline>
+        </template>
         <template if:true={emptyList}>
-            <div class="slds-section slds-is-open">
+            <div class={sectionClass}>
                 <h3 class="slds-section__title slds-theme_shade">
-                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Upcoming and Overdue</span>
+                    <button class="slds-button slds-section__title-action" onclick={toggleIcon}>
+                        <lightning-icon
+                            icon-name="utility:switch"
+                            class="slds-button__icon slds-button__icon_left slds-section__title-action-icon"
+                            size="x-small"
+                        ></lightning-icon>
+                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Upcoming and Overdue</span>
+                    </button>
                 </h3>
                 <div aria-hidden="false" class="slds-section__content slds-align_absolute-center">
-                    <p>No Results to show. Get started by sending an email, scheduling a task and more.</p>
+                    <p>No activities to show. Get started by sending an email, scheduling a task and more.</p>
                 </div>
             </div>
         </template>
+        <template if:true={showActivityButton}>
+            <div class="slds-scoped-notification slds-media slds-media_center slds-scoped-notification_light slds-m-top_medium" role="status">
+                <div class="slds-media__figure">
+                  <span class="slds-icon_container slds-icon-utility-info" title="information">
+                    <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                    <span class="slds-assistive-text">information</span>
+                  </span>
+                </div>
+                <div class="slds-media__body">
+                  <p>To change what's shown, try changing your filters.
+                  </p>
+                </div>
+            </div>
+            <div class="slds-align_absolute-center slds-p-top_small">
+                <lightning-button 
+                    label="Show All Activities" 
+                    variant="brand"
+                    onclick={handleRestoreDefault}>
+                </lightning-button>
+            </div>
+        </template>        
+    </template>
+    <template if:true={isLinked}>
+        <section aria-modal="true" class="slds-modal slds-fade-in-open slds-backdrop slds-align_absolute-center">
+            <div class="slds-modal__container">
+                <div class="slds-modal__header">
+                    <h2 id="header43" class="slds-text-heading--medium">
+                        Link and Categorize Attachment 
+                    </h2>
+                    <lightning-icon class="slds-modal__close" icon-name="utility:close" onclick={closeModal} size="small" style="--sds-c-icon-color-foreground-default: white"></lightning-icon>
+                </div>
+                <div class="slds-modal__content slds-p-around--medium">
+                   <div>
+                    <lightning-flow  flow-api-name='Email_Message_Move_Attachments'
+                        flow-input-variables={inputVariables}>
+                    </lightning-flow>
+                   </div>
+                </div>
+            </div>
+        </section>
     </template>
 </template>

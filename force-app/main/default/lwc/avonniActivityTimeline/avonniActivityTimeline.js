@@ -173,7 +173,8 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
     _items = [];
     _maxVisibleItems;
     _orientation = ORIENTATIONS.default;
-    _sortedDirection = SORTED_DIRECTIONS.default;
+    //_sortedDirection = SORTED_DIRECTIONS.default;
+    _sortedDirection = '';
 
     _redrawHorizontalTimeline = true;
 
@@ -750,8 +751,12 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
         this._pastDates = this.displayDates(this._pastDates, false);
 
         this.regroupDates(this._upcomingDates);
-        this.regroupDates(this._presentDates);
-        this.regroupDates(this._pastDates);
+        //this.regroupDates(this._presentDates);
+        //this.regroupDates(this._pastDates);
+        // MDU: the "present" & "past" buckets should reverse order when sort direction is 'asc' (oldest first), 
+        // but the "upcoming" bucket remains pinned at top either direction:
+        this.regroupDates(this._sortedDirection !== 'asc' ? this._presentDates : this._pastDates);
+        this.regroupDates(this._sortedDirection !== 'asc' ? this._pastDates : this._presentDates);
     }
 
     /**
@@ -898,7 +903,11 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
                 detail: event.detail
             })
         );
-        this.deleteItem(event);
+        if(event.detail.name == 'delete-item') {
+            this.deleteItem(event);
+        } else if(event.detail.name == 'link-attachments') {
+            this.linkAttachment(event);
+        }
     }
 
     /**
@@ -1079,6 +1088,16 @@ export default class AvonniActivityTimeline extends NavigationMixin(LightningEle
         } finally {
             this.isLoading = false;
         }
+    }
+
+    async linkAttachment(event) {
+        const emailId = event.detail.targetName;
+        //const emailType = event.detail.buttonName
+        this.dispatchEvent(
+            new CustomEvent('linkattachment', {
+                detail: {name: emailId}
+            })
+        );
     }
 
     /*async loadEmailDetails(emailId, emailType) {

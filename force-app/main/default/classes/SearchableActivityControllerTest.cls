@@ -128,7 +128,7 @@ public class SearchableActivityControllerTest {
         
         insert futureTask;
         
-        SearchableActivityController.Result loadTestItems = SearchableActivityController.loadItems(claim.Id);
+        SearchableActivityController.Result loadTestItems = SearchableActivityController.loadItems(claim.Id, 'load', '', '', '', '', '', true, true);
         String testGetActivityDigest = SearchableActivityController.getActivityDigest(claim.Id);
         SearchAbleActivityController.Result deleteTestItem = SearchableActivityController.deleteRecord(presentTask.Id);
         SearchAbleActivityController.Result loadTestEmailDetails = SearchableActivityController.loadEmailDetails(email.Id, 'Reply');
@@ -136,6 +136,8 @@ public class SearchableActivityControllerTest {
         SearchAbleActivityController.Result loadTestEmailDetails3 = SearchableActivityController.loadEmailDetails(email.Id, 'Forward');
         SearchAbleActivityController.Result receivedTestEmails = SearchableActivityController.editReceivedEmails(email.Id);
         SearchAbleActivityController.Result receivedTestEmails2 = SearchableActivityController.editReceivedEmails(emailNonUser.Id);
+        SearchableActivityController.Result testRecordInfo = SearchableActivityController.getRecordInfo(email.Id);
+        String testObjType = SearchableActivityController.getObjectType(claim.Id);
     }
     @isTest
     public static void findItems_TEST(){
@@ -184,13 +186,13 @@ public class SearchableActivityControllerTest {
         drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com', ToAddress='test@riskonnect.com', RelatedToId = claim.Id, IsBounced = true, MessageDate = System.today());
         dsr1=Database.insert(drEmailMessage1,false);
         fsrIds1.add(drEmailMessage1.Id);
-        drTask1=new Task(Subject='Litigation', WhatId = claim.Id);
+        drTask1=new Task(Subject='Litigation', WhatId = claim.Id, ActivityDate = System.today() - 5);
         Database.insert(drTask1,false);
         fsrIds1.add(drTask1.Id);
         Test.setFixedSearchResults(fsrIds1);
         Test.startTest();
-        SearchableActivityController.findItems('test', claim.Id);
-        SearchableActivityController.findItems('', claim.Id);
+        SearchableActivityController.loadItems(claim.Id, 'search', 'test', '', '', '', '', true, false);
+        SearchableActivityController.loadItems(claim.Id, 'search', '', '', '', '', '', true, false);
         Test.stopTest();
     }
     
@@ -229,7 +231,7 @@ public class SearchableActivityControllerTest {
         drEmailMessage=new EmailMessage(FromAddress='test@riskonnect.com', ToAddress='test1@riskonnect.com', RelatedToId = claim.Id, IsBounced = true, MessageDate = System.today());
         dsr=Database.insert(drEmailMessage,false);
         fsrIds.add(drEmailMessage.Id);
-        drTask=new Task(Subject='test');
+        drTask=new Task(Subject='test', ActivityDate = System.today() + 5);
         Database.insert(drTask,false);
         fsrIds.add(drTask.Id);
         Test.setFixedSearchResults(fsrIds);
@@ -241,13 +243,15 @@ public class SearchableActivityControllerTest {
         drEmailMessage1=new EmailMessage(FromAddress='test1@riskonnect.com', ToAddress='test@riskonnect.com', RelatedToId = claim.Id, IsBounced = true, MessageDate = System.today());
         dsr1=Database.insert(drEmailMessage1,false);
         fsrIds1.add(drEmailMessage1.Id);
-        drTask1=new Task(Subject='Litigation', WhatId = claim.Id);
+        drTask1=new Task(Subject='Litigation', WhatId = claim.Id, ActivityDate = System.today() - 5);
         Database.insert(drTask1,false);
         fsrIds1.add(drTask1.Id);
         Test.setFixedSearchResults(fsrIds1);
         Test.startTest();
-        SearchableActivityController.filterLoadResult(claim.Id, 'allTime', 'allEmails', 'read', null);
-        SearchableActivityController.filterLoadResult(claim.Id, null, null, null, null);
+        SearchableActivityController.loadItems(claim.Id, 'filter', '', 'allTime', 'allEmails', 'read', '', true, false);
+        SearchableActivityController.loadItems(claim.Id, 'filter', '', 'allTime', 'allEmails', 'read', '', true, true);
+        SearchableActivityController.loadItems(claim.Id, 'filter', '', 'allTime', 'sentEmails', 'read', '', true, false);
+        SearchableActivityController.loadItems(claim.Id, 'filter', '', '', '', '', '', true, true);
         Test.stopTest();
     }
 }
