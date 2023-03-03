@@ -603,7 +603,7 @@ public with sharing class SearchableActivityController {
             res.activityDigest = emailCount + ':' + lastEmailTime + ':' + taskCount + ':' + DateTime.newInstance(lastTaskDate, Time.newInstance(0, 0, 0, 0)).format('yyyy-MM-dd');
         } catch (Exception e) {
             res.isSuccess = false;
-            System.debug('Error: ' + e.getMessage());
+           // System.debug('Error: ' + e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
         return res;

@@ -680,7 +680,6 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             this.isCheckboxEmpty = false;
             this.isApplyDisabled = false;
         }
-        console.log(this.filters);
     }
     handleActivityTypeChange2(event){
         var activityType2 = event.detail.value;
@@ -696,17 +695,16 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             this.isCheckboxEmpty = false;
             this.isApplyDisabled = false;
         }
-        console.log(this.filters);
     }
     //Clover Willis - RKDEV-44215 - Override mouseleave event
     handleFilterMouseLeave(event){
         event.stopPropagation();
     }
     handleUnbindMouseLeave(event){
-        console.log('Clover test');
+        //console.log('Clover test');
         let domElement2 = this.template.querySelector('#clovercustoms');
-        console.log(domElement2);
-        console.log(this.template);
+        //console.log(domElement2);
+        //console.log(this.template);
     }
     //END RKDEV-44215
 
@@ -749,10 +747,8 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             isEmailChecked: true,
             isTaskChecked: true
         };
-        console.log(this.filters);
         this.showActivityButton = false;
         if(filterUpdate) {
-            console.log('Inside if');
             this.assignFilterValues();
         }
     }
