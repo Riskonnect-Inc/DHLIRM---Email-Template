@@ -5,7 +5,7 @@ import { refreshApex } from '@salesforce/apex';
 import { getRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 
 //import { loadStyle } from 'lightning/platformResourceLoader';
-import customStyles from '@salesforce/resourceUrl/searchableActivity_styleHacks';
+//import customStyles from '@salesforce/resourceUrl/searchableActivity_styleHacks';
 
 //import findItems from "@salesforce/apex/SearchableActivityController.findItems";
 import loadItems from "@salesforce/apex/SearchableActivityController.loadItems";
