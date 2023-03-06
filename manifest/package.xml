@@ -26,6 +26,10 @@
     </types>
     <types>
         <members>EmailMessage.isUnread__c</members>
+        <name>CustomField</name>
+    </types>
+    <types>
+        <members>EmailMessage</members>
         <name>CustomObject</name>
     </types>
     <types>
