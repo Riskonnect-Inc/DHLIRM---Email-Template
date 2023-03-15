@@ -234,6 +234,14 @@ public with sharing class SearchableActivityController {
             List<EmailMessage> emailList = Database.query(emailQuery);
             if(emailList.size() > 0) {
                 String prevMessage = emailList[0].HtmlBody;
+		if (String.isBlank(prevMessage)) {
+                    prevMessage = emailList[0].TextBody;
+                    if (String.isBlank(prevMessage)) {
+                        prevMessage = '<No Message>';
+                    } else {
+                        prevMessage = prevMessage.replaceAll('(\r\n|\n)', '<br>');
+                    }
+                }
                 String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+UserInfo.getName()+' </b><br> &lt;'+UserInfo.getUserEmail()+'&gt;<br>Date: '+emailList[0].MessageDate + '<br>'+prevMessage;
                 Map<String,Object> emailElement = new Map<String,Object>();
                 emailElement.put('Id', emailList[0].Id);
