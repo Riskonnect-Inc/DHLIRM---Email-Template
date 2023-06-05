@@ -56,7 +56,7 @@
 			}
 			attElmts.forEach(elmt => {
 				if (elmt) {
-					attIds = attIds.concat(String(elmt).split(new RegExp('[\s,]+')));
+					attIds = attIds.concat(String(elmt).split(/[\s,]+/));
 				}
 			});
 			//console.log(attIds.length);

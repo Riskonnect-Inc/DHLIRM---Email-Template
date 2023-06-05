@@ -5,6 +5,9 @@ public with sharing class SearchableActivityController {
         @AuraEnabled
         public Boolean isSuccess {get; set;}
 
+        @AuraEnabled 
+        public String errorType {get; set;}
+
         @AuraEnabled
         public List<Map<String,Object>> emailList {get; set;}
 
@@ -104,7 +107,15 @@ public with sharing class SearchableActivityController {
             if(isDelete) {
                 String delQuery = 'SELECT Id FROM '+sObjName+' WHERE Id =: recordId';
                 SObject delRecord = Database.query(delQuery);
-                delete delRecord;
+                try {
+                    delete delRecord;
+                } catch (DMLException err) {
+                    if (err.getDmlType(0) == StatusCode.INSUFFICIENT_ACCESS_OR_READONLY) {
+                        res.isSuccess = false;
+                        res.errorType = err.getDmlType(0).name().toUpperCase();
+                        res.errorMessage = 'You don\'t have Delete permission: ' + err.getMessage();
+                    }
+                }
             } else {
                 res.isSuccess = false;
                 res.errorMessage = 'Delete failed! User does not have access to delete the record.';
@@ -127,8 +138,9 @@ public with sharing class SearchableActivityController {
             String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, BccAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, HtmlBody, HasAttachment FROM EmailMessage WHERE Id =: emailId';
             List<EmailMessage> emailList = Database.query(emailQuery);
             if(emailList.size() > 0) {
-                String prevMessage = emailList[0].HtmlBody;
-                String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+UserInfo.getName()+' </b><br> <'+UserInfo.getUserEmail()+'><br>Date: '+emailList[0].MessageDate + '<br>'+prevMessage;
+                String prevMessage = (emailList[0].HtmlBody != null)? emailList[0].HtmlBody : emailList[0].TextBody; // Added by Raghil w.r.t CFDRK-604
+                //String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+UserInfo.getName()+' </b><br> <'+UserInfo.getUserEmail()+'><br>Date: '+emailList[0].MessageDate + '<br>'+prevMessage;
+                String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+emailList[0].FromAddress+' </b><br> <'+UserInfo.getUserEmail()+'><br>Date: '+emailList[0].MessageDate + '<br>'+prevMessage; // Added by Raghil w.r.t CFDRK-597
                 Map<String,Object> emailElement = new Map<String,Object>();
                 emailElement.put('Id', emailList[0].Id);
                 List<String> toAddressList = new List<String>();
