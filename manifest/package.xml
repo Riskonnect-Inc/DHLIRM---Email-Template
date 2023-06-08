@@ -6,7 +6,7 @@
         <name>ApexClass</name>
     </types>
     <types>
-        <members>SearchableTimeline</members>
+        <members>emailServices</members>
         <members>UtilityBarTimelineStyler</members>
         <name>AuraDefinitionBundle</name>
     </types>
