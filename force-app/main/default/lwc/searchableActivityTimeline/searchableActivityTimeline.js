@@ -206,6 +206,7 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
             ];
             if(this.emails != null || this.emails != undefined) {
                 for(i = 0; i< this.emails.length; i++) {  
+                    //console.log(this.emails[i].title, this.emails[i].datetimeValue);
                     let emailObj = 
                     {
                         name: this.emails[i].name,
@@ -559,8 +560,10 @@ export default class SearchableActivityTimeline extends NavigationMixin(Lightnin
         try {
             const response = await loadEmailDetails({
                 emailId : id,
-                emailType : type
+                emailType : type,
+                browserTimeZone: Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone
             });
+            //console.log(Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone);
             if(response.isSuccess) {
                 let recId = response.emailList[0].Id;
                 let toAddress = response.emailList[0].toAddress;

@@ -129,7 +129,7 @@ public with sharing class SearchableActivityController {
     }
 
     @AuraEnabled
-    public static Result loadEmailDetails(Id emailId, String emailType){
+    public static Result loadEmailDetails(Id emailId, String emailType, String browserTimeZone){
         Result res = new Result();
         List<Map<String,Object>> emails = new List<Map<String,Object>>();
         try {
@@ -138,9 +138,30 @@ public with sharing class SearchableActivityController {
             String emailQuery = 'SELECT Id, Subject, FromName, FromAddress, ToAddress, CcAddress, BccAddress, CreatedDate, CreatedById, MessageDate, TextBody, Incoming, IsBounced, IsTracked, IsOpened, Status, HtmlBody, HasAttachment FROM EmailMessage WHERE Id =: emailId';
             List<EmailMessage> emailList = Database.query(emailQuery);
             if(emailList.size() > 0) {
+                // MDU: new logic takes a browser timezone to ensure the reply's Message Date is formatted to that timezone:
+                DateTime now = System.now();
+                TimeZone browserTimeZoneInstance;
+                if (String.isNotBlank(browserTimeZone)) {
+                    try {
+                        browserTimeZoneInstance = TimeZone.getTimeZone(browserTimeZone);
+                    } catch (Exception ignore) {}
+                }
+                Long shiftOffset = 0;
+                if (browserTimeZoneInstance != null) {
+                    shiftOffset = browserTimeZoneInstance.getOffset(now) - UserInfo.getTimeZone().getOffset(now);
+                    System.debug('Applying timezone offset [' + shiftOffset + '] for ' + UserInfo.getTimeZone().getDisplayName() + ' To ' + browserTimeZoneInstance.getDisplayName());
+                }
+
+                //Long browserOffset = (String.isNotBlank(browserTimeZone) ? TimeZone.getTimeZone(browserTimeZone) : UserInfo.getTimeZone()).getOffset(now);
+                //Long sfUserOffset = UserInfo.getTimeZone().getOffset(now);
+                //Long shiftOffset = browserOffset - sfUserOffset; // e.g. -00:04 EDT - +00:02 Euro Central = -06:00
+                //System.debug('SHIFT OFFSET: ' + shiftOffset + '::' + browserTimeZone);
+                DateTime messageTime = emailList[0].MessageDate;
+                String formattedMessageTime = DateTime.newInstance(messageTime.getTime() + shiftOffset).format();
+
                 String prevMessage = (emailList[0].HtmlBody != null)? emailList[0].HtmlBody : emailList[0].TextBody; // Added by Raghil w.r.t CFDRK-604
                 //String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+UserInfo.getName()+' </b><br> <'+UserInfo.getUserEmail()+'><br>Date: '+emailList[0].MessageDate + '<br>'+prevMessage;
-                String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+emailList[0].FromAddress+' </b><br> <'+UserInfo.getUserEmail()+'><br>Date: '+emailList[0].MessageDate + '<br>'+prevMessage; // Added by Raghil w.r.t CFDRK-597
+                String addMessage = '<br><br>--------------- Original Message ---------------<br>From: <b>'+emailList[0].FromAddress+' </b><br> <'+UserInfo.getUserEmail()+'><br>Date: '+ formattedMessageTime + '<br>' + prevMessage; // Added by Raghil w.r.t CFDRK-597
                 Map<String,Object> emailElement = new Map<String,Object>();
                 emailElement.put('Id', emailList[0].Id);
                 List<String> toAddressList = new List<String>();
@@ -556,6 +577,9 @@ public with sharing class SearchableActivityController {
                         ) + ' bounced. Update the email address and try again.');       
                     emailElement.put('bouncedMessage', bouncedMessage);           
                 }   
+                System.debug(e.MessageDate.format());
+                System.debug(UserInfo.getLocale());
+                System.debug(UserInfo.getTimeZone());
                 emailElement.put('description', descriptionText);
                 emailElement.put('datetimeValue', e.MessageDate);
                 emailElement.put('fromAddress', e.FromAddress);
