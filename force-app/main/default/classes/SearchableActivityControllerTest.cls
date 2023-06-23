@@ -131,9 +131,9 @@ public class SearchableActivityControllerTest {
         SearchableActivityController.Result loadTestItems = SearchableActivityController.loadItems(claim.Id, 'load', '', '', '', '', '', true, true);
         String testGetActivityDigest = SearchableActivityController.getActivityDigest(claim.Id);
         SearchAbleActivityController.Result deleteTestItem = SearchableActivityController.deleteRecord(presentTask.Id);
-        SearchAbleActivityController.Result loadTestEmailDetails = SearchableActivityController.loadEmailDetails(email.Id, 'Reply');
-        SearchAbleActivityController.Result loadTestEmailDetails2 = SearchableActivityController.loadEmailDetails(email.Id, 'Reply All');
-        SearchAbleActivityController.Result loadTestEmailDetails3 = SearchableActivityController.loadEmailDetails(email.Id, 'Forward');
+        SearchAbleActivityController.Result loadTestEmailDetails = SearchableActivityController.loadEmailDetails(email.Id, 'Reply', null);
+        SearchAbleActivityController.Result loadTestEmailDetails2 = SearchableActivityController.loadEmailDetails(email.Id, 'Reply All', null);
+        SearchAbleActivityController.Result loadTestEmailDetails3 = SearchableActivityController.loadEmailDetails(email.Id, 'Forward', null);
         SearchAbleActivityController.Result receivedTestEmails = SearchableActivityController.editReceivedEmails(email.Id);
         SearchAbleActivityController.Result receivedTestEmails2 = SearchableActivityController.editReceivedEmails(emailNonUser.Id);
         SearchableActivityController.Result testRecordInfo = SearchableActivityController.getRecordInfo(email.Id);
